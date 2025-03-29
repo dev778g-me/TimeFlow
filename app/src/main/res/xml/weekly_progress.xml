@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/weekly_progress"
+    android:minWidth="100dp"
+    android:minHeight="50dp"
+    android:resizeMode="horizontal"
+    android:widgetCategory="home_screen"
+    />
+

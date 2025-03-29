@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">TimeFlow</string>
+    <string name="yearly_progress">Yearly Progress</string>
+    <string name="monthly_progress">Monthly Progress</string>
+    <string name="weekly_progress">Weekly Progress</string>
+</resources>
