@@ -1,7 +1,6 @@
-package com.dev.timeflow.Presentation
+package com.dev.timeflow.Presentation.Screens
 
 import android.icu.util.Calendar
-import android.provider.Settings
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,6 +33,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.glance.LocalContext
+import com.dev.timeflow.Managers.WidgetAlarmService
 import kotlinx.coroutines.delay
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
@@ -42,6 +43,11 @@ import java.util.Date
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(modifier: Modifier = Modifier) {
+  //  val context = LocalContext.current
+
+
+
+
     var datePickerController by remember { mutableStateOf(false) }
     val today = remember { Date().time }
     val dateState= rememberDatePickerState(
@@ -101,7 +107,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
             delay(1000L)
         }
     }
-
+   // val context = LocalContext.current
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -110,9 +116,11 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                 }
             )
         },
+
         floatingActionButton = {
             FloatingActionButton(onClick = {
-                   datePickerController = true
+
+              ///  WidgetAlarmService(context).scheduleAlarmForUpdatingWidgets()
             }) {
                 Icon(imageVector = Icons.Default.AddCircle, contentDescription = null)
             }
@@ -153,8 +161,8 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                     datePickerController = false
                 },
                 confirmButton = {
-                    val selectedmilies = dateState.selectedDateMillis ?: 0L
-                    val isFutureReady = selectedmilies>= today
+                    val selectedMilies = dateState.selectedDateMillis ?: 0L
+                    val isFutureReady = selectedMilies>= today
                     FilledTonalButton(onClick = {
                         if (dateState.selectedDateMillis != null) {
                             selectedDate = dateState.selectedDateMillis!!

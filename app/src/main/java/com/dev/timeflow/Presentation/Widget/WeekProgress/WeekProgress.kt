@@ -1,6 +1,9 @@
 package com.dev.timeflow.Presentation.Widget.WeekProgress
 
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.icu.text.DecimalFormat
 import android.icu.util.Calendar
 import androidx.compose.material3.MaterialTheme
@@ -13,6 +16,7 @@ import androidx.glance.GlanceModifier
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.LinearProgressIndicator
 import androidx.glance.appwidget.provideContent
+import androidx.glance.appwidget.updateAll
 import androidx.glance.background
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
@@ -24,9 +28,19 @@ import androidx.glance.text.FontStyle
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
+import com.dev.timeflow.Presentation.Widget.Constants
+
 import java.text.SimpleDateFormat
 
 class WeekProgress : GlanceAppWidget(){
+
+    companion object{
+       suspend fun updateWidget(context: Context){
+            WeekProgress().updateAll(context = context)
+        }
+    }
+
+
     override suspend fun provideGlance(
         context: Context,
         id: GlanceId

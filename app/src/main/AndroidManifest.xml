@@ -2,6 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -51,6 +56,20 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/weekly_progress"/>
         </receiver>
+        <receiver android:name=".Managers.WidgetAlarmReceivers"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action"/>
+            </intent-filter>
+        </receiver>
+        <receiver android:name=".Managers.BootCompleteReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED">
+                </action>
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>

@@ -1,8 +1,10 @@
 package com.dev.timeflow.Presentation.Widget.MonthProgress
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -22,17 +24,24 @@ import androidx.glance.text.FontStyle
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
+import com.dev.timeflow.Presentation.Widget.Constants
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
 class MonthProgress : GlanceAppWidget() {
+
     override suspend fun provideGlance(
         context: Context,
         id: GlanceId
     ) {
+
+        Log.d("MonthProgress", "provideGlance called for id: $id")
+
         provideContent {
-            MonthProgressWidget()
+            CompositionLocalProvider(androidx.compose.ui.platform.LocalContext provides context) {
+                MonthProgressWidget()
+            }
         }
     }
 }
