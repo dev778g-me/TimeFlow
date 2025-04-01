@@ -1,6 +1,7 @@
 package com.dev.timeflow.Presentation.Screens
 
 import android.icu.util.Calendar
+import android.os.SystemClock
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -21,10 +23,12 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,7 +59,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
         initialDisplayedMonthMillis = today,
 
         )
-    var selectedDate by remember { mutableLongStateOf(Date().time) }
+
     val calender = Calendar.getInstance()
     val decimalFormatter = DecimalFormat("#.##")
 
@@ -91,6 +95,27 @@ fun HomeScreen(modifier: Modifier = Modifier) {
     //Day Name
     val dayDate = SimpleDateFormat("EEEE")
     val days = dayDate.format(calender.time)
+
+    // custom date
+    val nowMilis = System.currentTimeMillis()
+    val selectedCalendar = Calendar.getInstance().apply {
+        timeInMillis = nowMilis
+    }
+    val currentCalendar = Calendar.getInstance()
+   // future date variable
+    var currentDate = System.currentTimeMillis()
+    var selectedDate by remember { mutableLongStateOf(0L) }
+    var percentage by remember { mutableStateOf(0f) }
+    if (selectedDate > 0) {
+        val totalMillisToFuture = selectedDate - today
+        val elapsedMillis = today - System.currentTimeMillis()
+        percentage = (elapsedMillis.toFloat() / totalMillisToFuture) * 100
+    }
+
+
+
+
+
     LaunchedEffect(Unit) {
         while (true) {
             calender.timeInMillis = System.currentTimeMillis()
@@ -119,10 +144,9 @@ fun HomeScreen(modifier: Modifier = Modifier) {
 
         floatingActionButton = {
             FloatingActionButton(onClick = {
-
-              ///  WidgetAlarmService(context).scheduleAlarmForUpdatingWidgets()
+             datePickerController = true
             }) {
-                Icon(imageVector = Icons.Default.AddCircle, contentDescription = null)
+                Icon(imageVector = Icons.Default.DateRange, contentDescription = null)
             }
         }
     ){ innerPadding ->
@@ -132,8 +156,14 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp)
         ) {
+            Text(text = selectedDate.toString())
+            Text(text = currentDate.toString())
+            Text(text = percentage.toString())
+            //Text(text = futureProgress.toString())
+//            Text(text = decimalFormatter.format(datePercentage))
+//           Text(text = currentdate.toString())
+//            Text(text = selectedDate.toString())
 
-       //     Text(convertLongDate(selectedDate))
             ProgressBox(
                 progress = dayProgress.toFloat(),"Day Progress",
                 time.toString()
@@ -149,35 +179,50 @@ fun HomeScreen(modifier: Modifier = Modifier) {
             ProgressBox(
                 progress = yearlyPercentage.toFloat(),"Year Progress",yearName.toString(),formatedYearlyPercentage.toFloat()
             )
+//            if (datePercentage.isFinite() && datePercentage > 0){
+//                ProgressBox(
+//                    progress = datePercentage.toFloat(),
+//                    "date",
+//                    "iuf",
+//                    9f
+//                )
+//            }
 
 
 
-
-        }
-
-        if (datePickerController){
-            DatePickerDialog(
-                onDismissRequest = {
-                    datePickerController = false
-                },
-                confirmButton = {
-                    val selectedMilies = dateState.selectedDateMillis ?: 0L
-                    val isFutureReady = selectedMilies>= today
-                    FilledTonalButton(onClick = {
-                        if (dateState.selectedDateMillis != null) {
-                            selectedDate = dateState.selectedDateMillis!!
-                        }
+            if (datePickerController){
+                DatePickerDialog(
+                    onDismissRequest = {
                         datePickerController = false
-                    }, enabled = isFutureReady) {
-                        Text(text = "Confirm Date")
+                    },
+                    confirmButton = {
+                        val selectedMilies = dateState.selectedDateMillis ?: 0L
+                        val isFutureReady = selectedMilies>= today
+                        FilledTonalButton(onClick = {
+                            if (dateState.selectedDateMillis != null) {
+                                selectedDate = dateState.selectedDateMillis!!
+                            }
+                            datePickerController = false
+                        }, enabled = isFutureReady) {
+                            Text(text = "Confirm Date")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = {
+                            datePickerController = false
+                        }) {
+                            Text(text = "Cancel")
+                        }
                     }
+                ) {
+                    DatePicker(
+                        state = dateState
+                    )
                 }
-            ) {
-                DatePicker(
-                    state = dateState
-                )
             }
         }
+
+
     }
 }
 
