@@ -23,11 +23,18 @@ It displays real-time progress for:
 ---
 ## 📷 Screenshots
 
+### 🔹 Home Screen Widget  
+Shows the progress of your **day, week, month, and year** at a glance.  
 <p align="center">
-  <b>HomeScreen Widget & App interface </b><br>
- 
-  <img src="https://github.com/dev778g-me/TimeFlow/blob/26cc58067f961002ee162e100317fce180a0fbeb/TimeFlow%20W2.png" width="400" />
-   <img src="https://github.com/dev778g-me/TimeFlow/blob/a5a4032b1e0855bf2cd873afc1de032b07536510/Timeflow1.png" width="400" />
+  <img src="https://github.com/dev778g-me/TimeFlow/blob/26cc58067f961002ee162e100317fce180a0fbeb/TimeFlow%20W2.png" width="300" alt="Time Flow Widget Screenshot"/>
+</p>
+
+---
+
+### 🔹 App Interface  
+Minimal and focused interface for configuring your experience.  
+<p align="center">
+  <img src="https://github.com/dev778g-me/TimeFlow/blob/a5a4032b1e0855bf2cd873afc1de032b07536510/Timeflow1.png" width="300" alt="Time Flow App UI Screenshot"/>
 </p>
 
 ## 🚀 Features
