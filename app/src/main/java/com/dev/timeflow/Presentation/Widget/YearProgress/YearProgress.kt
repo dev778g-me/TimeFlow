@@ -1,14 +1,15 @@
 package com.dev.timeflow.Presentation.Widget.YearProgress
 
 import android.content.Context
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
+import androidx.glance.GlanceTheme
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.LinearProgressIndicator
+import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
 import androidx.glance.layout.Box
@@ -21,7 +22,6 @@ import androidx.glance.text.FontStyle
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
-import com.dev.timeflow.Presentation.Widget.Constants
 import java.text.DecimalFormat
 import java.util.Calendar
 
@@ -49,30 +49,34 @@ fun YearProgressWidget() {
 
     Column {
         Box (
-            modifier = GlanceModifier.background(MaterialTheme.colorScheme.primaryContainer).fillMaxSize()
+            modifier = GlanceModifier
+                .background(GlanceTheme.colors.widgetBackground)
+                .fillMaxSize()
+                .cornerRadius(16.dp)
         ){
             Column(
                 modifier = GlanceModifier.padding(horizontal = 10.dp, vertical = 12.dp)
             ) {
-                Text(text = "YEAR-${year.toString()}", style = TextStyle(
-
+                Text(text = "Year-${year.toString()}", style = TextStyle(
                     fontWeight = FontWeight.Medium,
                     fontStyle = FontStyle.Normal,
-                    fontSize = 13.sp
+                    fontSize = 13.sp,
+                    color = GlanceTheme.colors.onPrimaryContainer
                 ))
                  Text(
                      modifier = GlanceModifier.padding(bottom = 20.dp),
                      text = "Progress-${formattedYearPercentage}",
                      style = TextStyle(
-                         fontSize = 12.sp
+                         fontSize = 12.sp,
+                         color = GlanceTheme.colors.onPrimaryContainer
                      )
                  )
-             //   Spacer(modifier = GlanceModifier.height(60.dp))
 
                 LinearProgressIndicator(
                     progress = yearPercentage / 100,
                     modifier = GlanceModifier.fillMaxWidth().height(10.dp),
-
+                    color = GlanceTheme.colors.primary,
+                    backgroundColor = GlanceTheme.colors.primaryContainer
                 )
             }
         }

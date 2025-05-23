@@ -10,8 +10,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
+import androidx.glance.GlanceTheme
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.LinearProgressIndicator
+import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
 import androidx.glance.layout.Box
@@ -62,22 +64,27 @@ fun MonthProgressWidget(modifier: Modifier = Modifier) {
     val formatedMonthlyPecentage = decimalFormat.format(monthlyPercentage).toString() + "%"
 
     Box (
-        modifier = GlanceModifier.background(MaterialTheme.colorScheme.primaryContainer).fillMaxSize()
+        modifier = GlanceModifier
+            .background(GlanceTheme.colors.widgetBackground)
+            .fillMaxSize()
+            .cornerRadius(16.dp)
     ){
         Column(
             modifier = GlanceModifier.padding(horizontal = 10.dp, vertical = 12.dp)
         ) {
-            Text(text = "MONTH-${monthName}", style = TextStyle(
-
+            Text(text = "Month-${monthName}", style = TextStyle(
                 fontWeight = FontWeight.Medium,
                 fontStyle = FontStyle.Normal,
-                fontSize = 13.sp
+                fontSize = 13.sp,
+                color = GlanceTheme.colors.onPrimaryContainer
+
             ))
             Text(
                 modifier = GlanceModifier.padding(bottom = 20.dp),
                 text = "Progress-${formatedMonthlyPecentage}",
                 style = TextStyle(
-                    fontSize = 12.sp
+                    fontSize = 12.sp,
+                    color = GlanceTheme.colors.onPrimaryContainer
                 )
             )
             //   Spacer(modifier = GlanceModifier.height(60.dp))
@@ -85,7 +92,8 @@ fun MonthProgressWidget(modifier: Modifier = Modifier) {
             LinearProgressIndicator(
                 progress = monthlyPercentage / 100,
                 modifier = GlanceModifier.fillMaxWidth().height(10.dp),
-
+                color = GlanceTheme.colors.primary,
+                backgroundColor = GlanceTheme.colors.primaryContainer
                 )
         }
     }

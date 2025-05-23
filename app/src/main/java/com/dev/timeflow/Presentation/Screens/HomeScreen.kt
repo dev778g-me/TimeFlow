@@ -1,7 +1,7 @@
 package com.dev.timeflow.Presentation.Screens
 
 import android.icu.util.Calendar
-import android.os.SystemClock
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,13 +9,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
@@ -23,12 +19,9 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,8 +30,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.glance.LocalContext
-import com.dev.timeflow.Managers.WidgetAlarmService
 import kotlinx.coroutines.delay
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
@@ -46,19 +37,11 @@ import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier) {
-  //  val context = LocalContext.current
+fun HomeScreen() {
+  val context = androidx.compose.ui.platform.LocalContext.current.applicationContext
 
-
-
-
-    var datePickerController by remember { mutableStateOf(false) }
     val today = remember { Date().time }
-    val dateState= rememberDatePickerState(
-        initialSelectedDateMillis = today,
-        initialDisplayedMonthMillis = today,
 
-        )
 
     val calender = Calendar.getInstance()
     val decimalFormatter = DecimalFormat("#.##")
@@ -97,13 +80,11 @@ fun HomeScreen(modifier: Modifier = Modifier) {
     val days = dayDate.format(calender.time)
 
     // custom date
-    val nowMilis = System.currentTimeMillis()
-    val selectedCalendar = Calendar.getInstance().apply {
-        timeInMillis = nowMilis
-    }
-    val currentCalendar = Calendar.getInstance()
+
+
+
    // future date variable
-    var currentDate = System.currentTimeMillis()
+
     var selectedDate by remember { mutableLongStateOf(0L) }
     var percentage by remember { mutableStateOf(0f) }
     if (selectedDate > 0) {
@@ -111,10 +92,6 @@ fun HomeScreen(modifier: Modifier = Modifier) {
         val elapsedMillis = today - System.currentTimeMillis()
         percentage = (elapsedMillis.toFloat() / totalMillisToFuture) * 100
     }
-
-
-
-
 
     LaunchedEffect(Unit) {
         while (true) {
@@ -143,9 +120,12 @@ fun HomeScreen(modifier: Modifier = Modifier) {
         },
 
         floatingActionButton = {
-            FloatingActionButton(onClick = {
-             datePickerController = true
-            }) {
+            FloatingActionButton(
+                onClick = {
+                    Toast.makeText(context, "Coming In Next Update !", Toast.LENGTH_SHORT).show()
+                }
+
+            ) {
                 Icon(imageVector = Icons.Default.DateRange, contentDescription = null)
             }
         }
@@ -156,13 +136,6 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp)
         ) {
-            Text(text = selectedDate.toString())
-            Text(text = currentDate.toString())
-            Text(text = percentage.toString())
-            //Text(text = futureProgress.toString())
-//            Text(text = decimalFormatter.format(datePercentage))
-//           Text(text = currentdate.toString())
-//            Text(text = selectedDate.toString())
 
             ProgressBox(
                 progress = dayProgress.toFloat(),"Day Progress",
@@ -179,47 +152,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
             ProgressBox(
                 progress = yearlyPercentage.toFloat(),"Year Progress",yearName.toString(),formatedYearlyPercentage.toFloat()
             )
-//            if (datePercentage.isFinite() && datePercentage > 0){
-//                ProgressBox(
-//                    progress = datePercentage.toFloat(),
-//                    "date",
-//                    "iuf",
-//                    9f
-//                )
-//            }
 
-
-
-            if (datePickerController){
-                DatePickerDialog(
-                    onDismissRequest = {
-                        datePickerController = false
-                    },
-                    confirmButton = {
-                        val selectedMilies = dateState.selectedDateMillis ?: 0L
-                        val isFutureReady = selectedMilies>= today
-                        FilledTonalButton(onClick = {
-                            if (dateState.selectedDateMillis != null) {
-                                selectedDate = dateState.selectedDateMillis!!
-                            }
-                            datePickerController = false
-                        }, enabled = isFutureReady) {
-                            Text(text = "Confirm Date")
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = {
-                            datePickerController = false
-                        }) {
-                            Text(text = "Cancel")
-                        }
-                    }
-                ) {
-                    DatePicker(
-                        state = dateState
-                    )
-                }
-            }
         }
 
 

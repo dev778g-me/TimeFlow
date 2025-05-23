@@ -13,8 +13,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
+import androidx.glance.GlanceTheme
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.LinearProgressIndicator
+import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
 import androidx.glance.appwidget.updateAll
 import androidx.glance.background
@@ -67,7 +69,10 @@ fun WeekProgressWidget(modifier: Modifier = Modifier) {
 
 
     Box (
-        modifier = GlanceModifier.background(MaterialTheme.colorScheme.primaryContainer).fillMaxSize()
+        modifier = GlanceModifier
+            .background(GlanceTheme.colors.widgetBackground)
+            .fillMaxSize()
+            .cornerRadius(16.dp)
     ){
         Column(
             modifier = GlanceModifier.padding(horizontal = 10.dp, vertical = 12.dp)
@@ -77,13 +82,15 @@ fun WeekProgressWidget(modifier: Modifier = Modifier) {
                 fontWeight = FontWeight.Medium,
                 fontStyle = FontStyle.Normal,
                 fontSize = 13.sp,
+                color = GlanceTheme.colors.onPrimaryContainer
 
             ))
             Text(
                 modifier = GlanceModifier.padding(bottom = 20.dp),
                 text = "Progress-${formattedWeekPercentage}",
                 style = TextStyle(
-                    fontSize = 12.sp
+                    fontSize = 12.sp,
+                    color = GlanceTheme.colors.onPrimaryContainer
                 ),
 
 
@@ -92,7 +99,8 @@ fun WeekProgressWidget(modifier: Modifier = Modifier) {
             LinearProgressIndicator(
                 progress = weekProgressPercentage / 100,
                 modifier = GlanceModifier.fillMaxWidth().height(10.dp),
-
+                color = GlanceTheme.colors.primary,
+                backgroundColor = GlanceTheme.colors.primaryContainer
                 )
         }
     }
