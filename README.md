@@ -87,13 +87,9 @@ See the [LICENSE](LICENSE) file for more details.
 Contributions are welcome!  
 If you find bugs or have ideas for improvements, open an issue or submit a pull request.
 
-Start here 👉 [GitHub Issues](https://github.com/yourusername/time-flow/issues)
+Start here 👉 [GitHub Issues](https://github.com/dev778g-me/time-flow/issues)
 
 ---
-
-## 📷 Screenshots
-
-> _Add your app screenshots here once available_
 
 ---
 
