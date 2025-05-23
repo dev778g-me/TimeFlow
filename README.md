@@ -21,6 +21,13 @@ It displays real-time progress for:
 - 📈 **This Year**
 
 ---
+## 📷 Screenshots
+
+<p align="center">
+  <b>HomeScreen Widget & App interface </b><br>
+  <img src="https://github.com/dev778g-me/TimeFlow/blob/a5a4032b1e0855bf2cd873afc1de032b07536510/Timeflow1.png" width="400" />
+  <img src="https://github.com/dev778g-me/TimeFlow/blob/26cc58067f961002ee162e100317fce180a0fbeb/TimeFlow%20W2.png" width="400" />
+</p>
 
 ## 🚀 Features
 
@@ -34,7 +41,7 @@ It displays real-time progress for:
 
 ## 📲 How It Works
 
-1. Install Time Flow from the Play Store (coming soon).
+1. Install Time Flow from the Release.
 2. Long-press your home screen and add the **Time Flow widget**.
 3. Instantly see how far you are into your day, week, month, or year.
 4. Get back to work with renewed awareness and drive.
