@@ -25,8 +25,9 @@ It displays real-time progress for:
 
 <p align="center">
   <b>HomeScreen Widget & App interface </b><br>
-  <img src="https://github.com/dev778g-me/TimeFlow/blob/a5a4032b1e0855bf2cd873afc1de032b07536510/Timeflow1.png" width="400" />
+ 
   <img src="https://github.com/dev778g-me/TimeFlow/blob/26cc58067f961002ee162e100317fce180a0fbeb/TimeFlow%20W2.png" width="400" />
+   <img src="https://github.com/dev778g-me/TimeFlow/blob/a5a4032b1e0855bf2cd873afc1de032b07536510/Timeflow1.png" width="400" />
 </p>
 
 ## 🚀 Features
