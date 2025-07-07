@@ -12,25 +12,26 @@ import androidx.compose.material3.Button
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.glance.LocalContext
+import app.rive.runtime.kotlin.RiveInitializer
 import com.dev.timeflow.Managers.WidgetAlarmService
+import com.dev.timeflow.Presentation.Navigation.NavGraph
 
 
 import com.dev.timeflow.Presentation.Screens.HomeScreen
 import com.dev.timeflow.Presentation.Widget.MonthProgress.MonthlyGlanceReceiver
-import com.dev.timeflow.ui.theme.TimeFlowTheme
+import com.example.compose.TimeFlowTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     //@RequiresPermission(Manifest.permission.SCHEDULE_EXACT_ALARM)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        println("start")
-       val lala = WidgetAlarmService(this)
-        println("end")
         WidgetAlarmService(this).scheduleAlarmForUpdatingWidgets()
         enableEdgeToEdge()
         setContent {
             TimeFlowTheme {
-                HomeScreen()
+                NavGraph()
             }
         }
     }
