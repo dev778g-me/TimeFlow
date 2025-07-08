@@ -25,6 +25,9 @@ class EventViewModel @Inject constructor(
     private val _allEvents = MutableStateFlow<List<Events>>(emptyList())
     var allEvents : StateFlow<List<Events>> = _allEvents
 
+    init {
+        getAllTasks()
+    }
     // function to get all the events from the database
     fun getAllEvents() {
         viewModelScope.launch {

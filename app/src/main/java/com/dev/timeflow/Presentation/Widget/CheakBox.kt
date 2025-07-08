@@ -2,6 +2,7 @@ package com.dev.timeflow.Presentation.Widget
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
@@ -14,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -23,7 +25,7 @@ fun RoundedCheckBox(
     onCheckedChange : (Boolean) -> Unit
 ) {
 
-    val color = if (isChecked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+    val color = if (isChecked) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.surfaceVariant
     val icon = if (isChecked) Icons.Rounded.Check else null
     val iconColor = if (isChecked) MaterialTheme.colorScheme.onPrimary else null
     Box(
@@ -31,6 +33,7 @@ fun RoundedCheckBox(
             .size(24.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(color)
+            .border(width = 1.dp, color = if (isChecked) Color.Transparent else MaterialTheme.colorScheme.onPrimaryContainer , shape = RoundedCornerShape(16.dp))
             .clickable(
                 onClick = {
                     onCheckedChange(

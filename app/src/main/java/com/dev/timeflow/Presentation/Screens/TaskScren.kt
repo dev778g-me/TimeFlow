@@ -7,9 +7,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,6 +27,7 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.AddBox
 import androidx.compose.material.icons.rounded.ArrowDropDown
 import androidx.compose.material.icons.rounded.Attachment
+import androidx.compose.material.icons.rounded.Circle
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.Remove
 import androidx.compose.material3.AlertDialog
@@ -43,6 +46,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -87,12 +91,9 @@ import java.util.Date
 fun TaskScreen(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val taskViewModel: EventViewModel = hiltViewModel()
-    LaunchedEffect(Unit){
-        taskViewModel.getAllTasks()
-    }
     val hapticFeedback = LocalHapticFeedback.current
     var showDialog by remember { mutableStateOf(false) }
-    var showMe by remember { mutableStateOf(false) }
+    var expand by remember { mutableStateOf(false) }
     var taskName by remember { mutableStateOf("") }
     var taskDescription by remember { mutableStateOf("") }
     var isNotEmpty by remember(taskName) {mutableStateOf(taskName.isNotEmpty()) }
@@ -284,172 +285,53 @@ fun TaskScreen(modifier: Modifier = Modifier) {
         AnimatedContent(
             targetState = allTask.isEmpty()
         ) {
-            if (it == true){
-                Box(
+            if (it) {
+                Column(
                     modifier = modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ){
-                    Column(
-                        modifier = modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        AsyncImage(
-                            modifier = modifier.size(
-                                250.dp
-                            ),
-                            model = R.drawable.emptytask,
-                            contentDescription = null
-                        )
-                        Text(
-                            modifier = modifier.padding(
-                                vertical = 4.dp
-                            ),
-                            text = "No tasks yet. Let's get productive!",
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    AsyncImage(
+                        modifier = modifier
+                            .aspectRatio(1f)
+                            .padding(34.dp),
+                        model = R.drawable.emptytask,
+                        contentScale = ContentScale.Inside,
+                        contentDescription = null
+                    )
+
+                    Text(
+                        text = "Add tasks ",
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.titleMedium
+                    )
                 }
             } else {
-                LazyColumn(
+                Column(
                     modifier = modifier
                         .fillMaxSize()
-                        .padding(
-                            horizontal = 16.dp
-                        )
+
                 ) {
-                   item {
-                       AnimatedContent(
-                           targetState = notCompleted.isEmpty()
-                       ) {
-                           if (it == true){
-                               Card(
-                                   colors = CardDefaults.cardColors(
-                                       containerColor = MaterialTheme.colorScheme.inverseOnSurface
-                                   )
-                               ) {
-                                   Column(
-                                       horizontalAlignment = Alignment.CenterHorizontally
-                                   ) {
-                                       AsyncImage(
-                                           modifier = modifier.padding(24.dp),
-                                           model = R.drawable.chk,
-                                           contentDescription = null
-                                       )
-
-                                       Text(
-                                           modifier = modifier.padding(
-                                               top = 16.dp,
-                                               bottom = 8.dp
-                                           ),
-                                           text = "You're All Caught Up!",
-                                           fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
-                                       )
-
-                                       Text(
-                                           modifier = modifier.padding(
-                                               bottom = 16.dp
-                                           ),
-                                           text = "Fantastic job staying on track!"
-                                       )
-                                   }
-
-                               }
-                           }
-                           else{
-                               Spacer(
-                                   modifier = modifier.height(1.dp)
-                               )
-                           }
-
-
-                       }
-                   }
-                    items(
-                        items = notCompleted,
-
+                    AnimatedContent(
+                        targetState = notCompleted.isEmpty()
                     ) {
-                        ListItem(
-                            tonalElevation = 10.dp,
-                            headlineContent = {
-                                Text(
-                                    text = it.name
-                                )
-                            }
-                        )
-                    }
-                    item {
-                        Card(
-                            modifier = modifier
-                                .fillMaxWidth()
-                                .padding(
-                                    vertical = 8.dp
-                                ),
-
-                            ) {
-                            Column (
-                                modifier = modifier
-                            ){
-                                Row(
-                                    modifier = modifier.fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        modifier = modifier.padding(
-                                            vertical = 8.dp,
-                                            horizontal = 16.dp
-                                        ),
-                                        text = "Completed Tasks (${completedTask.size})"
-                                    )
-                                    Spacer(
-                                        modifier = modifier.weight(1f)
-                                    )
-                                    IconButton(
-                                        onClick = {
-                                            showCompleted = !showCompleted
-                                        }
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.KeyboardArrowDown,
-                                            contentDescription = null
-                                        )
-                                    }
-                                }
-                                AnimatedVisibility(
-                                    visible = showCompleted
-                                ) {
-                                    Column(
-                                    ) {
-                                        completedTask.forEachIndexed {
-                                                index , comTask ->
-                                            ListItem(
-                                                leadingContent = {
-                                                    RoundedCheckBox(
-                                                        isChecked = comTask.isCompleted,
-                                                        onCheckedChange = {
-                                                            taskViewModel.updateTask(
-                                                                comTask.copy(
-                                                                    isCompleted = it
-                                                                )
-                                                            )
-                                                        }
-                                                    )
-
-                                                },
-                                                tonalElevation = 10.dp,
-                                                headlineContent = {
-                                                    Text(
-                                                        text = comTask.name
-                                                    )
-                                                }
-                                            )
-                                        }
-                                    }
-                                }
-
-                            }
+                        if (it){
+                            CompletedAllTaskCard()
+                        }else{
+                            NotCompletedTaskCard(
+                                tasks = notCompleted,
+                                taskViewModel = taskViewModel
+                            )
                         }
+
                     }
+                    CompletedTask(
+                        completedTasks = completedTask,
+                        expand = expand,
+                        onExpand = {
+                            expand = !expand
+                        }
+                    )
                 }
             }
         }
@@ -462,3 +344,269 @@ data class ImportanceChip(
     val color: Color,
     val icon : ImageVector = Icons.Filled.Circle
 )
+
+
+@Composable
+fun CompletedAllTaskCard(modifier: Modifier = Modifier,) {
+     Card (
+         modifier = modifier.padding(
+             horizontal = 16.dp
+         ),
+         colors = CardDefaults.cardColors(
+             containerColor = MaterialTheme.colorScheme.inverseOnSurface
+         )
+     ){
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            AsyncImage(
+                modifier = modifier
+                    .aspectRatio(1f)
+                    .padding(
+                        24.dp
+                    ),
+                model = R.drawable.alltaskdone,
+                contentDescription = null
+            )
+            Text(
+                text = "All task are Completed",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Text(
+                modifier = modifier.padding(
+                    bottom = 16.dp
+                ),
+                text = "Well Done !",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+     }
+}
+
+
+@Composable
+fun NotCompletedTaskCard(modifier: Modifier = Modifier, tasks: List<Tasks>, taskViewModel: EventViewModel) {
+
+    LazyColumn(
+        modifier = modifier
+            .padding(
+                horizontal = 16.dp,
+            )
+            .clip(RoundedCornerShape(24.dp))
+            .background(
+                MaterialTheme.colorScheme.inverseOnSurface
+            ),
+        contentPadding = PaddingValues(
+            vertical = 8.dp
+        )
+
+    ) {
+        items(
+            tasks
+        ) {
+            incompleteTask ->
+            ListItem(
+                colors = ListItemDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.inverseOnSurface
+                ),
+               tonalElevation = 10.dp,
+                modifier = modifier
+                    .padding(
+                        vertical = 4.dp,
+                        horizontal = 8.dp
+                    )
+                    .clip(
+                        RoundedCornerShape(16.dp)
+                    ),
+               trailingContent = {
+                   AssistChip(
+                       onClick = {},
+                       leadingIcon = {
+                           Icon(
+                               imageVector = Icons.Rounded.Circle,
+                               tint = when(incompleteTask.importance){
+                                   "Low" -> Color(0xFF4CAF50)
+                                   "Medium" ->  Color(0xFFFFC107)
+                                   "High" ->Color(0xFFF44336)
+                                   else -> Color.Transparent
+                               },
+                               contentDescription = null,
+                               modifier = modifier.size(
+                                   AssistChipDefaults.IconSize -8.dp
+                               )
+                           )
+                       },
+                       label = {
+                           Text(
+                               text = incompleteTask.importance,
+                               style = MaterialTheme.typography.labelSmall
+                           )
+                       }
+                   )
+               },
+                headlineContent = {
+                    Row(
+                        modifier = modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = incompleteTask.name
+                        )
+
+                    }
+                },
+                supportingContent = {
+                    Text(
+                        text = if (incompleteTask.description.isNullOrBlank()) "25-06-2025" else "${incompleteTask.description} 25-06-2025"
+                    )
+                },
+                leadingContent = {
+                    RoundedCheckBox(
+                        isChecked = incompleteTask.isCompleted,
+                        onCheckedChange = {
+                            taskViewModel.updateTask(
+                                tasks = incompleteTask.copy(
+                                    isCompleted = it
+                                )
+                            )
+                        }
+                    )
+                }
+            )
+        }
+    }
+
+}
+
+@Composable
+fun CompletedTask(
+    modifier: Modifier = Modifier,
+    completedTasks: List<Tasks>,
+    expand : Boolean,
+    onExpand : () -> Unit
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(
+                horizontal = 16.dp,
+                vertical = 8.dp
+            ),
+        colors = CardDefaults.cardColors(
+            containerColor =  MaterialTheme.colorScheme.inverseOnSurface
+        )
+    ) {
+        Column(
+            modifier = modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Completed Tasks (${completedTasks.size})"
+                )
+                IconButton(
+                    onClick = {
+                        onExpand.invoke()
+                    }
+                ) {
+                    Icon(imageVector = Icons.Rounded.ArrowDropDown, contentDescription = null)
+                }
+            }
+            AnimatedContent(
+                targetState = expand
+            ) {
+                if (it){
+                    LazyColumn(
+                        modifier = modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(
+                                MaterialTheme.colorScheme.inverseOnSurface
+                            ),
+                    ) {
+                        items(
+                            completedTasks
+                     ) {
+                             completeTask ->
+                         ListItem(
+                             colors = ListItemDefaults.colors(
+                                 containerColor = MaterialTheme.colorScheme.inverseOnSurface
+                             ),
+                             tonalElevation = 10.dp,
+                             modifier = modifier
+                                 .padding(
+                                     vertical = 4.dp,
+                                     horizontal = 8.dp
+                                 )
+                                 .clip(
+                                     RoundedCornerShape(16.dp)
+                                 ),
+                             trailingContent = {
+                                 AssistChip(
+                                     onClick = {},
+                                     leadingIcon = {
+                                         Icon(
+                                             imageVector = Icons.Rounded.Circle,
+                                             tint = when(completeTask.importance){
+                                                 "Low" -> Color(0xFF4CAF50)
+                                                 "Medium" ->  Color(0xFFFFC107)
+                                                 "High" ->Color(0xFFF44336)
+                                                 else -> Color.Transparent
+                                             },
+                                             contentDescription = null,
+                                             modifier = modifier.size(
+                                                 AssistChipDefaults.IconSize -8.dp
+                                             )
+                                         )
+                                     },
+                                     label = {
+                                         Text(
+                                             text = completeTask.importance,
+                                             style = MaterialTheme.typography.labelSmall
+                                         )
+                                     }
+                                 )
+                             },
+                             headlineContent = {
+                                 Row(
+                                     modifier = modifier.fillMaxWidth(),
+                                     horizontalArrangement = Arrangement.SpaceBetween
+                                 ) {
+                                     Text(
+                                         text = completeTask.name
+                                     )
+
+                                 }
+                             },
+                             supportingContent = {
+                                 Text(
+                                     text = if (completeTask.description.isNullOrBlank()) "25-06-2025" else "${completeTask.description} 25-06-2025"
+                                 )
+                             },
+                             leadingContent = {
+                                 RoundedCheckBox(
+                                     isChecked = completeTask.isCompleted,
+                                     onCheckedChange = {
+//                                         taskViewModel.updateTask(
+//                                             tasks = completeTask.copy(
+//                                                 isCompleted = it
+//                                             )
+//                                         )
+                                     }
+                                 )
+                             }
+                         )
+                     }
+                 }
+
+                }
+            }
+        }
+    }
+}

@@ -15,6 +15,8 @@ import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.outlined.Event
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -31,6 +33,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -40,6 +43,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -48,6 +55,7 @@ import com.dev.timeflow.Presentation.Viewmodel.EventViewModel
 import kotlinx.coroutines.delay
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
+import java.time.LocalDate
 import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -128,17 +136,99 @@ fun HomeScreen(
     }
     val taskViewModel : EventViewModel = hiltViewModel()
     val allTask by taskViewModel.allTasks.collectAsState(emptyList())
+    val completedTask by remember(allTask) {
+        derivedStateOf {
+            allTask.filter {
+                it.isCompleted
+            }
+        }
+    }
+
+    val inCompletedTask by remember(allTask) {
+        derivedStateOf {
+            allTask.filter {
+                !it.isCompleted
+            }
+        }
+    }
+
+    val lowImportanceTask by remember(allTask) {
+        derivedStateOf {
+            allTask.filter {
+                it.importance == "Low"
+            }
+        }
+    }
+    val mediumImportanceTask by remember {
+        derivedStateOf {
+            allTask.filter {
+                it.importance == "Medium"
+            }
+        }
+    }
+    val highImportanceTask by remember {
+        derivedStateOf {
+            allTask.filter {
+                it.importance == "High"
+            }
+        }
+    }
+   val todayDate = LocalDate.now()
     Scaffold(
 
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                //.padding(innerPadding)
                 .padding(horizontal = 16.dp)
         ) {
          if (allTask.isNotEmpty()){
+             Card(
+                 modifier = Modifier.fillMaxWidth(),
+                 colors = CardDefaults.cardColors(
+                     containerColor = MaterialTheme.colorScheme.inverseOnSurface
+                 )
+             ) {
+                 Text(
+                     modifier = Modifier.padding(16.dp),
+                     text = buildAnnotatedString {
+                         // Today’s date
+                         withStyle(style = SpanStyle(color = Color.Gray)) {
+                             append("Today is $todayDate (${todayDate.dayOfWeek.name})\n")
+                         }
 
+                         // Total tasks
+                         withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.primary)) {
+                             append("Total tasks: ${allTask.size}\n")
+                         }
+
+                         // Completed tasks
+                         withStyle(style = SpanStyle(color = Color(0xFF4CAF50))) { // Green
+                             append("Completed: ${completedTask.size}\n")
+                         }
+
+                         // Incomplete tasks
+                         withStyle(style = SpanStyle(color = Color(0xFFF44336))) { // Red
+                             append("Remaining: ${inCompletedTask.size}\n")
+                         }
+
+                         // Priority breakdown
+                         withStyle(style = SpanStyle(color = Color.Gray)) {
+                             append("Task priority:\n")
+                         }
+                         withStyle(style = SpanStyle(color = Color(0xFFD32F2F), fontWeight = FontWeight.Bold)) { // Red
+                             append("High: ${highImportanceTask.size}  ")
+                         }
+                         withStyle(style = SpanStyle(color = Color(0xFFFFA000), fontWeight = FontWeight.SemiBold)) { // Orange
+                             append("Medium: ${mediumImportanceTask.size}  ")
+                         }
+                         withStyle(style = SpanStyle(color = Color(0xFF1976D2))) { // Blue
+                             append("Low: ${lowImportanceTask.size}")
+                         }
+                     }
+                 )
+
+             }
          }
             ProgressBox(
                 progress = dayProgress.toFloat(),"Day Progress",
