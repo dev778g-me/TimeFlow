@@ -2,6 +2,11 @@ package com.dev.timeflow.Presentation.Screens
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,7 +25,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.rounded.Add
@@ -310,7 +317,7 @@ fun TaskScreen(modifier: Modifier = Modifier) {
                 Column(
                     modifier = modifier
                         .fillMaxSize()
-
+                        .verticalScroll(state = rememberScrollState())
                 ) {
                     AnimatedContent(
                         targetState = notCompleted.isEmpty()
@@ -330,7 +337,8 @@ fun TaskScreen(modifier: Modifier = Modifier) {
                         expand = expand,
                         onExpand = {
                             expand = !expand
-                        }
+                        },
+                        taskViewModel = taskViewModel
                     )
                 }
             }
@@ -389,7 +397,7 @@ fun CompletedAllTaskCard(modifier: Modifier = Modifier,) {
 @Composable
 fun NotCompletedTaskCard(modifier: Modifier = Modifier, tasks: List<Tasks>, taskViewModel: EventViewModel) {
 
-    LazyColumn(
+    Column(
         modifier = modifier
             .padding(
                 horizontal = 16.dp,
@@ -398,14 +406,12 @@ fun NotCompletedTaskCard(modifier: Modifier = Modifier, tasks: List<Tasks>, task
             .background(
                 MaterialTheme.colorScheme.inverseOnSurface
             ),
-        contentPadding = PaddingValues(
-            vertical = 8.dp
-        )
+//        contentPadding = PaddingValues(
+//            vertical = 8.dp
+//        )
 
     ) {
-        items(
-            tasks
-        ) {
+        tasks.forEach{
             incompleteTask ->
             ListItem(
                 colors = ListItemDefaults.colors(
@@ -485,7 +491,8 @@ fun CompletedTask(
     modifier: Modifier = Modifier,
     completedTasks: List<Tasks>,
     expand : Boolean,
-    onExpand : () -> Unit
+    onExpand : () -> Unit,
+    taskViewModel : EventViewModel
 ) {
     Card(
         modifier = modifier
@@ -500,6 +507,7 @@ fun CompletedTask(
     ) {
         Column(
             modifier = modifier.fillMaxWidth()
+
         ) {
             Row(
                 modifier = modifier
@@ -523,87 +531,84 @@ fun CompletedTask(
                 targetState = expand
             ) {
                 if (it){
-                    LazyColumn(
+                    Column(
                         modifier = modifier
                             .clip(RoundedCornerShape(12.dp))
                             .background(
                                 MaterialTheme.colorScheme.inverseOnSurface
                             ),
                     ) {
-                        items(
-                            completedTasks
-                     ) {
-                             completeTask ->
-                         ListItem(
-                             colors = ListItemDefaults.colors(
-                                 containerColor = MaterialTheme.colorScheme.inverseOnSurface
-                             ),
-                             tonalElevation = 10.dp,
-                             modifier = modifier
-                                 .padding(
-                                     vertical = 4.dp,
-                                     horizontal = 8.dp
-                                 )
-                                 .clip(
-                                     RoundedCornerShape(16.dp)
-                                 ),
-                             trailingContent = {
-                                 AssistChip(
-                                     onClick = {},
-                                     leadingIcon = {
-                                         Icon(
-                                             imageVector = Icons.Rounded.Circle,
-                                             tint = when(completeTask.importance){
-                                                 "Low" -> Color(0xFF4CAF50)
-                                                 "Medium" ->  Color(0xFFFFC107)
-                                                 "High" ->Color(0xFFF44336)
-                                                 else -> Color.Transparent
-                                             },
-                                             contentDescription = null,
-                                             modifier = modifier.size(
-                                                 AssistChipDefaults.IconSize -8.dp
-                                             )
-                                         )
-                                     },
-                                     label = {
-                                         Text(
-                                             text = completeTask.importance,
-                                             style = MaterialTheme.typography.labelSmall
-                                         )
-                                     }
-                                 )
-                             },
-                             headlineContent = {
-                                 Row(
-                                     modifier = modifier.fillMaxWidth(),
-                                     horizontalArrangement = Arrangement.SpaceBetween
-                                 ) {
-                                     Text(
-                                         text = completeTask.name
-                                     )
+                        completedTasks.forEach { completeTask ->
 
-                                 }
-                             },
-                             supportingContent = {
-                                 Text(
-                                     text = if (completeTask.description.isNullOrBlank()) "25-06-2025" else "${completeTask.description} 25-06-2025"
-                                 )
-                             },
-                             leadingContent = {
-                                 RoundedCheckBox(
-                                     isChecked = completeTask.isCompleted,
-                                     onCheckedChange = {
-//                                         taskViewModel.updateTask(
-//                                             tasks = completeTask.copy(
-//                                                 isCompleted = it
-//                                             )
-//                                         )
-                                     }
-                                 )
-                             }
-                         )
-                     }
-                 }
+                            AnimatedVisibility(
+                                visible = true,
+                                enter = fadeIn(tween(300)) + expandVertically(tween(300)),
+                                exit = fadeOut(tween(200)) + shrinkVertically(tween(200))
+                            ) {
+                                ListItem(
+                                    colors = ListItemDefaults.colors(
+                                        containerColor = MaterialTheme.colorScheme.inverseOnSurface
+                                    ),
+                                    tonalElevation = 10.dp,
+                                    modifier = modifier
+                                        .padding(vertical = 4.dp, horizontal = 8.dp)
+                                        .clip(RoundedCornerShape(16.dp)),
+                                    trailingContent = {
+                                        AssistChip(
+                                            onClick = {},
+                                            leadingIcon = {
+                                                Icon(
+                                                    imageVector = Icons.Rounded.Circle,
+                                                    tint = when (completeTask.importance) {
+                                                        "Low" -> Color(0xFF4CAF50)
+                                                        "Medium" -> Color(0xFFFFC107)
+                                                        "High" -> Color(0xFFF44336)
+                                                        else -> Color.Transparent
+                                                    },
+                                                    contentDescription = null,
+                                                    modifier = modifier.size(
+                                                        AssistChipDefaults.IconSize - 8.dp
+                                                    )
+                                                )
+                                            },
+                                            label = {
+                                                Text(
+                                                    text = completeTask.importance,
+                                                    style = MaterialTheme.typography.labelSmall
+                                                )
+                                            }
+                                        )
+                                    },
+                                    headlineContent = {
+                                        Row(
+                                            modifier = modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Text(text = completeTask.name)
+                                        }
+                                    },
+                                    supportingContent = {
+                                        Text(
+                                            text = if (completeTask.description.isNullOrBlank())
+                                                "25-06-2025"
+                                            else "${completeTask.description} 25-06-2025"
+                                        )
+                                    },
+                                    leadingContent = {
+                                        RoundedCheckBox(
+                                            isChecked = completeTask.isCompleted,
+                                            onCheckedChange = {
+                                                taskViewModel.updateTask(
+                                                    tasks = completeTask.copy(isCompleted = it)
+                                                )
+                                            }
+                                        )
+                                    }
+                                )
+                            }
+                        }
+
+                    }
 
                 }
             }

@@ -25,6 +25,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -184,7 +185,10 @@ fun HomeScreen(
         ) {
          if (allTask.isNotEmpty()){
              Card(
-                 modifier = Modifier.fillMaxWidth(),
+                 modifier = Modifier.fillMaxWidth()
+                     .padding(
+                     vertical = 4.dp
+                 ),
                  colors = CardDefaults.cardColors(
                      containerColor = MaterialTheme.colorScheme.inverseOnSurface
                  )
@@ -203,7 +207,7 @@ fun HomeScreen(
                          }
 
                          // Completed tasks
-                         withStyle(style = SpanStyle(color = Color(0xFF4CAF50))) { // Green
+                         withStyle(style = SpanStyle(color = Color.Green)) { // Green
                              append("Completed: ${completedTask.size}\n")
                          }
 
@@ -266,7 +270,9 @@ fun ProgressBox(progress: Float,heading : String,subHeading: String,percentage: 
                 .padding(vertical = 4.dp)
                 .clip(RoundedCornerShape(16.dp)),
             tonalElevation = 20.dp,
-
+colors = ListItemDefaults.colors(
+    containerColor = MaterialTheme.colorScheme.inverseOnSurface
+),
             overlineContent = {
                 Text(text = heading)
             },
