@@ -406,9 +406,6 @@ fun NotCompletedTaskCard(modifier: Modifier = Modifier, tasks: List<Tasks>, task
             .background(
                 MaterialTheme.colorScheme.inverseOnSurface
             ),
-//        contentPadding = PaddingValues(
-//            vertical = 8.dp
-//        )
 
     ) {
         tasks.forEach{

@@ -19,4 +19,8 @@ interface EventDao{
     // function to get all the events
     @Query("SELECT * FROM events")
     fun getAllEvents() : Flow<List<Events>>
+
+    // function to get an event by the id
+    @Query("SELECT * FROM events WHERE id = :id")
+     fun getEventById(id: Long): Flow<Events>
 }

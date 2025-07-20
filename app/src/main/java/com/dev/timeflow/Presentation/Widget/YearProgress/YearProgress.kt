@@ -12,8 +12,10 @@ import androidx.glance.appwidget.LinearProgressIndicator
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
+import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
+import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
@@ -44,6 +46,7 @@ fun YearProgressWidget() {
     val totalDayOfTheYear = calendar.getActualMaximum(Calendar.DAY_OF_YEAR)
     val year = calendar.get(Calendar.YEAR)
     val decimalFormat = DecimalFormat("#.##")
+    val remainingDay = totalDayOfTheYear - dayOfTheYear
     val yearPercentage = (dayOfTheYear.toFloat() / totalDayOfTheYear.toFloat()) * 100
     val formattedYearPercentage = decimalFormat.format(yearPercentage).toString() + "%"
 
@@ -55,29 +58,54 @@ fun YearProgressWidget() {
                 .cornerRadius(16.dp)
         ){
             Column(
-                modifier = GlanceModifier.padding(horizontal = 10.dp, vertical = 12.dp)
+                modifier = GlanceModifier
+                    .fillMaxSize()
+                    .padding(12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = "Year-${year.toString()}", style = TextStyle(
-                    fontWeight = FontWeight.Medium,
+                Text(
+                    text = year.toString(), style = TextStyle(
+                        fontWeight = FontWeight.Bold,
                     fontStyle = FontStyle.Normal,
-                    fontSize = 13.sp,
+                    fontSize = 16.sp,
                     color = GlanceTheme.colors.onPrimaryContainer
                 ))
+
                  Text(
-                     modifier = GlanceModifier.padding(bottom = 20.dp),
-                     text = "Progress-${formattedYearPercentage}",
+                     modifier = GlanceModifier.padding(vertical = 2.dp),
+                     text = "Progress : $formattedYearPercentage",
                      style = TextStyle(
+                         fontWeight = FontWeight.Medium,
                          fontSize = 12.sp,
                          color = GlanceTheme.colors.onPrimaryContainer
                      )
                  )
-
-                LinearProgressIndicator(
-                    progress = yearPercentage / 100,
-                    modifier = GlanceModifier.fillMaxWidth().height(10.dp),
-                    color = GlanceTheme.colors.primary,
-                    backgroundColor = GlanceTheme.colors.primaryContainer
+                Text(
+                    modifier = GlanceModifier.padding(
+                        vertical = 0.dp
+                    ),
+                    text = "Day $dayOfTheYear • $remainingDay left",
+                    style = TextStyle(
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 10.sp,
+                        color = GlanceTheme.colors.onPrimaryContainer
+                    )
                 )
+                Spacer(modifier = GlanceModifier.defaultWeight())
+
+                Box(
+                    modifier = GlanceModifier.padding(
+                        bottom = 0.dp
+                    )
+                ) {
+                    LinearProgressIndicator(
+                        progress = yearPercentage / 100,
+                        modifier = GlanceModifier.fillMaxWidth().height(10.dp),
+                        color = GlanceTheme.colors.primary,
+                        backgroundColor = GlanceTheme.colors.primaryContainer
+                    )
+                }
+
             }
         }
     }
