@@ -36,6 +36,7 @@ import androidx.compose.material.icons.rounded.ArrowDropDown
 import androidx.compose.material.icons.rounded.Attachment
 import androidx.compose.material.icons.rounded.Circle
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
+import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Remove
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
@@ -58,6 +59,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -123,7 +125,7 @@ fun TaskScreen(modifier: Modifier = Modifier) {
 
     )
     var selectedChip by remember { mutableStateOf(0) }
-
+   var isNotification by remember { mutableStateOf(false) }
     val allTask by taskViewModel.allTasks.collectAsState(emptyList())
     val completedTask by remember(allTask) {
        derivedStateOf {
@@ -256,6 +258,36 @@ fun TaskScreen(modifier: Modifier = Modifier) {
                             )
                         }
                     }
+
+                    ListItem(
+                        modifier = modifier.clip(
+                            RoundedCornerShape(16.dp)
+                        ),
+                        colors = ListItemDefaults.colors(
+                            containerColor = Color.Transparent
+                        ),
+                        tonalElevation = 10.dp,
+                        headlineContent = {
+                            Text("Notification")
+                        },
+                        leadingContent = {
+                            Icon(
+                                imageVector = Icons.Rounded.Notifications,
+                                contentDescription = null
+                            )
+                        },
+                        trailingContent = {
+                            Switch(
+                                checked = isNotification,
+                                onCheckedChange = {
+                                      isNotification = it
+                                    hapticFeedback.performHapticFeedback(
+                                        HapticFeedbackType.Confirm
+                                    )
+                                }
+                            )
+                        }
+                    )
                     Button(
                         enabled = isNotEmpty,
                         modifier = modifier
@@ -270,6 +302,7 @@ fun TaskScreen(modifier: Modifier = Modifier) {
                                     name = taskName,
                                     description = taskDescription,
                                     importance = chipItem[selectedChip].label,
+                                    notification = isNotification,
                                     isCompleted = false,
                                     createdAt = System.currentTimeMillis(),
                                 )
@@ -350,6 +383,7 @@ fun TaskScreen(modifier: Modifier = Modifier) {
 data class ImportanceChip(
     val label : String,
     val color: Color,
+    val type : Int = 0,
     val icon : ImageVector = Icons.Filled.Circle
 )
 

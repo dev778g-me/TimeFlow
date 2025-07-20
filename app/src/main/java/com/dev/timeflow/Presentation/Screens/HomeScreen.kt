@@ -3,11 +3,17 @@ package com.dev.timeflow.Presentation.Screens
 import android.health.connect.datatypes.ExerciseRoute
 import android.icu.util.Calendar
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
@@ -15,13 +21,16 @@ import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.outlined.Event
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.ListItem
@@ -40,6 +49,7 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -47,19 +57,27 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.glance.text.FontFamily
+import androidx.glance.text.FontStyle
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import coil3.compose.AsyncImage
 import com.dev.timeflow.Presentation.Navigation.Routes
 import com.dev.timeflow.Presentation.Viewmodel.EventViewModel
+import com.dev.timeflow.R
 import kotlinx.coroutines.delay
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.Date
+import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun HomeScreen(
     navController: NavController
@@ -174,7 +192,27 @@ fun HomeScreen(
             }
         }
     }
+    val chipItem = listOf<ImportanceChip>(
+        ImportanceChip(
+            label = "Low",
+            type = lowImportanceTask.size,
+            color = Color(0xFF4CAF50) // Material Green 500
+        ),
+        ImportanceChip(
+            label = "Medium",
+            type = mediumImportanceTask.size,
+            color = Color(0xFFFFC107) // Material Amber 500
+        ),
+        ImportanceChip(
+            label = "High",
+            type = highImportanceTask.size ,
+            color = Color(0xFFF44336) // Material Red 500
+        )
+
+
+    )
    val todayDate = LocalDate.now()
+    val formattedDate = todayDate.format(DateTimeFormatter.ofPattern("EEEE, MMM dd", Locale.getDefault()))
     Scaffold(
 
     ) { innerPadding ->
@@ -183,57 +221,103 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
         ) {
-         if (allTask.isNotEmpty()){
-             Card(
-                 modifier = Modifier.fillMaxWidth()
-                     .padding(
-                     vertical = 4.dp
-                 ),
-                 colors = CardDefaults.cardColors(
-                     containerColor = MaterialTheme.colorScheme.inverseOnSurface
-                 )
-             ) {
-                 Text(
-                     modifier = Modifier.padding(16.dp),
-                     text = buildAnnotatedString {
-                         // Today’s date
-                         withStyle(style = SpanStyle(color = Color.Gray)) {
-                             append("Today is $todayDate (${todayDate.dayOfWeek.name})\n")
-                         }
 
-                         // Total tasks
-                         withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.primary)) {
-                             append("Total tasks: ${allTask.size}\n")
-                         }
+            AnimatedVisibility(visible = allTask.isNotEmpty()) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            vertical = 4.dp
+                        ),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.inverseOnSurface
+                    )
+                ) {
+                   Column (
+                       modifier = Modifier.fillMaxWidth()
+                   ){
+                       Text(
+                           modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 4.dp),
+                           text = "📋 Daily Summary",
+                           style = MaterialTheme.typography.titleMedium.copy(
+                               fontWeight = FontWeight.Bold,
+                               color = MaterialTheme.colorScheme.primary
+                           )
+                       )
+                       Text(
+                           modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                           text = "Today is $formattedDate",
+                           style = MaterialTheme.typography.bodyMedium.copy(
+                               fontWeight = FontWeight.SemiBold,
+                               color = MaterialTheme.colorScheme.onPrimaryContainer
+                           )
+                       )
 
-                         // Completed tasks
-                         withStyle(style = SpanStyle(color = Color.Green)) { // Green
-                             append("Completed: ${completedTask.size}\n")
-                         }
+                       Text(
+                           modifier = Modifier.padding(
+                               horizontal = 16.dp
+                           ),
+                           text  = "${completedTask.size} of ${allTask.size} tasks completed",
+                       )
+                       val progress = (completedTask.size.toFloat() / allTask.size.toFloat()) *100f
+                      Box(
+                          modifier = Modifier.padding(
+                              start = 16.dp,
+                              end = 16.dp,
+                              top = 4.dp,
+                              bottom = 4.dp
+                          )
+                      ){
+                          LinearProgressIndicator(
+                              progress = progress / 100f,
+                              modifier = Modifier
+                                  .fillMaxWidth()
+                                  .height(10.dp),
+                                  //.padding(horizon),
+                              trackColor =  MaterialTheme.colorScheme.onPrimary,
+                              color = if (progress== 100f) {
+                                  Color(0xFF4CAF50)
+                              } else {
+                                  MaterialTheme.colorScheme.secondary
+                              },
+                          )
+                      }
+                       Row (
+                           modifier = Modifier
+                               .padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
+                           horizontalArrangement = Arrangement.SpaceBetween
+                       ){
+                           chipItem.reversed().forEachIndexed {
+                               index , chip ->
+                               AssistChip(
+                                   modifier = Modifier.padding(
+                                       start = if (index == 0) 0.dp else 4.dp
+                                   ),
+                                   onClick = {},
+                                   label = {
+                                       Text(
+                                           text = "${chip.type} ${chip.label}"
+                                       )
+                                   },
+                                   leadingIcon = {
+                                       Icon(
+                                           modifier = Modifier.size(
+                                               InputChipDefaults.IconSize -4.dp
+                                           ),
+                                           imageVector = chip.icon,
+                                           tint = chip.color,
+                                           contentDescription = null
+                                       )
+                                   }
+                               )
+                           }
+                       }
+                   }
 
-                         // Incomplete tasks
-                         withStyle(style = SpanStyle(color = Color(0xFFF44336))) { // Red
-                             append("Remaining: ${inCompletedTask.size}\n")
-                         }
+                }
 
-                         // Priority breakdown
-                         withStyle(style = SpanStyle(color = Color.Gray)) {
-                             append("Task priority:\n")
-                         }
-                         withStyle(style = SpanStyle(color = Color(0xFFD32F2F), fontWeight = FontWeight.Bold)) { // Red
-                             append("High: ${highImportanceTask.size}  ")
-                         }
-                         withStyle(style = SpanStyle(color = Color(0xFFFFA000), fontWeight = FontWeight.SemiBold)) { // Orange
-                             append("Medium: ${mediumImportanceTask.size}  ")
-                         }
-                         withStyle(style = SpanStyle(color = Color(0xFF1976D2))) { // Blue
-                             append("Low: ${lowImportanceTask.size}")
-                         }
-                     }
-                 )
+            }
 
-             }
-         }
             ProgressBox(
                 progress = dayProgress.toFloat(),"Day Progress",
                 time.toString()
@@ -249,6 +333,21 @@ fun HomeScreen(
             ProgressBox(
                 progress = yearlyPercentage.toFloat(),"Year Progress",yearName.toString(),formatedYearlyPercentage.toFloat()
             )
+            Spacer(modifier = Modifier.weight(1f))
+
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        bottom = 16.dp
+                    ),
+                textAlign = TextAlign.End,
+                text = "Time is Running ......",
+                style = MaterialTheme.typography.titleLarge,
+                fontFamily = androidx.compose.ui.text.font.FontFamily.Cursive
+            )
+
+
 
         }
 

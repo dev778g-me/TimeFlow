@@ -1,8 +1,11 @@
 package com.dev.timeflow.Data.Repo
 
 import android.content.Context
+import androidx.glance.appwidget.GlanceAppWidgetManager
+import androidx.glance.appwidget.updateAll
 import com.dev.timeflow.Data.Dao.EventDao
 import com.dev.timeflow.Data.Model.Events
+import com.dev.timeflow.Presentation.Widget.EventWidget.EventProgress
 import dagger.hilt.EntryPoint
 import dagger.hilt.EntryPoints
 import dagger.hilt.InstallIn
@@ -38,6 +41,28 @@ class WidgetRepo @Inject constructor(
            return dataStoreRepo.readEventId(
                widgetId = id
            )
+    }
+
+    suspend fun updateWidget(){
+        val appWidgetManager = GlanceAppWidgetManager(context)
+        val glanceId = appWidgetManager.getGlanceIds(EventProgress::class.java)
+        glanceId.forEach {
+            EventProgress.update(
+                context = context,
+                id = it
+            )
+        }
+        EventProgress.updateAll(context)
+    }
+
+   suspend fun saveEventId(
+        widgetId : Long,
+        eventId : Long
+    ){
+        dataStoreRepo.saveEventId(
+            widgetId = widgetId,
+            eventId = eventId
+        )
     }
 
 

@@ -1,6 +1,7 @@
 package com.dev.timeflow.Data.Model
 
 import android.accessibilityservice.GestureDescription
+import android.app.Notification
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -11,6 +12,7 @@ data class Tasks(
     val name : String,
     val description: String?,
     val importance : String,
+    val notification: Boolean = false,
     val isCompleted : Boolean = false,
     val createdAt : Long,
 )

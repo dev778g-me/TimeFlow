@@ -1,5 +1,6 @@
 package com.dev.timeflow.Presentation.Widget.EventWidget
 
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
@@ -20,20 +21,28 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
+import com.dev.timeflow.Data.Repo.WidgetRepo
 import com.dev.timeflow.Presentation.Viewmodel.EventViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EventSelectionScreen(modifier: Modifier = Modifier) {
-
+fun EventSelectionScreen(
+    modifier: Modifier = Modifier,
+    widgetId : Int,
+    widgetRepo: WidgetRepo
+) {
+    val activity = LocalActivity.current
     val eventViewModel : EventViewModel = hiltViewModel()
     LaunchedEffect(Unit) {
         eventViewModel.getAllEvents()
     }
     val allEvents by eventViewModel.allEvents.collectAsState(emptyList())
-    var selectedItem by remember { mutableStateOf(0) }
+    var selectedItem by remember { mutableStateOf<Long?>(null) }
+    var scope = rememberCoroutineScope()
     Scaffold (
         topBar = {
             TopAppBar(
@@ -44,8 +53,19 @@ fun EventSelectionScreen(modifier: Modifier = Modifier) {
                 },
                 actions = {
                     Button(
+                        enabled = selectedItem != null ,
                         modifier = modifier.padding(end = 4.dp),
-                        onClick = {}
+                        onClick = {
+                            scope.launch {
+                              widgetRepo.saveEventId(
+                                  widgetId = widgetId.toLong(),
+                                  eventId = selectedItem!!
+                              )
+                                widgetRepo.updateWidget()
+
+                              activity?.finish()
+                            }
+                        }
                     ) {
                         androidx.compose.material3.Text(
                             text = "Save"
@@ -70,9 +90,9 @@ fun EventSelectionScreen(modifier: Modifier = Modifier) {
                    },
                    leadingContent = {
                        Checkbox(
-                           checked = selectedItem == index,
+                           checked = selectedItem == event.id,
                            onCheckedChange = {
-                               selectedItem = index
+                               selectedItem = event.id
                            }
                        )
                    },

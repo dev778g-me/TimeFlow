@@ -12,6 +12,7 @@ import androidx.glance.GlanceTheme
 import androidx.glance.action.ActionParameters
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
+import androidx.glance.appwidget.LinearProgressIndicator
 import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.cornerRadius
@@ -23,6 +24,7 @@ import androidx.glance.layout.Column
 import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
+import androidx.glance.layout.height
 import androidx.glance.layout.padding
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
@@ -37,13 +39,16 @@ object EventProgress : GlanceAppWidget() {
         context: Context,
         id: GlanceId
     ) {
+
     val appContext = context.applicationContext
         val entryPoint = EntryPointAccessors.fromApplication(
             context = appContext,
             WidgetRepo.TimeFlowEntryPoint::class.java
         )
+        val eventRepo = entryPoint.eventWidgetRepo()
+
     val widgetId = id.hashCode().toLong()
-    val eventRepo = entryPoint.eventWidgetRepo()
+
 
       provideContent {
        val eventIdState = eventRepo.readEventId(
@@ -88,6 +93,9 @@ object EventProgress : GlanceAppWidget() {
                               .clickable(
                                   onClick = actionRunCallback(onEventAdded::class.java)
                               )
+                              .padding(
+                                  12.dp
+                              )
                               .background(GlanceTheme.colors.widgetBackground)
                               .cornerRadius(16.dp),
                           contentAlignment = Alignment.Center
@@ -103,22 +111,43 @@ object EventProgress : GlanceAppWidget() {
                                   text = event.title,
                                   style = TextStyle(
                                       fontWeight = FontWeight.Bold,
-                                      fontSize = 16.sp
-                                  )
+                                      fontSize = 16.sp,
+                                      color = GlanceTheme.colors.onPrimaryContainer
+                                  ),
+                                  maxLines = 1
                               )
+                              val startDate = event.startTime
+                              val endDate = event.endTime
+                              val currentDay = System.currentTimeMillis()
+                              val difference = endDate - startDate
+                              val elapsed = currentDay - startDate
+                              val progress = if (difference >0){
+                                  (elapsed.toFloat() / difference.toFloat()) * 100f
+                              } else {
+                                  0f
+                              }
                               Text(
                                   modifier = GlanceModifier.padding(
                                       vertical = 4.dp
                                   ),
-                                  text = event.description,
+                                  text = "$progress %",
                                   style = TextStyle(
                                       fontWeight = FontWeight.Bold,
-                                      fontSize = 12.sp
-                                  )
+                                      fontSize = 12.sp,
+                                      color = GlanceTheme.colors.onPrimaryContainer
+                                  ),
+                                  maxLines = 1
                               )
                               Spacer(modifier = GlanceModifier.defaultWeight())
-                              Box {
 
+
+                              Box {
+                                  LinearProgressIndicator(
+                                      progress = progress /100f,
+                                      modifier = GlanceModifier.height(10.dp).fillMaxWidth(),
+                                              color = GlanceTheme.colors.primary,
+                                      backgroundColor = GlanceTheme.colors.primaryContainer
+                                  )
                               }
                           }
                       }
