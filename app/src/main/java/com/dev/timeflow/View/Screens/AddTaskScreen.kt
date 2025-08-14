@@ -1,4 +1,4 @@
-package com.dev.timeflow.Presentation.Screens
+package com.dev.timeflow.View.Screens
 
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold

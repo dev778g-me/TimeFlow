@@ -1,4 +1,4 @@
-package com.dev.timeflow.Presentation.Navigation
+package com.dev.timeflow.View.Navigation
 
 import kotlinx.serialization.Serializable
 
@@ -20,5 +20,10 @@ sealed interface Routes {
     @Serializable
     data object AddEventScreen : Routes{
         override val route = "add_event_screen"
+    }
+
+    @Serializable
+    data object NewTaskScreen : Routes{
+        override val route = "new_task_screen"
     }
 }

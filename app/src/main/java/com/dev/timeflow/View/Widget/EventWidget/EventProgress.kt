@@ -1,4 +1,4 @@
-package com.dev.timeflow.Presentation.Widget.EventWidget
+package com.dev.timeflow.View.Widget.EventWidget
 
 import android.appwidget.AppWidgetManager
 import android.content.Context

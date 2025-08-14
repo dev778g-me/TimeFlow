@@ -5,7 +5,7 @@ import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.updateAll
 import com.dev.timeflow.Data.Dao.EventDao
 import com.dev.timeflow.Data.Model.Events
-import com.dev.timeflow.Presentation.Widget.EventWidget.EventProgress
+import com.dev.timeflow.View.Widget.EventWidget.EventProgress
 import dagger.hilt.EntryPoint
 import dagger.hilt.EntryPoints
 import dagger.hilt.InstallIn

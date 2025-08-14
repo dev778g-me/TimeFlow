@@ -1,4 +1,4 @@
-package com.dev.timeflow.Presentation.Widget.EventWidget
+package com.dev.timeflow.View.Widget.EventWidget
 
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver

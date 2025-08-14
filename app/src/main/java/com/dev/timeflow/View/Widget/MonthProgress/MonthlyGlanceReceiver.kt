@@ -1,16 +1,8 @@
-package com.dev.timeflow.Presentation.Widget.MonthProgress
+package com.dev.timeflow.View.Widget.MonthProgress
 
-import android.app.AlarmManager
-import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
-import android.icu.util.Calendar
-import android.os.Build
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
-import com.dev.timeflow.Presentation.Widget.MonthProgress.MonthlyGlanceReceiver.Companion.ACTION_UPDATE_WIDGET
-import java.time.Instant
-import java.time.Instant.now
 
 class MonthlyGlanceReceiver : GlanceAppWidgetReceiver(){
 

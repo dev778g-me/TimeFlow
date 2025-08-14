@@ -38,7 +38,7 @@
             android:theme="@style/Theme.TimeFlow">
 
         </activity>
-        <receiver android:name=".Presentation.Widget.YearProgress.YearProgressGlanceReceiver"
+        <receiver android:name=".View.Widget.YearProgress.YearProgressGlanceReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -47,7 +47,7 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/yearly_progress" />
         </receiver>
-        <receiver android:name=".Presentation.Widget.MonthProgress.MonthlyGlanceReceiver"
+        <receiver android:name=".View.Widget.MonthProgress.MonthlyGlanceReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -56,7 +56,7 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/month_progress"/>
         </receiver>
-        <receiver android:name=".Presentation.Widget.WeekProgress.WeekGlanceReceiver"
+        <receiver android:name=".View.Widget.WeekProgress.WeekGlanceReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
@@ -65,7 +65,7 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/weekly_progress"/>
         </receiver>
-        <receiver android:name=".Presentation.Widget.EventWidget.EventProgressGlanceReceiver"
+        <receiver android:name=".View.Widget.EventWidget.EventProgressGlanceReceiver"
             android:exported="true"
             >
             <intent-filter>

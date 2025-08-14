@@ -1,4 +1,4 @@
-package com.dev.timeflow.Presentation.Widget.YearProgress
+package com.dev.timeflow.View.Widget.YearProgress
 
 import android.content.Context
 import androidx.compose.runtime.Composable

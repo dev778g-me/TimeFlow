@@ -1,4 +1,4 @@
-package com.dev.timeflow.Presentation.Screens
+package com.dev.timeflow.View.Screens
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize

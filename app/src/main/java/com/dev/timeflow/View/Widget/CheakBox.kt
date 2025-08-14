@@ -1,4 +1,4 @@
-package com.dev.timeflow.Presentation.Widget
+package com.dev.timeflow.View.Widget
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background

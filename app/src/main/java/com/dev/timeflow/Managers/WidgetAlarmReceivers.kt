@@ -5,10 +5,10 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.glance.appwidget.GlanceAppWidgetManager
-import com.dev.timeflow.Presentation.Widget.EventWidget.EventProgress
-import com.dev.timeflow.Presentation.Widget.MonthProgress.MonthProgress
-import com.dev.timeflow.Presentation.Widget.WeekProgress.WeekProgress
-import com.dev.timeflow.Presentation.Widget.YearProgress.YearProgress
+import com.dev.timeflow.View.Widget.EventWidget.EventProgress
+import com.dev.timeflow.View.Widget.MonthProgress.MonthProgress
+import com.dev.timeflow.View.Widget.WeekProgress.WeekProgress
+import com.dev.timeflow.View.Widget.YearProgress.YearProgress
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
