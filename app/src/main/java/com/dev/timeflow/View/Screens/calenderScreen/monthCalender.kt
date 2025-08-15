@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -18,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import com.kizitonwose.calendar.core.CalendarDay
 import com.kizitonwose.calendar.core.DayPosition
 import java.time.LocalDate
@@ -43,7 +45,7 @@ fun MonthCalender(
                 .clip(CircleShape)
                 .background(
                     if (isu) {
-                        MaterialTheme.colorScheme.tertiary
+                        MaterialTheme.colorScheme.primary
                     } else {
                         Color.Transparent
                     }
@@ -70,7 +72,7 @@ fun MonthCalender(
                     text = day.date.dayOfMonth.toString(),
                     fontWeight = if (isu) FontWeight.ExtraBold else FontWeight.Normal,
                     color = when{
-                        isu -> MaterialTheme.colorScheme.onTertiary
+                        isu -> MaterialTheme.colorScheme.onPrimary
                         dayPosition -> MaterialTheme.colorScheme.onSurface
                         else -> MaterialTheme.colorScheme.onSurface.copy(
                             alpha = 0.2f

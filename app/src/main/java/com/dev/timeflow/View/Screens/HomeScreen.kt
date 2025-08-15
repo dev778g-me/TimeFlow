@@ -215,7 +215,7 @@ fun HomeScreen(
                    ){
                        Text(
                            modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 4.dp),
-                           text = "📋 Daily Summary",
+                           text = "Daily Summary",
                            style = MaterialTheme.typography.titleMedium.copy(
                                fontWeight = FontWeight.Bold,
                                color = MaterialTheme.colorScheme.primary

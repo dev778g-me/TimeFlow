@@ -1,6 +1,7 @@
 package com.dev.timeflow.View.Navigation
 
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -62,7 +63,7 @@ fun NavGraph(modifier: Modifier = Modifier) {
                             contentDescription = null
                         )
                         Text(
-                            text = "TimeFlow",
+                            text = "Timeflow",
                         )
                     }
                 }
@@ -97,7 +98,10 @@ fun NavGraph(modifier: Modifier = Modifier) {
                     )
                 }
             }
-        }
+        },
+        contentWindowInsets = WindowInsets(0.dp)
+        ,
+
     ) {
         NavHost(
             modifier = modifier

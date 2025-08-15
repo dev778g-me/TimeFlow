@@ -88,6 +88,23 @@ class EventViewModel @Inject constructor(
         }
     }
 
+
+    // variable to hold the task for tasks
+    private var  _taskForDate = MutableStateFlow<List<Tasks>>(emptyList())
+    var taskForDate : StateFlow<List<Tasks>> = _taskForDate
+
+    // function to get tasks for a date
+    fun getTasksForADate(date : Long) {
+        viewModelScope.launch { 
+          val tasks =  taskRepo.getTasksForADate(
+                date = date
+            )
+           tasks.collect {
+               _taskForDate.value = it
+           }
+        }
+    }
+
     // function to delete a task from the database
     fun deleteTask(tasks: Tasks){
        viewModelScope.launch(Dispatchers.IO) {

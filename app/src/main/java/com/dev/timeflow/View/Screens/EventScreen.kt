@@ -18,9 +18,12 @@ import androidx.compose.material.icons.rounded.AccessTime
 import androidx.compose.material.icons.rounded.DriveFileRenameOutline
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonMenu
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LargeFloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -56,7 +59,7 @@ import java.time.LocalDate
 import java.time.ZoneId
 import kotlin.math.roundToInt
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun EventScreen(
     modifier: Modifier = Modifier,
@@ -88,13 +91,15 @@ fun EventScreen(
 
     Scaffold(
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                   showDialog = true
+            FloatingActionButtonMenu(
+                modifier = modifier,
+                expanded = showDialog,
+                button = {
+                    FloatingActionButton(
+                        onClick = {}
+                    ) { }
                 }
-            ) {
-                Icon(imageVector = Icons.Filled.EventBusy, contentDescription = null)
-            }
+            ) { }
         }
     ) {
         innerPadding ->

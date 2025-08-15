@@ -53,7 +53,6 @@ dependencies {
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
-    //implementation("androidx.compose.material3:material3:1.4.0-beta01")
     implementation("androidx.compose.material3:material3-android:1.4.0-alpha14")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -70,6 +69,8 @@ dependencies {
     implementation(libs.androidx.glance.appwidget)
 
     //navigation
+    //lucide icons
+    implementation("com.composables:icons-lucide:1.0.0")
     implementation("androidx.navigation:navigation-compose:2.9.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
     implementation("androidx.room:room-runtime:2.7.2")
