@@ -96,7 +96,9 @@ fun EventScreen(
                 expanded = showDialog,
                 button = {
                     FloatingActionButton(
-                        onClick = {}
+                        onClick = {
+                            showDialog = true
+                        }
                     ) { }
                 }
             ) { }
