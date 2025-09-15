@@ -46,8 +46,9 @@ import com.composables.icons.lucide.FlagTriangleRight
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Notebook
 import com.composables.icons.lucide.Signature
+import com.dev.timeflow.Data.Model.ImportanceChipModel
 import com.dev.timeflow.Data.Model.SavingModel
-import com.dev.timeflow.View.Screens.ImportanceChip
+
 
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
@@ -67,7 +68,7 @@ fun SheetToAddEventAndTask(
     onSwitchChange : (Boolean) -> Unit,
     changeSavingType: (Int) -> Unit,
     savingChipList : List<SavingModel>,
-    importanceChip : List<ImportanceChip>,
+    importanceChip : List<ImportanceChipModel>,
     hapticFeedback: HapticFeedback,
     switchState : Boolean,
     taskName : String,
@@ -309,7 +310,8 @@ fun SheetToAddEventAndTask(
                     if (selectedSavingType == 0) {
                         onEventSave.invoke()
                     }
-                    onTaskSave.invoke()
+                    else{
+                    onTaskSave.invoke()}
 
                     onDismiss.invoke()
                 }

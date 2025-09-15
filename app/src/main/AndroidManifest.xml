@@ -31,13 +31,6 @@
 
             </intent-filter>
         </activity>
-        <activity android:name=".EventActivity"
-           android:exported="true"
-            android:launchMode="singleTop"
-            android:excludeFromRecents="true"
-            android:theme="@style/Theme.TimeFlow">
-
-        </activity>
         <receiver android:name=".View.Widget.YearProgress.YearProgressGlanceReceiver"
             android:exported="true">
             <intent-filter>
@@ -64,16 +57,6 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/weekly_progress"/>
-        </receiver>
-        <receiver android:name=".View.Widget.EventWidget.EventProgressGlanceReceiver"
-            android:exported="true"
-            >
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/event_progress"/>
         </receiver>
         <receiver android:name=".Managers.WidgetAlarmReceivers"
             android:exported="true">

@@ -18,6 +18,12 @@ class EventRepo @Inject constructor(
             events = events
         )
     }
+  // function to get all events for a particular date
+  suspend fun getEventsForADate(date : Long) : Flow <List<Events>> {
+     return eventDao.getAllEventsForADate(
+          date = date
+      )
+  }
 
     // function to delete an event from the database
     suspend fun deleteEvent(events: Events){

@@ -75,7 +75,9 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
+import androidx.glance.text.TextAlign
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.composables.icons.lucide.Bell
@@ -89,13 +91,16 @@ import com.composables.icons.lucide.Plus
 import com.composables.icons.lucide.Signature
 import com.dev.timeflow.Data.Model.DropdownModel
 import com.dev.timeflow.Data.Model.Events
+import com.dev.timeflow.Data.Model.ImportanceChipModel
 import com.dev.timeflow.Data.Model.SavingModel
 import com.dev.timeflow.Data.Model.Tasks
+import com.dev.timeflow.Managers.utils.componets.EventTile
 import com.dev.timeflow.Managers.utils.componets.Tasktile
 import com.dev.timeflow.Managers.utils.toMidnight
 import com.dev.timeflow.Viewmodel.EventViewModel
 import com.dev.timeflow.R
 import com.dev.timeflow.View.Screens.calenderScreen.MonthCalender
+import com.dev.timeflow.View.Screens.calenderScreen.MonthHeader
 import com.dev.timeflow.View.Screens.calenderScreen.WeekCalender
 import com.dev.timeflow.View.Widget.SheetToAddEventAndTask
 import com.kizitonwose.calendar.compose.WeekCalendar
@@ -122,9 +127,6 @@ fun NewTask(modifier: Modifier = Modifier) {
     val disabledDates = listOf(
         LocalDate.now(),
     )
-    var calenderChipState by rememberSaveable { mutableStateOf(false) }
-
-    var showDropDownForChoosingCalender by rememberSaveable { mutableStateOf(false) }
 
     //variable to hold state of the currently selected date
     var currentSelectedDate by rememberSaveable{mutableStateOf(LocalDate.now())}
@@ -144,33 +146,39 @@ fun NewTask(modifier: Modifier = Modifier) {
     // var to hold to choose the date for the event
     var showCalendar by rememberSaveable { mutableStateOf(false) }
     val today = LocalDate.now()
-    var selectedDates = remember { mutableStateOf<LocalDate>(today) }
+    var selectedDates = rememberSaveable { mutableStateOf<LocalDate>(today) }
 
 
 
     LaunchedEffect(currentSelectedDate) {
-        Log.d("TASKDATE","we just updated the date${currentSelectedDate}")
+        Log.d("TASKDATE","the function ran with the updated date $currentSelectedDate")
         taskViewModel.getTasksForADate(
             date = currentSelectedDate
                 .atStartOfDay(ZoneId.systemDefault())
                 .toInstant()
                 .toEpochMilli()
         ).also {
-            Log.d("TASKDATE","we just completed the functiom")
+            Log.d("TASKDATE","the function just completed with the date $currentSelectedDate")
         }
+
+        taskViewModel.getAllEventsForADate(
+            date = currentSelectedDate.atStartOfDay(ZoneId.systemDefault())
+                .toInstant().toEpochMilli()
+        )
     }
 
     val tasksForDate by taskViewModel.taskForDate.collectAsState(emptyList())
-    val importanceChip = listOf<ImportanceChip>(
-        ImportanceChip(
+    val eventsForDate by taskViewModel.eventForDate.collectAsState(emptyList())
+    val importanceChip = listOf<ImportanceChipModel>(
+        ImportanceChipModel(
             label = "Low",
             color = Color(0xFF4CAF50) // Material Green 500
         ),
-        ImportanceChip(
+        ImportanceChipModel(
             label = "Medium",
             color = Color(0xFFFFC107) // Material Amber 500
         ),
-        ImportanceChip(
+        ImportanceChipModel(
             label = "High",
             color = Color(0xFFF44336) // Material Red 500
         )
@@ -223,8 +231,7 @@ fun NewTask(modifier: Modifier = Modifier) {
                        description = taskDescription,
                        notification = switchState,
                        importance = importanceChip[selectedChip].label,
-                       createdAt = System.currentTimeMillis().toMidnight()
-
+                       taskDate = currentSelectedDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
                    )
                )
            },
@@ -234,11 +241,7 @@ fun NewTask(modifier: Modifier = Modifier) {
                        id = 0,
                        title = taskName,
                        description = taskDescription,
-                       startTime = System.currentTimeMillis().toMidnight(),
-                       endTime = selectedDates.value
-                           .atStartOfDay(ZoneId.systemDefault())
-                           .toInstant()
-                           .toEpochMilli()
+                       eventTime = currentSelectedDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
                    )
                )
            },
@@ -353,61 +356,6 @@ fun NewTask(modifier: Modifier = Modifier) {
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(
-                modifier = modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                Box {
-                    FilterChip(
-                        modifier = modifier.padding(horizontal = 16.dp),
-                        selected = calenderChipState,
-                        onClick = {
-                            showDropDownForChoosingCalender = ! showDropDownForChoosingCalender
-
-                        },
-                        label = {
-                            Text(
-                                text = selectedDropDownMenu
-                            )
-                        },
-
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Rounded.FilterList,
-                                contentDescription = null,
-                                modifier = modifier.size(
-                                    FilterChipDefaults.IconSize
-                                )
-                            )
-                        }
-                    )
-                   if (showDropDownForChoosingCalender){
-                       DropdownMenu(
-                           expanded = showDropDownForChoosingCalender,
-                           onDismissRequest = {
-                               showDropDownForChoosingCalender = false
-                           }
-                       ) {
-
-                          dropDownItems.forEach {
-                              DropdownMenuItem(
-                                  leadingIcon = {
-                                      Icon(imageVector = it.icon , contentDescription = null)
-                                  },
-                                  text = {
-                                      Text(it.title)
-                                  },
-                                  onClick = {
-                                      showDropDownForChoosingCalender = false
-                                      selectedDropDownMenu = it.title
-                                  }
-                              )
-                          }
-                       }
-                   }
-                }
-
-            }
 
             when (selectedDropDownMenu) {
                 "Weekly" -> {
@@ -441,62 +389,100 @@ fun NewTask(modifier: Modifier = Modifier) {
                             )
                         },
                         monthHeader = {
-                            Text(
-                                modifier = modifier.padding(
-                                    horizontal = 16.dp
-                                ),
-                                text = it.yearMonth.month.toString().toLowerCase().replaceFirstChar {
-                                    it.toUpperCase()
-                                },
-                                fontWeight = FontWeight.SemiBold
+                            MonthHeader(
+                                monthName = it.yearMonth.month.toString(),
+                                weekName = it.weekDays.first().map {
+                                    it.date.dayOfWeek.toString().take(3).toLowerCase().replaceFirstChar {
+                                        it.toUpperCase()
+                                    }
+                                }
                             )
                         }
                     )}
                 }
             }
 
-            AnimatedContent(
-                modifier = modifier.align(Alignment.CenterHorizontally),
-                targetState = tasksForDate.isNotEmpty()
-            ) {
-                if (it){
-                    LazyColumn(
-                        modifier = modifier.padding(
-                            horizontal = 8.dp
-                        )
-                    ) {
-                        item {
-                            Text(
-                                modifier = modifier.padding(horizontal = 12.dp),
-                                text = "Tasks",
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                        items(tasksForDate) {
-                            Tasktile(
-                                tasks = it
-                            )
-                        }
-                    }
-                } else {
-                    Column(
-                        modifier = modifier
-                            .fillMaxSize()
-                            .weight(1f),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        AsyncImage(
-                            modifier = modifier.size(150.dp),
-                            model = R.drawable.emptytask,
-                            contentDescription = null
-                        )
-                        Text(
-                            text = "Chill out buddy\nyou got nothing"
-                        )
-                    }
-                }
-            }
+          Column {
+              AnimatedContent(
+                  modifier = modifier.align(Alignment.CenterHorizontally),
+                  targetState = tasksForDate.isNotEmpty() || eventsForDate.isNotEmpty()
+              ) {
+                  if (it){
+                      LazyColumn(
+                          modifier = modifier.padding(
+                              horizontal = 8.dp
+                          )
+                      ) {
+                          item {
+                              Text(
+                                  modifier = modifier.padding(horizontal = 12.dp),
+                                  text = "Tasks",
+                                  color = MaterialTheme.colorScheme.primary
+                              )
+                          }
+                          items(tasksForDate) {
+                              Tasktile(
+                                  onUpdateTask = { value ->
+                                      println(value)
+                                      taskViewModel.updateTask(
+                                          tasks = it.copy(
+                                              isCompleted = value
+                                          )
+                                      )
+                                  },
+                                  taskName = it.name,
+                                  taskDescription = it.description,
+                                  taskCreatedAt = it.createdAt,
+                                  taskDate = it.taskDate,
+                                  taskIsCompleted = it.isCompleted,
+                                  taskImortance = it.importance
+                              )
+                          }
+
+                          item {
+                              AnimatedContent(
+                                  targetState = eventsForDate.isNotEmpty()
+                              ) {
+                                  if (it){
+                                      Column {
+                                          Text(
+                                              modifier = modifier.padding(horizontal = 12.dp),
+                                              text = "Events",
+                                              color = MaterialTheme.colorScheme.primary
+                                          )
+                                          eventsForDate.forEach {
+                                              EventTile(
+                                                  events = it
+                                              )
+                                          }
+                                      }
+                                  }
+                              }
+
+                          }
+                      }
+                  } else {
+                      Column(
+                          modifier = modifier
+                              .fillMaxSize()
+                              .weight(1f),
+                          horizontalAlignment = Alignment.CenterHorizontally,
+                          verticalArrangement = Arrangement.Center
+                      ) {
+                          AsyncImage(
+                              modifier = modifier.size(150.dp),
+                              model = R.drawable.emptytask,
+                              contentDescription = null
+                          )
+                          Text(
+                              text = "Chill out buddy\nyou got nothing"
+                          )
+                      }
+                  }
+              }
+
+
+          }
 
 
         }

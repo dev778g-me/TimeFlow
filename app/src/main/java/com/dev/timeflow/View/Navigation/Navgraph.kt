@@ -1,5 +1,6 @@
 package com.dev.timeflow.View.Navigation
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,6 +15,7 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.TaskAlt
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -28,16 +30,17 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.dev.timeflow.View.Screens.EventScreen
 import com.dev.timeflow.View.Screens.HomeScreen
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.room.util.copy
+import com.composables.icons.lucide.Calendar
+import com.composables.icons.lucide.Lucide
 import com.dev.timeflow.View.Screens.AddEventScreen
 import com.dev.timeflow.View.Screens.NewTask
-import com.dev.timeflow.View.Screens.TaskScreen
 import com.dev.timeflow.R
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -45,13 +48,16 @@ import com.dev.timeflow.R
 fun NavGraph(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
+    val isTaskScreen = backStackEntry?.destination?.route == Routes.NewTaskScreen.route
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
+                navigationIcon = {
                     Row(
+                        modifier = modifier,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+
                         androidx.compose.foundation.Image(
                             modifier = modifier.size(40.dp),
                             painter = painterResource(
@@ -63,8 +69,29 @@ fun NavGraph(modifier: Modifier = Modifier) {
                             contentDescription = null
                         )
                         Text(
+                            style = MaterialTheme.typography.titleLarge,
                             text = "Timeflow",
                         )
+                    }
+                },
+                title = {
+
+                },
+                actions = {
+                    AnimatedVisibility(
+                        modifier = modifier.padding(
+                            end = 4.dp
+                        ),
+                        visible = isTaskScreen
+                    ) {
+                        IconButton(
+                            onClick = {}
+                        ) {
+                            Icon(
+                                imageVector = Lucide.Calendar,
+                                contentDescription = null
+                            )
+                        }
                     }
                 }
             )
@@ -114,21 +141,11 @@ fun NavGraph(modifier: Modifier = Modifier) {
                 HomeScreen(navController = navController)
             }
 
-            composable(route = Routes.EventScreen.route) {
-                EventScreen(
-                    onNavigate = {
-                        navController.navigate(Routes.AddEventScreen.route)
-                    }
-                )
-            }
-
 
             composable(route = Routes.AddEventScreen.route) {
                 AddEventScreen()
             }
-            composable(route = Routes.TaskScreen.route) {
-                TaskScreen()
-            }
+         
             composable(route = Routes.NewTaskScreen.route) {
                 NewTask()
             }
@@ -161,10 +178,4 @@ val bottomNavItems = listOf(
         selectedIcon = Icons.Filled.TaskAlt,
         route = Routes.NewTaskScreen
     ),
-    BottomNavAttribute(
-        title = "Events",
-        unselectedIcon = Icons.Outlined.Event,
-        selectedIcon = Icons.Filled.Event,
-        route = Routes.EventScreen
-    )
 )

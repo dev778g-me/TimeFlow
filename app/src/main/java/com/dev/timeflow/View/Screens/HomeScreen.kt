@@ -44,6 +44,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.dev.timeflow.Data.Model.ImportanceChipModel
 import com.dev.timeflow.Viewmodel.EventViewModel
 import kotlinx.coroutines.delay
 import java.text.DecimalFormat
@@ -168,18 +169,18 @@ fun HomeScreen(
             }
         }
     }
-    val chipItem = listOf<ImportanceChip>(
-        ImportanceChip(
+    val chipItem = listOf<ImportanceChipModel>(
+        ImportanceChipModel(
             label = "Low",
             type = lowImportanceTask.size,
             color = Color(0xFF4CAF50) // Material Green 500
         ),
-        ImportanceChip(
+        ImportanceChipModel(
             label = "Medium",
             type = mediumImportanceTask.size,
             color = Color(0xFFFFC107) // Material Amber 500
         ),
-        ImportanceChip(
+        ImportanceChipModel(
             label = "High",
             type = highImportanceTask.size ,
             color = Color(0xFFF44336) // Material Red 500

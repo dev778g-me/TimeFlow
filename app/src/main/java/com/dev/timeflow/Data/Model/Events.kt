@@ -11,7 +11,6 @@ data class Events(
     val id : Long,
     val title: String,
     val description: String,
-    val startTime : Long,
-    val endTime : Long,
-
+    val eventTime : Long,
+    val createdAt : Long = System.currentTimeMillis()
 )

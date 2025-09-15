@@ -37,19 +37,6 @@ class EventViewModel @Inject constructor(
     }
 
 
-    // variable to hold the all the tasks in the database
-    private val _allTasks = MutableStateFlow<List<Tasks>>(emptyList())
-    var allTasks : StateFlow<List<Tasks>> = _allTasks
-
-    fun getAllTasks(){
-        viewModelScope.launch {
-            val tasks =taskRepo.getAllTasks()
-            tasks.collect {
-                _allTasks.value = it
-            }
-        }
-    }
-
     // function to insert an event into the database
     fun insertEvent(events: Events){
         viewModelScope.launch(Dispatchers.IO) {
@@ -70,6 +57,32 @@ class EventViewModel @Inject constructor(
     }
 
 
+    private val _eventForDate = MutableStateFlow<List<Events>>(emptyList())
+    var eventForDate: StateFlow<List<Events>> = _eventForDate
+
+    fun getAllEventsForADate(date : Long) {
+        viewModelScope.launch {
+            eventRepo.getEventsForADate(
+                date = date
+            ).collect {
+                _eventForDate.value = it
+            }
+
+        }
+    }
+
+    // variable to hold the all the tasks in the database
+    private val _allTasks = MutableStateFlow<List<Tasks>>(emptyList())
+    var allTasks : StateFlow<List<Tasks>> = _allTasks
+
+    fun getAllTasks(){
+        viewModelScope.launch {
+            val tasks =taskRepo.getAllTasks()
+            tasks.collect {
+                _allTasks.value = it
+            }
+        }
+    }
     // function to add a task to the database
     fun insertTask(tasks: Tasks){
         viewModelScope.launch(Dispatchers.IO) {
@@ -96,12 +109,11 @@ class EventViewModel @Inject constructor(
     // function to get tasks for a date
     fun getTasksForADate(date : Long) {
         viewModelScope.launch { 
-          val tasks =  taskRepo.getTasksForADate(
-                date = date
-            )
-           tasks.collect {
-               _taskForDate.value = it
-           }
+       taskRepo.getTasksForADate(
+           date = date
+       ).collect {
+           _taskForDate.value = it
+       }
         }
     }
 
