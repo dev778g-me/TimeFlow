@@ -1,54 +1,30 @@
 package com.dev.timeflow.View.Screens
 
-import android.media.metrics.Event
 import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CalendarViewDay
 import androidx.compose.material.icons.rounded.CalendarViewMonth
 import androidx.compose.material.icons.rounded.CalendarViewWeek
-import androidx.compose.material.icons.rounded.FilterList
-import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FilledTonalIconButton
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.ToggleButton
-import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -69,26 +45,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.hapticfeedback.HapticFeedback
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
-import androidx.glance.text.TextAlign
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
-import com.composables.icons.lucide.Bell
 import com.composables.icons.lucide.Calendar
-import com.composables.icons.lucide.Clock
-import com.composables.icons.lucide.FlagTriangleRight
 import com.composables.icons.lucide.ListTodo
 import com.composables.icons.lucide.Lucide
-import com.composables.icons.lucide.Notebook
 import com.composables.icons.lucide.Plus
-import com.composables.icons.lucide.Signature
 import com.dev.timeflow.Data.Model.DropdownModel
 import com.dev.timeflow.Data.Model.Events
 import com.dev.timeflow.Data.Model.ImportanceChipModel
@@ -96,7 +61,6 @@ import com.dev.timeflow.Data.Model.SavingModel
 import com.dev.timeflow.Data.Model.Tasks
 import com.dev.timeflow.Managers.utils.componets.EventTile
 import com.dev.timeflow.Managers.utils.componets.Tasktile
-import com.dev.timeflow.Managers.utils.toMidnight
 import com.dev.timeflow.Viewmodel.EventViewModel
 import com.dev.timeflow.R
 import com.dev.timeflow.View.Screens.calenderScreen.MonthCalender
@@ -146,7 +110,7 @@ fun NewTask(modifier: Modifier = Modifier) {
     // var to hold to choose the date for the event
     var showCalendar by rememberSaveable { mutableStateOf(false) }
     val today = LocalDate.now()
-    var selectedDates = rememberSaveable { mutableStateOf<LocalDate>(today) }
+    val selectedDates = rememberSaveable { mutableStateOf<LocalDate>(today) }
 
 
 
@@ -372,22 +336,24 @@ fun NewTask(modifier: Modifier = Modifier) {
                         },
                     )
                 }
+
                 "Monthly" -> {
                     AnimatedVisibility(
-                        visible = selectedDropDownMenu =="Monthly"
-                    ) { HorizontalCalendar(
-                        state = state,
-                        reverseLayout = true,
-                        dayContent = {
-                            MonthCalender(
-                                day = it,
-                                hapticFeedback = haptics,
-                                selectedDate = currentSelectedDate,
-                                onClick = {
-                                    currentSelectedDate = it
-                                }
-                            )
-                        },
+                        visible = selectedDropDownMenu == "Monthly"
+                    ) {
+                        HorizontalCalendar(
+                            state = state,
+                            reverseLayout = true,
+                            dayContent = {
+                                MonthCalender(
+                                    day = it,
+                                    hapticFeedback = haptics,
+                                    selectedDate = currentSelectedDate,
+                                    onClick = { date ->
+                                        currentSelectedDate = date
+                                    }
+                                )
+                            },
                         monthHeader = {
                             MonthHeader(
                                 monthName = it.yearMonth.month.toString(),
@@ -406,7 +372,7 @@ fun NewTask(modifier: Modifier = Modifier) {
               AnimatedContent(
                   modifier = modifier.align(Alignment.CenterHorizontally),
                   targetState = tasksForDate.isNotEmpty() || eventsForDate.isNotEmpty()
-              ) {
+              ) { it ->
                   if (it){
                       LazyColumn(
                           modifier = modifier.padding(
@@ -435,7 +401,7 @@ fun NewTask(modifier: Modifier = Modifier) {
                                   taskCreatedAt = it.createdAt,
                                   taskDate = it.taskDate,
                                   taskIsCompleted = it.isCompleted,
-                                  taskImortance = it.importance
+                                  taskImportance = it.importance
                               )
                           }
 

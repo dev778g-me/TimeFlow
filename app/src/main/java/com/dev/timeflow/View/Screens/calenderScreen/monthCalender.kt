@@ -4,6 +4,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.EaseInElastic
 import androidx.compose.animation.core.EaseInOutCirc
 import androidx.compose.animation.core.EaseInOutSine
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
@@ -45,22 +46,17 @@ fun MonthCalender(
 ) {
     val date = LocalDate.now()
     val todayDayOfMonth = date.dayOfMonth
-    val isToday = todayDayOfMonth == day.date.dayOfMonth
     val dayPosition = day.position == DayPosition.MonthDate
     val isSelected = selectedDate == day.date
 
     val boxSelectedColor by animateColorAsState(
-        animationSpec = tween(
-            easing = EaseInOutCirc
-        ),
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium),
         targetValue = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent
     )
 
     val boxTextColor by animateColorAsState(
-      animationSpec = tween(
-          easing = EaseInOutSine
-      ),
-        targetValue =when{
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium),
+        targetValue = when {
             isSelected -> MaterialTheme.colorScheme.onPrimary
             dayPosition -> MaterialTheme.colorScheme.onSurface
             else -> MaterialTheme.colorScheme.onSurface.copy(
@@ -72,7 +68,7 @@ fun MonthCalender(
         Box(
             modifier = modifier
                 .aspectRatio(1f)
-                .padding(8.dp)
+                .padding(4.dp)
                 .clip(CircleShape)
                 .background(
                     boxSelectedColor
@@ -82,7 +78,6 @@ fun MonthCalender(
                         onClick(
                             day.date
                         )
-                        println(day)
                         hapticFeedback.performHapticFeedback(
                             hapticFeedbackType = HapticFeedbackType.Confirm
                         )
@@ -95,10 +90,10 @@ fun MonthCalender(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-//                Row {
                 Text(
+                    modifier = modifier.padding(8.dp),
                     text = day.date.dayOfMonth.toString(),
-                    fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Normal,
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                     color = boxTextColor
                 )
             }
@@ -122,7 +117,7 @@ fun MonthHeader(
                 start = 12.dp
 
             ),
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.primary,
             text = monthName.toLowerCase().replaceFirstChar {
                 it.toUpperCase()
@@ -130,9 +125,11 @@ fun MonthHeader(
             fontWeight = FontWeight.Bold
         )
         Row(
-            modifier = modifier.fillMaxWidth().padding(
-                bottom = 8.dp
-            )
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(
+                    bottom = 8.dp
+                )
             //horizontalArrangement = Arrangement.SpaceAround
         ) {
             weekName.forEach {

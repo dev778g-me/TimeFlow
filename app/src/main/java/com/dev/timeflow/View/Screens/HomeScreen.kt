@@ -32,6 +32,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -107,7 +108,7 @@ fun HomeScreen(
    // future date variable
 
     var selectedDate by remember { mutableLongStateOf(0L) }
-    var percentage by remember { mutableStateOf(0f) }
+    var percentage by remember { mutableFloatStateOf(0f) }
     if (selectedDate > 0) {
         val totalMillisToFuture = selectedDate - today
         val elapsedMillis = today - System.currentTimeMillis()

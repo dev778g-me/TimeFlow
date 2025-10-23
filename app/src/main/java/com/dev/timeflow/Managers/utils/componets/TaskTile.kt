@@ -1,9 +1,6 @@
 package com.dev.timeflow.Managers.utils.componets
 
-import android.graphics.pdf.models.ListItem
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -13,7 +10,6 @@ import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -21,15 +17,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
-import androidx.glance.text.TextAlign
-import androidx.glance.text.TextDecoration
 import com.dev.timeflow.Data.Model.Events
-import com.dev.timeflow.Data.Model.Tasks
 import com.dev.timeflow.Managers.utils.toLocalDate
-import com.dev.timeflow.View.Widget.RoundedCheckBox
 
 @Composable
 fun Tasktile(
@@ -39,7 +29,7 @@ fun Tasktile(
     taskCreatedAt : Long,
     taskDate : Long,
     taskIsCompleted : Boolean,
-    taskImortance : String,
+    taskImportance : String,
   //  tasks: Tasks,
     onUpdateTask : (Boolean) -> Unit
 ) {
@@ -52,18 +42,16 @@ fun Tasktile(
                 RoundedCornerShape(16.dp)
             )
             .clickable(
-                onClick = {}
-            ),
-        headlineContent = {
-            Text(
+                onClick = {}), headlineContent = {
+        Text(
 //                textDecoration = if (tasks.isCompleted) {
 //                    androidx.compose.ui.text.style.TextDecoration.LineThrough
 //                } else {
 //                    androidx.compose.ui.text.style.TextDecoration.None
 //                },
-                text = taskName
-            )
-        },
+            text = taskName
+        )
+    },
 
         trailingContent = {
             AssistChip(
@@ -75,7 +63,7 @@ fun Tasktile(
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Rounded.Circle,
-                        tint = when(taskImortance){
+                        tint = when(taskImportance){
                             "Low" -> Color(0xFF4CAF50)
                             "Medium" ->  Color(0xFFFFC107)
                             "High" ->Color(0xFFF44336)
@@ -89,7 +77,7 @@ fun Tasktile(
                 },
                 label = {
                     Text(
-                        text = taskImortance,
+                        text = taskImportance,
                         style = MaterialTheme.typography.labelSmall
                     )
                 }

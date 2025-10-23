@@ -1,5 +1,6 @@
 package com.dev.timeflow.Viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dev.timeflow.Data.Model.Events
@@ -8,6 +9,7 @@ import com.dev.timeflow.Data.Repo.EventRepo
 import com.dev.timeflow.Data.Repo.TaskRepo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -19,13 +21,21 @@ class EventViewModel @Inject constructor(
     private val taskRepo: TaskRepo
 ) : ViewModel(){
 
+    // job to track and cancel the task fetch operation
+    private var taskJob: Job? = null
+
+    // job to track and cancel the event fetch operation
+    private var eventJob: Job? = null
+
+
     // variable to hold all the events in the database
     private val _allEvents = MutableStateFlow<List<Events>>(emptyList())
     var allEvents : StateFlow<List<Events>> = _allEvents
 
-    init {
-        getAllTasks()
-    }
+//    init {
+//        getAllTasks()
+//    }
+
     // function to get all the events from the database
     fun getAllEvents() {
         viewModelScope.launch {
@@ -35,6 +45,25 @@ class EventViewModel @Inject constructor(
             }
         }
     }
+
+
+    private val _eventsForToday = MutableStateFlow<List<Events>>(emptyList())
+    var eventForToday : StateFlow<List<Events>> = _eventsForToday
+
+    // function to get event for a date
+    fun getEventForToday(date: Long){
+        viewModelScope.launch {
+            eventRepo.getEventsForADate(
+                date = date
+            ).collect {
+                _eventsForToday.value = it
+                Log.d("Events","${it}")
+            }
+        }
+    }
+
+
+
 
 
     // function to insert an event into the database
@@ -61,7 +90,12 @@ class EventViewModel @Inject constructor(
     var eventForDate: StateFlow<List<Events>> = _eventForDate
 
     fun getAllEventsForADate(date : Long) {
-        viewModelScope.launch {
+
+        // cancel the previous job
+        eventJob?.cancel()
+
+        _eventForDate.value = emptyList()
+       eventJob =  viewModelScope.launch {
             eventRepo.getEventsForADate(
                 date = date
             ).collect {
@@ -108,12 +142,32 @@ class EventViewModel @Inject constructor(
 
     // function to get tasks for a date
     fun getTasksForADate(date : Long) {
-        viewModelScope.launch { 
-       taskRepo.getTasksForADate(
-           date = date
-       ).collect {
-           _taskForDate.value = it
-       }
+
+        //cancelling existing task fetch
+        taskJob?.cancel()
+
+        _taskForDate.value = emptyList()
+
+
+        taskJob =  viewModelScope.launch {
+            taskRepo.getTasksForADate(
+                date = date
+            ).collect {
+                _taskForDate.value = it
+            }
+        }
+    }
+
+    private var _taskForToday = MutableStateFlow<List<Tasks>>(emptyList())
+    var taskForToday : StateFlow<List<Tasks>> = _taskForToday
+
+    fun getTasksForToday (date: Long){
+        viewModelScope.launch {
+            taskRepo.getTasksForADate(
+                date = date
+            ).collect {
+                _taskForToday.value = it
+            }
         }
     }
 
