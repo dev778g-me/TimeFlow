@@ -50,12 +50,12 @@ fun MonthCalender(
     val isSelected = selectedDate == day.date
 
     val boxSelectedColor by animateColorAsState(
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium),
+
         targetValue = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent
     )
 
     val boxTextColor by animateColorAsState(
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium),
+
         targetValue = when {
             isSelected -> MaterialTheme.colorScheme.onPrimary
             dayPosition -> MaterialTheme.colorScheme.onSurface
@@ -91,7 +91,7 @@ fun MonthCalender(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    modifier = modifier.padding(8.dp),
+                    modifier = modifier.padding(0.dp),
                     text = day.date.dayOfMonth.toString(),
                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                     color = boxTextColor

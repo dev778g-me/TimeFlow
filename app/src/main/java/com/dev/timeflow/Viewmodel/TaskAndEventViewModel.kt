@@ -1,22 +1,33 @@
 package com.dev.timeflow.Viewmodel
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dev.timeflow.Data.Model.Events
+import com.dev.timeflow.Data.Model.NotificationAlarmManagerModel
 import com.dev.timeflow.Data.Model.Tasks
 import com.dev.timeflow.Data.Repo.EventRepo
 import com.dev.timeflow.Data.Repo.TaskRepo
+import com.dev.timeflow.Managers.notification.TimeFlowAlarmManagerService
+import com.dev.timeflow.Managers.notification.TimeFlowNotificationManager
+import com.dev.timeflow.Managers.utils.toHour
+import com.dev.timeflow.Managers.utils.toLocalDate
+import com.dev.timeflow.Managers.utils.toMinute
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.util.Calendar
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.hours
 
 @HiltViewModel
-class EventViewModel @Inject constructor(
+class TaskAndEventViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val eventRepo: EventRepo,
     private val taskRepo: TaskRepo
 ) : ViewModel(){
@@ -32,9 +43,12 @@ class EventViewModel @Inject constructor(
     private val _allEvents = MutableStateFlow<List<Events>>(emptyList())
     var allEvents : StateFlow<List<Events>> = _allEvents
 
-//    init {
-//        getAllTasks()
-//    }
+
+    var scrollStateValue = MutableStateFlow<Int>(0)
+
+    fun manageScrollState(scrollValue: Int){
+        scrollStateValue.value = scrollValue
+    }
 
     // function to get all the events from the database
     fun getAllEvents() {
@@ -123,6 +137,21 @@ class EventViewModel @Inject constructor(
             taskRepo.insertTask(
                 tasks = tasks
             )
+            if (tasks.notification){
+                TimeFlowAlarmManagerService(context = context).scheduleNotification(
+                    context = context,
+                    notificationAlarmManagerModel = NotificationAlarmManagerModel(
+                        title = tasks.name,
+                        id = tasks.id,
+                        hour = tasks.taskTime.toHour(),
+                        minute = tasks.taskTime.toMinute()
+                    )
+                )
+            } else {
+                println("notification has been turned off")
+            }
+
+            Log.d("TESTING NOTIFICATION","${tasks.taskTime.toHour()} ${tasks.taskTime.toMinute()}")
         }
     }
 
@@ -178,6 +207,11 @@ class EventViewModel @Inject constructor(
                tasks = tasks
            )
        }
+    }
+
+
+    fun scheduleNotificationForTaskAndEvents() {
+
     }
 
 }

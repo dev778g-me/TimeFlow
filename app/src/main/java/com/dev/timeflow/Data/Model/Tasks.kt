@@ -14,6 +14,6 @@ data class Tasks(
     val importance : String,
     val notification: Boolean = false,
     val isCompleted : Boolean = false,
-    val taskDate : Long,
+    val taskTime : Long,
     val createdAt : Long = System.currentTimeMillis()
 )

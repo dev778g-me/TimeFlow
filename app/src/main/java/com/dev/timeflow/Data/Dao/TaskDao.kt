@@ -23,7 +23,7 @@ import java.sql.Date
     @Delete
     suspend fun deleteTask(tasks: Tasks)
 
-    @Query("SELECT * FROM TASKS WHERE taskDate =:date")
+    @Query("SELECT * FROM TASKS WHERE taskTime =:date")
     fun getTaskForDate(date: Long) : Flow<List<Tasks>>
 
     // function to get all the tasks

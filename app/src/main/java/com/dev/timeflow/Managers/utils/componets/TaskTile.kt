@@ -1,6 +1,17 @@
 package com.dev.timeflow.Managers.utils.componets
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -9,99 +20,208 @@ import androidx.compose.material.icons.rounded.Circle
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.dev.timeflow.Data.Model.Events
 import com.dev.timeflow.Managers.utils.toLocalDate
+import com.dev.timeflow.Managers.utils.toMyFormat
+import com.dev.timeflow.View.Widget.NewCheckBox
+import com.dev.timeflow.View.Widget.RoundedCheckBox
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun Tasktile(
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier.padding(
+        vertical = 2.dp
+    ),
     taskName : String,
     taskDescription  : String ?,
     taskCreatedAt : Long,
     taskDate : Long,
     taskIsCompleted : Boolean,
     taskImportance : String,
+    taskNotification : Boolean,
   //  tasks: Tasks,
     onUpdateTask : (Boolean) -> Unit
 ) {
-    ListItem(
+    var showDetails by rememberSaveable { mutableStateOf(false) }
+    val color by animateColorAsState(
+        targetValue = if (showDetails) MaterialTheme.colorScheme.primaryContainer.copy(
+            alpha = 0.3f
+        ) else Color.Transparent
+    )
+    val textColor by animateColorAsState(
+        targetValue = if (showDetails) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+    )
+    Column(
         modifier = modifier
-            .padding(
-                vertical = 2.dp
-            )
             .clip(
                 RoundedCornerShape(16.dp)
             )
+            .background(
+                color = color
+            )
             .clickable(
-                onClick = {}), headlineContent = {
-        Text(
-//                textDecoration = if (tasks.isCompleted) {
-//                    androidx.compose.ui.text.style.TextDecoration.LineThrough
-//                } else {
-//                    androidx.compose.ui.text.style.TextDecoration.None
-//                },
-            text = taskName
-        )
-    },
+                onClick = {
+                    showDetails = !showDetails
+                }
+            )
+            .padding(
+                vertical = 8.dp
+            ),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            NewCheckBox(
+                isSelected = taskIsCompleted
+            ) {
+                onUpdateTask.invoke(
+                    it
+                )
+            }
 
-        trailingContent = {
-            AssistChip(
-                border = AssistChipDefaults.assistChipBorder(
-                    enabled = false,
-                    disabledBorderColor = Color.Transparent
-                ),
-                onClick = {},
-                leadingIcon = {
+            Text(
+                modifier = modifier.weight(1f),
+                text = taskName,
+                color = textColor,
+                textDecoration = if (taskIsCompleted) TextDecoration.LineThrough else TextDecoration.None,
+                fontWeight = if (showDetails) FontWeight.SemiBold else FontWeight.Normal
+            )
+
+            Box(
+                modifier = modifier.padding(
+                    end = 8.dp
+                )
+            ){
+                Row(
+                    modifier = modifier
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(
+                            when (taskImportance) {
+                                "Low" -> Color(0xFF4CAF50).copy(alpha = 0.3f)
+                                "Medium" -> Color(0xFFFFC107).copy(alpha = 0.3f)
+                                "High" -> Color(0xFFF44336).copy(alpha = 0.3f)
+                                else -> Color.Transparent
+                            }
+                        )
+                    ,
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
                     Icon(
                         imageVector = Icons.Rounded.Circle,
-                        tint = when(taskImportance){
+                        tint = when (taskImportance) {
                             "Low" -> Color(0xFF4CAF50)
-                            "Medium" ->  Color(0xFFFFC107)
-                            "High" ->Color(0xFFF44336)
+                            "Medium" -> Color(0xFFFFC107)
+                            "High" -> Color(0xFFF44336)
                             else -> Color.Transparent
                         },
                         contentDescription = null,
-                        modifier = modifier.size(
-                            AssistChipDefaults.IconSize -8.dp
+                        modifier = modifier
+                            .size(
+                                AssistChipDefaults.IconSize - 4.dp
+                            )
+                            .padding(
+                                start = 6.dp
+                            )
+                    )
+                    Text(
+                        modifier = modifier.padding(end = 6.dp),
+                        text = taskImportance,
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = when (taskImportance) {
+                                "Low" -> FontWeight.Light
+                                "Medium" -> FontWeight.Medium
+                                "High" -> FontWeight.SemiBold
+                                else -> FontWeight.Normal
+                            }
                         )
                     )
-                },
-                label = {
-                    Text(
-                        text = taskImportance,
-                        style = MaterialTheme.typography.labelSmall
-                    )
                 }
-            )
-        },
-        supportingContent = {
-            Text(
-                text = if (taskDescription.isNullOrEmpty()){
-                    taskDate.toLocalDate().toString()
-                } else {
-                    "$taskDescription ${taskDate.toLocalDate().toString()}"
-                }
-            )
-        },
-        leadingContent = {
-            Checkbox(
-                checked = taskIsCompleted,
-                onCheckedChange = {
-                    onUpdateTask.invoke(it)
-                },
+            }
 
-            )
-        }
-    )
+       }
+       AnimatedContent(
+           targetState = showDetails
+       ) {
+          if (it){
+              Row(verticalAlignment = Alignment.CenterVertically) {
+                  NewCheckBox(
+                      modifier = modifier.alpha(0f),
+                      isSelected = taskIsCompleted
+                  ) {
+                      onUpdateTask.invoke(
+                          it
+                      )
+                  }
+
+                 Column(
+                     modifier = modifier
+                         .weight(1f)
+                 ) {
+                     Text(
+                         text = buildAnnotatedString {
+                             append("description :")
+                             withStyle(
+                                 style = SpanStyle(
+                                     fontWeight = FontWeight.SemiBold,
+                                     color = MaterialTheme.colorScheme.onPrimaryContainer
+                                 )
+                             ){
+                                 if (taskDescription.isNullOrBlank()){
+                                     append(" null")
+                                 } else {
+                                     append(" $taskDescription")
+                                 }
+                             }
+
+                         },
+                         style = MaterialTheme.typography.titleSmall
+                     )
+                     Text(
+                         text = buildAnnotatedString {
+                             append("notification :")
+                             withStyle(
+                                 style = SpanStyle(
+                                     fontWeight = FontWeight.SemiBold,
+                                     color = MaterialTheme.colorScheme.onPrimaryContainer
+                                 )
+                             ) {
+                                 append(" ${taskNotification}")
+                             }
+                         },
+                         style = MaterialTheme.typography.titleSmall
+                     )
+                 }
+             }
+          }
+       }
+
+   }
+
 }
 
 @Composable

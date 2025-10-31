@@ -1,8 +1,17 @@
 package com.dev.timeflow.View.Screens
 
 import android.util.Log
+import android.view.HapticFeedbackConstants
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,26 +23,37 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CalendarViewDay
 import androidx.compose.material.icons.rounded.CalendarViewMonth
 import androidx.compose.material.icons.rounded.CalendarViewWeek
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerLayoutType
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.kizitonwose.calendar.compose.HorizontalCalendar
 import com.kizitonwose.calendar.compose.rememberCalendarState
@@ -42,15 +62,22 @@ import java.time.LocalDate
 import java.time.YearMonth
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 
 import androidx.compose.ui.window.Popup
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.composables.icons.lucide.Calendar
+import com.composables.icons.lucide.CalendarRange
 import com.composables.icons.lucide.ListTodo
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Plus
@@ -58,10 +85,11 @@ import com.dev.timeflow.Data.Model.DropdownModel
 import com.dev.timeflow.Data.Model.Events
 import com.dev.timeflow.Data.Model.ImportanceChipModel
 import com.dev.timeflow.Data.Model.SavingModel
+import com.dev.timeflow.Data.Model.TabModel
 import com.dev.timeflow.Data.Model.Tasks
 import com.dev.timeflow.Managers.utils.componets.EventTile
 import com.dev.timeflow.Managers.utils.componets.Tasktile
-import com.dev.timeflow.Viewmodel.EventViewModel
+import com.dev.timeflow.Viewmodel.TaskAndEventViewModel
 import com.dev.timeflow.R
 import com.dev.timeflow.View.Screens.calenderScreen.MonthCalender
 import com.dev.timeflow.View.Screens.calenderScreen.MonthHeader
@@ -73,24 +101,29 @@ import com.maxkeppeler.sheets.calendar.CalendarDialog
 import com.maxkeppeler.sheets.calendar.models.CalendarConfig
 import com.maxkeppeler.sheets.calendar.models.CalendarSelection
 import com.maxkeppeler.sheets.calendar.models.CalendarStyle
+import kotlinx.coroutines.launch
+import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.ZoneId
 
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
-@Preview(showBackground = true, showSystemUi = true
-)
 @Composable
-fun NewTask(modifier: Modifier = Modifier) {
+fun CalenderScreen(modifier: Modifier = Modifier) {
     val haptics = LocalHapticFeedback.current
-    val taskViewModel: EventViewModel = hiltViewModel()
+    val taskViewModel: TaskAndEventViewModel = hiltViewModel()
     val currentMonth = remember { YearMonth.now() }
     val startMonth = remember { currentMonth.minusMonths(100) }
     val endMonth = remember { currentMonth.plusMonths(100) }
     val firstDayOfWeek = remember { firstDayOfWeekFromLocale() }
-
+    val localTime = LocalDateTime.now()
     val disabledDates = listOf(
-        LocalDate.now(),
+        localTime.toLocalDate(),
     )
+
+    // local view for haptic feedback
+    val localView = LocalView.current
+
 
     //variable to hold state of the currently selected date
     var currentSelectedDate by rememberSaveable{mutableStateOf(LocalDate.now())}
@@ -104,15 +137,32 @@ fun NewTask(modifier: Modifier = Modifier) {
     // var to hold state of the task name textfield
     var taskName by rememberSaveable { mutableStateOf("") }
 
+    // var to hols the timePicker
+    var showTime by rememberSaveable { mutableStateOf(false) }
+
     // var to hold the state of the task description textfield
     var taskDescription by rememberSaveable { mutableStateOf("") }
 
     // var to hold to choose the date for the event
     var showCalendar by rememberSaveable { mutableStateOf(false) }
-    val today = LocalDate.now()
+
+    val today = localTime.toLocalDate()
     val selectedDates = rememberSaveable { mutableStateOf<LocalDate>(today) }
 
+    var selectedIndex by remember { mutableIntStateOf(0) }
 
+
+    // state for the timePicker
+    val timePickerState = rememberTimePickerState(
+        initialHour = localTime.hour,
+        initialMinute = localTime.minute
+    )
+
+
+
+    val pageState = rememberPagerState(initialPage = 0, pageCount = {2})
+
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(currentSelectedDate) {
         Log.d("TASKDATE","the function ran with the updated date $currentSelectedDate")
@@ -147,11 +197,25 @@ fun NewTask(modifier: Modifier = Modifier) {
             color = Color(0xFFF44336) // Material Red 500
         )
     )
-
+    val tabs = listOf<TabModel>(
+        TabModel(
+            title = "Tasks",
+            unSelectedIcon = Lucide.ListTodo
+        ),
+        TabModel(
+            title = "Events",
+            unSelectedIcon = Lucide.CalendarRange
+        )
+    )
     // var to hold the state of the importance chip
 
     var selectedChip by rememberSaveable { mutableStateOf(0) }
-
+    LaunchedEffect(pageState) {
+        snapshotFlow { pageState.currentPage }
+            .collect { page ->
+                selectedIndex = page
+            }
+    }
     //choosing event or tsk
     val type = listOf<SavingModel>(
         SavingModel(
@@ -195,7 +259,7 @@ fun NewTask(modifier: Modifier = Modifier) {
                        description = taskDescription,
                        notification = switchState,
                        importance = importanceChip[selectedChip].label,
-                       taskDate = currentSelectedDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                       taskTime = currentSelectedDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
                    )
                )
            },
@@ -233,9 +297,15 @@ fun NewTask(modifier: Modifier = Modifier) {
            switchState = switchState,
            taskName = taskName,
            taskDescription = taskDescription,
-           selectedImportantChip = selectedChip
+           selectedImportantChip = selectedChip,
+           showTimeState = showTime,
+           onTimeState = {
+               showTime = it
+           }
        )
    }
+
+
 
     if (showCalendar) {
         Popup(
@@ -260,7 +330,7 @@ fun NewTask(modifier: Modifier = Modifier) {
                     config = CalendarConfig(
                         yearSelection = true,
                         monthSelection = true,
-                        boundary = LocalDate.now() ..LocalDate.of(2030, 12, 31),
+                        boundary = LocalDate.now()..LocalDate.of(2030, 12, 31),
                         style = CalendarStyle.MONTH,
                         disabledDates = disabledDates
                     ),
@@ -304,20 +374,56 @@ fun NewTask(modifier: Modifier = Modifier) {
     Scaffold(
         //contentWindowInsets = WindowInsets(0.dp),
         floatingActionButton = {
-           FloatingActionButton(
-               onClick = {
-                   showBottomSheet = !showBottomSheet
-               }
-           ) {
-               Icon(imageVector = Lucide.Plus, contentDescription = null)
-           }
+            FloatingActionButton(
+                onClick = {
+                    showBottomSheet = !showBottomSheet
+                }
+            ) {
+                Icon(imageVector = Lucide.Plus, contentDescription = null)
+            }
         },
 
-    ) {
-        innerPadding ->
+        ) { innerPadding ->
+        if (showTime) {
+            AlertDialog(
+                text = {
+                    TimePicker(
+                        state = timePickerState,
+                       // layoutType = TimePickerLayoutType.Horizontal
+                    )
+                },
+                dismissButton = {
+                    OutlinedButton(
+                        onClick = {}
+                    ) {
+                        Text(
+                            "Cancel"
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {}
+                    ) {
+                        Text("Confirm")
+                    }
+                },
+                onDismissRequest = {
+                    showTime = false
+                },
+                properties = DialogProperties(),
+                title = {
+                    Text(
+                        text = "Pick Time"
+                    )
+                },
+
+            )
+        }
         Column(
             modifier = modifier
-                .fillMaxSize(),
+                .fillMaxSize()
+                .animateContentSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
@@ -354,80 +460,166 @@ fun NewTask(modifier: Modifier = Modifier) {
                                     }
                                 )
                             },
-                        monthHeader = {
-                            MonthHeader(
-                                monthName = it.yearMonth.month.toString(),
-                                weekName = it.weekDays.first().map {
-                                    it.date.dayOfWeek.toString().take(3).toLowerCase().replaceFirstChar {
-                                        it.toUpperCase()
+                            monthHeader = {
+                                MonthHeader(
+                                    monthName = it.yearMonth.month.toString(),
+                                    weekName = it.weekDays.first().map {
+                                        it.date.dayOfWeek.toString().take(3).toLowerCase()
+                                            .replaceFirstChar {
+                                                it.toUpperCase()
+                                            }
                                     }
-                                }
-                            )
-                        }
-                    )}
+                                )
+                            }
+                        )
+                    }
                 }
             }
 
-          Column {
+          Column(
+            //  modifier = modifier.animateContentSize()
+          ) {
               AnimatedContent(
                   modifier = modifier.align(Alignment.CenterHorizontally),
                   targetState = tasksForDate.isNotEmpty() || eventsForDate.isNotEmpty()
               ) { it ->
+
                   if (it){
                       LazyColumn(
                           modifier = modifier.padding(
-                              horizontal = 8.dp
-                          )
+                              horizontal = 16.dp)
                       ) {
                           item {
-                              Text(
-                                  modifier = modifier.padding(horizontal = 12.dp),
-                                  text = "Tasks",
-                                  color = MaterialTheme.colorScheme.primary
-                              )
-                          }
-                          items(tasksForDate) {
-                              Tasktile(
-                                  onUpdateTask = { value ->
-                                      println(value)
-                                      taskViewModel.updateTask(
-                                          tasks = it.copy(
-                                              isCompleted = value
-                                          )
+                              ButtonGroup(
+                                  modifier = modifier
+                                      .fillMaxWidth()
+                                      .padding(
+                                          vertical = 8.dp,
+                                      ),
+                                  overflowIndicator = {}
+                              ) {
+                                  tabs.forEachIndexed { index, model ->
+                                      val isSelected = index == selectedIndex
+                                      toggleableItem(
+                                          weight = 1f,
+                                          checked = isSelected,
+                                          onCheckedChange = {
+                                              selectedIndex = index
+                                              localView.performHapticFeedback(
+                                                  HapticFeedbackConstants.CONFIRM
+                                              )
+                                              scope.launch {
+                                                  pageState.animateScrollToPage(
+                                                      index
+                                                  )
+                                              }
+                                          },
+                                          label = model.title
                                       )
-                                  },
-                                  taskName = it.name,
-                                  taskDescription = it.description,
-                                  taskCreatedAt = it.createdAt,
-                                  taskDate = it.taskDate,
-                                  taskIsCompleted = it.isCompleted,
-                                  taskImportance = it.importance
-                              )
+                                  }
+                              }
                           }
 
                           item {
-                              AnimatedContent(
-                                  targetState = eventsForDate.isNotEmpty()
-                              ) {
-                                  if (it){
-                                      Column {
-                                          Text(
-                                              modifier = modifier.padding(horizontal = 12.dp),
-                                              text = "Events",
-                                              color = MaterialTheme.colorScheme.primary
-                                          )
-                                          eventsForDate.forEach {
-                                              EventTile(
-                                                  events = it
-                                              )
+                              HorizontalPager(
+                                  state = pageState
+                              ) { page ->
+                                  when(page){
+                                     0-> AnimatedContent(
+                                          targetState = tasksForDate.isNotEmpty(),
+                                         transitionSpec = {
+                                             scaleIn(
+                                                 animationSpec = spring(
+                                                     dampingRatio = Spring.DampingRatioLowBouncy,
+                                                     stiffness = Spring.StiffnessLow
+                                                 )
+                                             ) togetherWith scaleOut(
+                                                 animationSpec = spring(
+                                                     dampingRatio = Spring.DampingRatioLowBouncy,
+                                                     stiffness = Spring.StiffnessLow
+                                                 )
+                                             )
+                                         }
+                                      ) {
+                                          if (it){
+                                              Column {
+                                                  tasksForDate.forEach {
+                                                      Tasktile(
+                                                          modifier = modifier
+                                                              .padding(
+                                                                  vertical = 2.dp
+                                                              )
+                                                              .animateEnterExit(
+                                                                  enter = scaleIn(
+                                                                      animationSpec = spring(
+                                                                          dampingRatio = Spring.DampingRatioMediumBouncy,
+                                                                          stiffness = Spring.StiffnessMedium
+                                                                      )
+                                                                  ),
+                                                                  exit = scaleOut(
+                                                                      animationSpec = spring(
+                                                                          dampingRatio = Spring.DampingRatioMediumBouncy,
+                                                                          stiffness = Spring.StiffnessMedium
+                                                                      )
+                                                                  )
+                                                              ),
+                                                          onUpdateTask = { value ->
+                                                              println(value)
+                                                              taskViewModel.updateTask(
+                                                                  tasks = it.copy(
+                                                                      isCompleted = value
+                                                                  )
+                                                              )
+                                                          },
+                                                          taskName = it.name,
+                                                          taskDescription = it.description,
+                                                          taskCreatedAt = it.createdAt,
+                                                          taskDate = it.taskTime,
+                                                          taskIsCompleted = it.isCompleted,
+                                                          taskImportance = it.importance,
+                                                          taskNotification = it.notification
+                                                      )
+                                                  }
+                                              }
+                                          }
+                                      }
+                                      1-> AnimatedContent(
+                                          targetState = eventsForDate.isNotEmpty(),
+                                          transitionSpec = {
+                                              scaleIn() togetherWith scaleOut()
+                                          }
+                                      ) {
+                                          if (it){
+                                              Column {
+                                                  eventsForDate.forEach {
+                                                      EventTile(
+                                                          modifier = modifier.animateEnterExit(
+                                                              enter = scaleIn(
+                                                                  animationSpec = spring(
+                                                                      dampingRatio = Spring.DampingRatioMediumBouncy,
+                                                                      stiffness = Spring.StiffnessMedium
+                                                                  )
+                                                              ),
+                                                              exit = scaleOut(
+                                                                  animationSpec = spring(
+                                                                      dampingRatio = Spring.DampingRatioMediumBouncy,
+                                                                      stiffness = Spring.StiffnessMedium
+                                                                  )
+                                                              )
+                                                          ),
+                                                          events = it
+                                                      )
+                                                  }
+                                              }
                                           }
                                       }
                                   }
                               }
-
                           }
+
                       }
                   } else {
+                      // using a placeholder image if both task and events are empty ...>>>>
                       Column(
                           modifier = modifier
                               .fillMaxSize()

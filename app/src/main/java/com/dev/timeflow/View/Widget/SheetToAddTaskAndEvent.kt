@@ -57,6 +57,7 @@ fun SheetToAddEventAndTask(
     modifier: Modifier = Modifier,
     onDismiss : () -> Unit,
     onSwitchState : (Boolean) -> Unit,
+    onTimeState : (Boolean) -> Unit,
     selectedSavingType : Int,
     isButtonEnabled : Boolean,
     onTaskSave : () -> Unit,
@@ -71,6 +72,7 @@ fun SheetToAddEventAndTask(
     importanceChip : List<ImportanceChipModel>,
     hapticFeedback: HapticFeedback,
     switchState : Boolean,
+    showTimeState : Boolean,
     taskName : String,
     taskDescription : String,
     selectedImportantChip : Int
@@ -297,7 +299,25 @@ fun SheetToAddEventAndTask(
                     }
                 }
             }
-
+            AnimatedContent(
+                targetState = switchState,
+                transitionSpec = { scaleIn() togetherWith scaleOut() }
+            ) {
+                if (it) {
+                 Button(
+                     modifier = modifier.fillMaxWidth(),
+                     onClick = {
+                        onTimeState.invoke(
+                            !showTimeState
+                        )
+                     }
+                 ) {
+                     Text(
+                         text = "Select Time"
+                     )
+                 }
+                }
+            }
             Button(
                 enabled = isButtonEnabled,
                 modifier = modifier

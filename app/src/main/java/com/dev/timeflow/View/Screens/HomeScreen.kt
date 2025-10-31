@@ -46,7 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.dev.timeflow.Data.Model.ImportanceChipModel
-import com.dev.timeflow.Viewmodel.EventViewModel
+import com.dev.timeflow.Viewmodel.TaskAndEventViewModel
 import kotlinx.coroutines.delay
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
@@ -131,7 +131,7 @@ fun HomeScreen(
             delay(1000L)
         }
     }
-    val taskViewModel : EventViewModel = hiltViewModel()
+    val taskViewModel : TaskAndEventViewModel = hiltViewModel()
     val allTask by taskViewModel.allTasks.collectAsState(emptyList())
     val completedTask by remember(allTask) {
         derivedStateOf {

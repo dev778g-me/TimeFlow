@@ -9,6 +9,7 @@ import dagger.hilt.android.HiltAndroidApp
 class Application : Application(){
    companion object{
        const  val TIMEFLOW_NOTIFICATION_ID = "timeflow_notification_id"
+       const val TIMEFLOW_NOTIFICATION_NAME = "timeflow_notification_name"
    }
     override fun onCreate() {
         super.onCreate()

@@ -1,6 +1,12 @@
 package com.dev.timeflow.View.Widget
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -15,46 +21,66 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun RoundedCheckBox(
     modifier: Modifier = Modifier,
-    isChecked : Boolean ,
-    onCheckedChange : (Boolean) -> Unit
+    isChecked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
 ) {
+    val backgroundColor = if (isChecked) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.surface
+    }
 
-    val color = if (isChecked) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.surfaceVariant
-    val icon = if (isChecked) Icons.Rounded.Check else null
-    val iconColor = if (isChecked) MaterialTheme.colorScheme.onPrimary else null
+    val iconColor = if (isChecked) {
+        MaterialTheme.colorScheme.onPrimary
+    }else {
+        MaterialTheme.colorScheme.onSurface
+    }
+
+    val borderColor = if (isChecked) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.outline
+    }
+
     Box(
         modifier = modifier
-            .size(24.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(color)
-            .border(width = 1.dp, color = if (isChecked) Color.Transparent else MaterialTheme.colorScheme.onPrimaryContainer , shape = RoundedCornerShape(16.dp))
-            .clickable(
-                onClick = {
-                    onCheckedChange(
-                        !isChecked
-                    )
-                }
+            .size(20.dp)
+            .clip(RoundedCornerShape(6.dp))
+            .background(backgroundColor)
+            .border(
+                width = 1.dp,
+                color = borderColor,
+                shape = RoundedCornerShape(6.dp)
             )
-        ,
+            .clickable { onCheckedChange(!isChecked) },
         contentAlignment = Alignment.Center
     ) {
         AnimatedVisibility(
-            visible = isChecked
-        ) {
-            icon?.let {
-                Icon(
-                    modifier = modifier.size(16.dp),
-                    tint = iconColor!!,
-                    imageVector = it,
-                    contentDescription = null
+            visible = isChecked,
+            enter = scaleIn(
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium
                 )
-            }
+            ),
+            exit = scaleOut(
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium
+                )
+            )
+        ) {
+            Icon(
+                modifier = Modifier.size(16.dp),
+                imageVector = Icons.Rounded.Check,
+                contentDescription = "Checked",
+                tint = iconColor
+            )
         }
     }
 }

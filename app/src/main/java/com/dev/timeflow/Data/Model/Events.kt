@@ -12,5 +12,6 @@ data class Events(
     val title: String,
     val description: String,
     val eventTime : Long,
+    val notification : Boolean = false,
     val createdAt : Long = System.currentTimeMillis()
 )
