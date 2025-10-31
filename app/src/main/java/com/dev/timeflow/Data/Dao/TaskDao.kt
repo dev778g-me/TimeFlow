@@ -7,7 +7,6 @@ import androidx.room.Query
 import androidx.room.Upsert
 import com.dev.timeflow.Data.Model.Tasks
 import kotlinx.coroutines.flow.Flow
-import java.sql.Date
 
 @Dao
  interface TaskDao{
@@ -23,8 +22,8 @@ import java.sql.Date
     @Delete
     suspend fun deleteTask(tasks: Tasks)
 
-    @Query("SELECT * FROM TASKS WHERE taskTime =:date")
-    fun getTaskForDate(date: Long) : Flow<List<Tasks>>
+    @Query("SELECT * FROM TASKS WHERE createdAt BETWEEN :start AND :end")
+    fun getTaskForDate(start: Long, end : Long) : Flow<List<Tasks>>
 
     // function to get all the tasks
     @Query("SELECT * FROM TASKS ORDER BY createdAt")

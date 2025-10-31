@@ -44,6 +44,18 @@ fun Long.toHour(): Int{
     return format.format(date).toInt()
 }
 
+fun Calendar.toDateTimeInMillis(hour : Int, minute : Int, date: LocalDate) : Long{
+    this.apply {
+        set(Calendar.DAY_OF_MONTH,date.dayOfMonth)
+        set(Calendar.MONTH, date.month.value)
+        set(Calendar.YEAR, date.year)
+        set(Calendar.HOUR_OF_DAY,hour)
+        set(Calendar.MINUTE,minute)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND,0)
+    }
+    return this.timeInMillis
+}
 
 
 fun Long.toMinute() : Int{

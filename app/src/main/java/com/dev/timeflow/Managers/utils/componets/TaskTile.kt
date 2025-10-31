@@ -1,26 +1,22 @@
 package com.dev.timeflow.Managers.utils.componets
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Circle
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
@@ -30,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -37,7 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -45,17 +42,13 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.dev.timeflow.Data.Model.Events
-import com.dev.timeflow.Managers.utils.toLocalDate
-import com.dev.timeflow.Managers.utils.toMyFormat
 import com.dev.timeflow.View.Widget.NewCheckBox
-import com.dev.timeflow.View.Widget.RoundedCheckBox
-import java.time.format.DateTimeFormatter
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
-fun Tasktile(
-    modifier: Modifier = Modifier.padding(
-        vertical = 2.dp
-    ),
+fun TaskTile(
+    modifier: Modifier,
     taskName : String,
     taskDescription  : String ?,
     taskCreatedAt : Long,
@@ -75,8 +68,21 @@ fun Tasktile(
     val textColor by animateColorAsState(
         targetValue = if (showDetails) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
     )
+    var animate by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val  scale by animateFloatAsState(
+        targetValue = if (animate) 1.02f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioLowBouncy,
+            stiffness = Spring.StiffnessLow
+        )
+    )
     Column(
         modifier = modifier
+            .graphicsLayer{
+                scaleX = scale
+                scaleY = scale
+            }
             .clip(
                 RoundedCornerShape(16.dp)
             )
@@ -98,9 +104,15 @@ fun Tasktile(
             NewCheckBox(
                 isSelected = taskIsCompleted
             ) {
+                scope.launch{
+                    animate = true
+                    delay(200)
+                    animate = false
+                }
                 onUpdateTask.invoke(
                     it
                 )
+
             }
 
             Text(

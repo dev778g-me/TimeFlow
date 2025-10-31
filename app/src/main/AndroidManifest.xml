@@ -64,6 +64,13 @@
                 <action android:name="android.intent.action"/>
             </intent-filter>
         </receiver>
+
+        <receiver android:name=".Managers.notification.NotificationAlarmManagerReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action"/>
+            </intent-filter>
+        </receiver>
         <receiver android:name=".Managers.BootCompleteReceiver"
             android:exported="true">
             <intent-filter>

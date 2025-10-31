@@ -3,7 +3,6 @@ package com.dev.timeflow.Data.Repo
 import com.dev.timeflow.Data.Dao.TaskDao
 import com.dev.timeflow.Data.Model.Tasks
 import kotlinx.coroutines.flow.Flow
-import java.sql.Date
 import javax.inject.Inject
 
 class TaskRepo @Inject constructor(
@@ -30,9 +29,10 @@ class TaskRepo @Inject constructor(
         )
     }
 
-    suspend fun getTasksForADate (date: Long) : Flow<List<Tasks>>{
+    suspend fun getTasksForADate (start: Long, end : Long) : Flow<List<Tasks>>{
         return taskDao.getTaskForDate(
-            date = date
+            start = start,
+            end = end
         )
     }
 

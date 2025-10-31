@@ -1,16 +1,20 @@
 package com.dev.timeflow.View.Navigation
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -20,6 +24,8 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.TaskAlt
 import androidx.compose.material3.AppBarRow
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FabPosition
@@ -32,12 +38,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuDefaults
+import androidx.compose.material3.MenuItemColors
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -59,10 +68,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.composables.icons.lucide.Calendar
+import com.composables.icons.lucide.CalendarDays
+import com.composables.icons.lucide.CalendarRange
+import com.composables.icons.lucide.CalendarX2
 import com.composables.icons.lucide.Contact
 import com.composables.icons.lucide.House
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Plus
+import com.dev.timeflow.Data.Model.DropdownModel
 import com.dev.timeflow.R
 import com.dev.timeflow.View.Screens.AddEventScreen
 import com.dev.timeflow.View.Screens.CalenderScreen
@@ -76,44 +89,38 @@ fun NavGraph(modifier: Modifier = Modifier) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val isTaskScreen = backStackEntry?.destination?.route == Routes.NewTaskScreen.route
     val taskAndEventViewModel : TaskAndEventViewModel = hiltViewModel()
-    val scrollStateValue by taskAndEventViewModel.scrollStateValue.collectAsState(0)
-    val bottomNavItems = listOf(
-        BottomNavAttribute(
-            title = "Today",
-            unselectedIcon = Lucide.House,
-            selectedIcon = Lucide.House,
-            route = Routes.TimerScreen
+    var showDropDown by remember { mutableStateOf(false) }
+    var selectedDropDown by remember { mutableIntStateOf(0) }
+
+    val dropdownItem = listOf<DropdownModel>(
+        DropdownModel(
+            title = "Week",
+            icon = Lucide.CalendarDays,
+            onClick = {
+                selectedDropDown = 0
+                showDropDown = false
+            }
         ),
-        BottomNavAttribute(
-            title = "Calender",
-            unselectedIcon = Lucide.Calendar,
-            selectedIcon = Lucide.Calendar,
-            route = Routes.NewTaskScreen
-        ),
+        DropdownModel(
+            title = "Month",
+            icon = Lucide.CalendarX2,
+            onClick = {
+                selectedDropDown = 1
+                showDropDown = false
+            }
+        )
     )
-    var selectedIndex by remember { mutableStateOf(0) }
     Scaffold(
         modifier = modifier.nestedScroll(
             FloatingToolbarDefaults.exitAlwaysScrollBehavior(exitDirection =Bottom )
         ),
         topBar = {
             TopAppBar(
-//                navigationIcon = {
-//                    Icon(
-//                        modifier = modifier.padding(
-//                            start = 12.dp,
-//                            end = 2.dp
-//                        ),
-//                        imageVector = Lucide.Calendar,
-//                        contentDescription = null
-//                    )
-//                },
                 navigationIcon = {
                     Row(
                         modifier = modifier,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-
                         androidx.compose.foundation.Image(
                             modifier = modifier.size(ButtonDefaults.ExtraLargeIconSize),
                             painter = painterResource(
@@ -151,14 +158,73 @@ fun NavGraph(modifier: Modifier = Modifier) {
                     )
                 },
                 actions = {
-                    FilledIconButton(
-                        onClick = {}
+                    AnimatedContent(
+                        targetState = navController.currentDestination?.route == Routes.NewTaskScreen.route
                     ) {
-                        Icon(
-                            modifier = modifier.size(IconButtonDefaults.smallIconSize),
-                            imageVector = Lucide.Contact,
-                            contentDescription = null
-                        )
+                        if (it){
+                            IconButton(
+                                onClick = {
+                                    showDropDown = !showDropDown
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Lucide.CalendarRange,
+                                    contentDescription = null
+                                )
+                            }
+
+                            DropdownMenu(
+                                expanded = showDropDown,
+                                onDismissRequest = { showDropDown = false }
+                            ) {
+                                dropdownItem.forEachIndexed { index, model ->
+
+                                    val isSelected = selectedDropDown == index
+
+                                    DropdownMenuItem(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(
+                                                horizontal = 4.dp,
+                                                vertical = 2.dp
+                                            )
+                                            .clip(RoundedCornerShape(8.dp))
+
+                                            .background(
+                                                if (isSelected) MaterialTheme.colorScheme.primaryContainer
+                                                else MaterialTheme.colorScheme.surface
+                                            ),
+                                        text = {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                modifier = Modifier.fillMaxWidth()
+                                            ) {
+                                                Icon(
+                                                    imageVector = model.icon,
+                                                    contentDescription = null,
+                                                    tint = if (isSelected) MaterialTheme.colorScheme.primary
+                                                    else MaterialTheme.colorScheme.onSurface
+                                                )
+
+                                                Spacer(Modifier.width(8.dp))
+
+                                                Text(
+                                                    text = model.title,
+                                                    color = if (isSelected) MaterialTheme.colorScheme.primary
+                                                    else MaterialTheme.colorScheme.onSurface
+                                                )
+                                            }
+                                        },
+                                        onClick = {
+                                            model.onClick()
+                                            showDropDown = false
+                                        }
+                                    )
+                                }
+                            }
+
+
+                        }
                     }
                 }
             )
@@ -200,7 +266,9 @@ fun NavGraph(modifier: Modifier = Modifier) {
                 }
 
                 composable(route = Routes.NewTaskScreen.route) {
-                    CalenderScreen()
+                    CalenderScreen(
+                        selectedTab = selectedDropDown
+                    )
                 }
 
             }

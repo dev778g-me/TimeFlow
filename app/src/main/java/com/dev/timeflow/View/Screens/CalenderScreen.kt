@@ -3,14 +3,11 @@ package com.dev.timeflow.View.Screens
 import android.util.Log
 import android.view.HapticFeedbackConstants
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -22,7 +19,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
@@ -30,7 +26,6 @@ import androidx.compose.material.icons.rounded.CalendarViewDay
 import androidx.compose.material.icons.rounded.CalendarViewMonth
 import androidx.compose.material.icons.rounded.CalendarViewWeek
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -42,7 +37,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TimePicker
-import androidx.compose.material3.TimePickerLayoutType
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -66,11 +60,8 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 
 import androidx.compose.ui.window.Popup
@@ -88,7 +79,8 @@ import com.dev.timeflow.Data.Model.SavingModel
 import com.dev.timeflow.Data.Model.TabModel
 import com.dev.timeflow.Data.Model.Tasks
 import com.dev.timeflow.Managers.utils.componets.EventTile
-import com.dev.timeflow.Managers.utils.componets.Tasktile
+import com.dev.timeflow.Managers.utils.componets.TaskTile
+import com.dev.timeflow.Managers.utils.toDateTimeInMillis
 import com.dev.timeflow.Viewmodel.TaskAndEventViewModel
 import com.dev.timeflow.R
 import com.dev.timeflow.View.Screens.calenderScreen.MonthCalender
@@ -96,6 +88,8 @@ import com.dev.timeflow.View.Screens.calenderScreen.MonthHeader
 import com.dev.timeflow.View.Screens.calenderScreen.WeekCalender
 import com.dev.timeflow.View.Widget.SheetToAddEventAndTask
 import com.kizitonwose.calendar.compose.WeekCalendar
+import com.kizitonwose.calendar.compose.weekcalendar.rememberWeekCalendarState
+import com.kizitonwose.calendar.core.atStartOfMonth
 import com.maxkeppeker.sheets.core.models.base.rememberUseCaseState
 import com.maxkeppeler.sheets.calendar.CalendarDialog
 import com.maxkeppeler.sheets.calendar.models.CalendarConfig
@@ -103,22 +97,41 @@ import com.maxkeppeler.sheets.calendar.models.CalendarSelection
 import com.maxkeppeler.sheets.calendar.models.CalendarStyle
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
-import java.time.LocalTime
 import java.time.ZoneId
+import java.util.Calendar
 
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun CalenderScreen(modifier: Modifier = Modifier) {
+fun CalenderScreen(
+    modifier: Modifier = Modifier,
+    selectedTab : Int
+) {
     val haptics = LocalHapticFeedback.current
     val taskViewModel: TaskAndEventViewModel = hiltViewModel()
+    val localTime = LocalDateTime.now()
+    val disabledDates = listOf(
+        LocalDate.now()
+    )
     val currentMonth = remember { YearMonth.now() }
     val startMonth = remember { currentMonth.minusMonths(100) }
     val endMonth = remember { currentMonth.plusMonths(100) }
     val firstDayOfWeek = remember { firstDayOfWeekFromLocale() }
-    val localTime = LocalDateTime.now()
-    val disabledDates = listOf(
-        localTime.toLocalDate(),
+    val state = rememberCalendarState(
+        startMonth = startMonth,
+        endMonth = endMonth,
+        firstVisibleMonth = currentMonth,
+        firstDayOfWeek = firstDayOfWeek
+    )
+    val currentDate = remember { LocalDate.now() }
+
+    val startDate = remember { currentMonth.minusMonths(100).atStartOfMonth() }
+    val endDate = remember { currentMonth.plusMonths(100).atEndOfMonth() }
+    val weekState = rememberWeekCalendarState(
+        startDate = startDate,
+        endDate = endDate,
+        firstVisibleWeekDate = currentDate,
+        firstDayOfWeek = firstDayOfWeek
     )
 
     // local view for haptic feedback
@@ -149,7 +162,7 @@ fun CalenderScreen(modifier: Modifier = Modifier) {
     val today = localTime.toLocalDate()
     val selectedDates = rememberSaveable { mutableStateOf<LocalDate>(today) }
 
-    var selectedIndex by remember { mutableIntStateOf(0) }
+    var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
 
 
     // state for the timePicker
@@ -160,19 +173,24 @@ fun CalenderScreen(modifier: Modifier = Modifier) {
 
 
 
+    var currentSelectedTime by rememberSaveable { mutableStateOf(System.currentTimeMillis()) }
+
+
     val pageState = rememberPagerState(initialPage = 0, pageCount = {2})
 
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(currentSelectedDate) {
-        Log.d("TASKDATE","the function ran with the updated date $currentSelectedDate")
+        Log.d("TASKDATE", "the function ran with the updated date $currentSelectedDate")
         taskViewModel.getTasksForADate(
-            date = currentSelectedDate
+            start = currentSelectedDate
                 .atStartOfDay(ZoneId.systemDefault())
                 .toInstant()
-                .toEpochMilli()
+                .toEpochMilli(),
+            end = System.currentTimeMillis()
+
         ).also {
-            Log.d("TASKDATE","the function just completed with the date $currentSelectedDate")
+            Log.d("TASKDATE", "the function just completed with the date $currentSelectedDate")
         }
 
         taskViewModel.getAllEventsForADate(
@@ -227,7 +245,7 @@ fun CalenderScreen(modifier: Modifier = Modifier) {
             icon = Lucide.ListTodo
         )
     )
-    var selectedSavingType by rememberSaveable { mutableStateOf(0) }
+    var selectedSavingType by rememberSaveable { mutableIntStateOf(0) }
     var isButtonEnabled by rememberSaveable(
         taskName,
         selectedSavingType,
@@ -259,7 +277,11 @@ fun CalenderScreen(modifier: Modifier = Modifier) {
                        description = taskDescription,
                        notification = switchState,
                        importance = importanceChip[selectedChip].label,
-                       taskTime = currentSelectedDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                       taskTime = Calendar.getInstance().toDateTimeInMillis(
+                           hour = timePickerState.hour,
+                           minute = timePickerState.minute,
+                           date = currentSelectedDate
+                       )
                    )
                )
            },
@@ -276,7 +298,7 @@ fun CalenderScreen(modifier: Modifier = Modifier) {
            showCalendar = {
                showCalendar = true
            },
-           onselectedImportantChipChange = {
+           onSelectedImportantChipChange = {
                selectedChip = it
            },
            onTaskNameChange = {
@@ -304,8 +326,6 @@ fun CalenderScreen(modifier: Modifier = Modifier) {
            }
        )
    }
-
-
 
     if (showCalendar) {
         Popup(
@@ -342,12 +362,7 @@ fun CalenderScreen(modifier: Modifier = Modifier) {
         }
     }
 
-    val state = rememberCalendarState(
-        startMonth = startMonth,
-        endMonth = endMonth,
-        firstVisibleMonth = currentMonth,
-        firstDayOfWeek = firstDayOfWeek
-    )
+
 
 
     val dropDownItems = listOf<DropdownModel>(
@@ -389,12 +404,14 @@ fun CalenderScreen(modifier: Modifier = Modifier) {
                 text = {
                     TimePicker(
                         state = timePickerState,
-                       // layoutType = TimePickerLayoutType.Horizontal
+                        // layoutType = TimePickerLayoutType.Horizontal
                     )
                 },
                 dismissButton = {
                     OutlinedButton(
-                        onClick = {}
+                        onClick = {
+                            showTime = false
+                        }
                     ) {
                         Text(
                             "Cancel"
@@ -403,7 +420,9 @@ fun CalenderScreen(modifier: Modifier = Modifier) {
                 },
                 confirmButton = {
                     Button(
-                        onClick = {}
+                        onClick = {
+                            showTime = false
+                        }
                     ) {
                         Text("Confirm")
                     }
@@ -418,7 +437,7 @@ fun CalenderScreen(modifier: Modifier = Modifier) {
                     )
                 },
 
-            )
+                )
         }
         Column(
             modifier = modifier
@@ -426,68 +445,77 @@ fun CalenderScreen(modifier: Modifier = Modifier) {
                 .animateContentSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+         AnimatedContent(
+             targetState = selectedTab,
+             transitionSpec = {
+                 scaleIn(
+                     animationSpec = spring(
+                         dampingRatio = Spring.DampingRatioLowBouncy,
+                         stiffness = Spring.StiffnessMedium
+                     )
+                 ) togetherWith scaleOut(
+                     animationSpec = spring(
+                         dampingRatio = Spring.DampingRatioLowBouncy,
+                         stiffness = Spring.StiffnessMedium
+                 )
+             ) }
+         ) {
+             if (it ==0){
+                 WeekCalendar(
+                     state = weekState,
+                     dayContent = {
+                             weekDate ->
+                         WeekCalender(
+                             weekDate = weekDate,
+                             selectedDate = currentSelectedDate,
+                             onClick = {
+                                 currentSelectedDate = it
+                             }
+                         )
+                     },
+                 )
+             }
+             else if(it ==1){
+                 HorizontalCalendar(
+                     state = state,
+                     reverseLayout = false,
+                     dayContent = {
+                         MonthCalender(
+                             day = it,
+                             hapticFeedback = haptics,
+                             selectedDate = currentSelectedDate,
+                             onClick = { date ->
+                                 currentSelectedDate = date
+                             }
+                         )
+                     },
+                     monthHeader = {
+                         MonthHeader(
+                             monthName = it.yearMonth.month.toString(),
+                             weekName = it.weekDays.first().map {
+                                 it.date.dayOfWeek.toString().take(3).toLowerCase()
+                                     .replaceFirstChar {
+                                         it.toUpperCase()
+                                     }
+                             }
+                         )
+                     }
+                 )
+             }
+         }
 
-            when (selectedDropDownMenu) {
-                "Weekly" -> {
-                    WeekCalendar(
-                        dayContent = {
-                            weekDate ->
-                            WeekCalender(
-                                weekDate = weekDate,
-                                selectedDate = currentSelectedDate,
-                                onClick = {
-                                    currentSelectedDate = it
-                                }
-                            )
-                        },
-                    )
-                }
 
-                "Monthly" -> {
-                    AnimatedVisibility(
-                        visible = selectedDropDownMenu == "Monthly"
-                    ) {
-                        HorizontalCalendar(
-                            state = state,
-                            reverseLayout = true,
-                            dayContent = {
-                                MonthCalender(
-                                    day = it,
-                                    hapticFeedback = haptics,
-                                    selectedDate = currentSelectedDate,
-                                    onClick = { date ->
-                                        currentSelectedDate = date
-                                    }
-                                )
-                            },
-                            monthHeader = {
-                                MonthHeader(
-                                    monthName = it.yearMonth.month.toString(),
-                                    weekName = it.weekDays.first().map {
-                                        it.date.dayOfWeek.toString().take(3).toLowerCase()
-                                            .replaceFirstChar {
-                                                it.toUpperCase()
-                                            }
-                                    }
-                                )
-                            }
-                        )
-                    }
-                }
-            }
-
-          Column(
-            //  modifier = modifier.animateContentSize()
-          ) {
+          Column {
               AnimatedContent(
                   modifier = modifier.align(Alignment.CenterHorizontally),
                   targetState = tasksForDate.isNotEmpty() || eventsForDate.isNotEmpty()
               ) { it ->
 
-                  if (it){
+                  if (it) {
                       LazyColumn(
                           modifier = modifier.padding(
-                              horizontal = 16.dp)
+                              horizontal = 16.dp
+                          )
                       ) {
                           item {
                               ButtonGroup(
@@ -495,7 +523,8 @@ fun CalenderScreen(modifier: Modifier = Modifier) {
                                       .fillMaxWidth()
                                       .padding(
                                           vertical = 8.dp,
-                                      ),
+                                      )
+                                  ,
                                   overflowIndicator = {}
                               ) {
                                   tabs.forEachIndexed { index, model ->
@@ -524,19 +553,19 @@ fun CalenderScreen(modifier: Modifier = Modifier) {
                               HorizontalPager(
                                   state = pageState
                               ) { page ->
-                                  when(page){
-                                     0-> AnimatedContent(
+                                  when(page) {
+                                      0 -> AnimatedContent(
                                           targetState = tasksForDate.isNotEmpty(),
-                                         transitionSpec = {
-                                             scaleIn(
-                                                 animationSpec = spring(
-                                                     dampingRatio = Spring.DampingRatioLowBouncy,
-                                                     stiffness = Spring.StiffnessLow
-                                                 )
-                                             ) togetherWith scaleOut(
-                                                 animationSpec = spring(
-                                                     dampingRatio = Spring.DampingRatioLowBouncy,
-                                                     stiffness = Spring.StiffnessLow
+                                          transitionSpec = {
+                                              scaleIn(
+                                                  animationSpec = spring(
+                                                      dampingRatio = Spring.DampingRatioLowBouncy,
+                                                      stiffness = Spring.StiffnessLow
+                                                  )
+                                              ) togetherWith scaleOut(
+                                                  animationSpec = spring(
+                                                      dampingRatio = Spring.DampingRatioLowBouncy,
+                                                      stiffness = Spring.StiffnessLow
                                                  )
                                              )
                                          }
@@ -544,11 +573,10 @@ fun CalenderScreen(modifier: Modifier = Modifier) {
                                           if (it){
                                               Column {
                                                   tasksForDate.forEach {
-                                                      Tasktile(
-                                                          modifier = modifier
-                                                              .padding(
-                                                                  vertical = 2.dp
-                                                              )
+                                                      TaskTile(
+                                                          modifier = modifier.padding(
+                                                              vertical = 2.dp
+                                                          )
                                                               .animateEnterExit(
                                                                   enter = scaleIn(
                                                                       animationSpec = spring(

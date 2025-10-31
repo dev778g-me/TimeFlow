@@ -1,6 +1,8 @@
 package com.dev.timeflow.View.Widget
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
@@ -63,7 +65,7 @@ fun SheetToAddEventAndTask(
     onTaskSave : () -> Unit,
     onEventSave : () -> Unit,
     showCalendar : () -> Unit,
-    onselectedImportantChipChange : (Int) -> Unit,
+    onSelectedImportantChipChange : (Int) -> Unit,
     onTaskNameChange : (String) -> Unit,
     onTaskDescriptionChange : (String) -> Unit,
     onSwitchChange : (Boolean) -> Unit,
@@ -154,6 +156,11 @@ fun SheetToAddEventAndTask(
                     ),
                     checked = switchState,
                     onCheckedChange = {
+                        if (!switchState){
+                            onTimeState.invoke(
+                                true
+                            )
+                        }
                         onSwitchState.invoke(
                             it
                         )
@@ -271,7 +278,7 @@ fun SheetToAddEventAndTask(
                                         ),
                                         selected = selectedImportantChip == index,
                                         onClick = {
-                                            onselectedImportantChipChange.invoke(index)
+                                            onSelectedImportantChipChange.invoke(index)
                                             hapticFeedback.performHapticFeedback(
                                                 hapticFeedbackType = HapticFeedbackType.Confirm
                                             )
@@ -300,9 +307,9 @@ fun SheetToAddEventAndTask(
                 }
             }
             AnimatedContent(
-                targetState = switchState,
-                transitionSpec = { scaleIn() togetherWith scaleOut() }
-            ) {
+                targetState = switchState, transitionSpec = {
+                    scaleIn() togetherWith scaleOut()
+                }) {
                 if (it) {
                  Button(
                      modifier = modifier.fillMaxWidth(),

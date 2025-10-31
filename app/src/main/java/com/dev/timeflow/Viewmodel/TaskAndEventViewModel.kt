@@ -138,13 +138,13 @@ class TaskAndEventViewModel @Inject constructor(
                 tasks = tasks
             )
             if (tasks.notification){
-                TimeFlowAlarmManagerService(context = context).scheduleNotification(
-                    context = context,
+                TimeFlowAlarmManagerService(context).scheduleNotification(
                     notificationAlarmManagerModel = NotificationAlarmManagerModel(
                         title = tasks.name,
                         id = tasks.id,
                         hour = tasks.taskTime.toHour(),
-                        minute = tasks.taskTime.toMinute()
+                        minute = tasks.taskTime.toMinute(),
+                        localDate = tasks.taskTime.toLocalDate()
                     )
                 )
             } else {
@@ -170,7 +170,7 @@ class TaskAndEventViewModel @Inject constructor(
     var taskForDate : StateFlow<List<Tasks>> = _taskForDate
 
     // function to get tasks for a date
-    fun getTasksForADate(date : Long) {
+    fun getTasksForADate(start : Long, end : Long) {
 
         //cancelling existing task fetch
         taskJob?.cancel()
@@ -180,7 +180,7 @@ class TaskAndEventViewModel @Inject constructor(
 
         taskJob =  viewModelScope.launch {
             taskRepo.getTasksForADate(
-                date = date
+              start = start, end = end
             ).collect {
                 _taskForDate.value = it
             }
@@ -190,10 +190,11 @@ class TaskAndEventViewModel @Inject constructor(
     private var _taskForToday = MutableStateFlow<List<Tasks>>(emptyList())
     var taskForToday : StateFlow<List<Tasks>> = _taskForToday
 
-    fun getTasksForToday (date: Long){
+    fun getTasksForToday (start: Long, end: Long){
         viewModelScope.launch {
             taskRepo.getTasksForADate(
-                date = date
+               start = start,
+                end = end
             ).collect {
                 _taskForToday.value = it
             }
