@@ -7,6 +7,7 @@ import android.content.Intent
 import android.os.Build
 import android.util.Log
 import com.dev.timeflow.Data.Model.NotificationAlarmManagerModel
+import com.dev.timeflow.Managers.utils.toLocalDate
 import com.dev.timeflow.View.Screens.CalenderScreen
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Calendar
@@ -29,9 +30,10 @@ class TimeFlowAlarmManagerService(
 
             }
 
-            val requestCode = notificationAlarmManagerModel.id.toInt() * 10 + notificationAlarmManagerModel.hour
+        val requestCode =
+            notificationAlarmManagerModel.id.toInt() * 10 + notificationAlarmManagerModel.hour
 
-            val pendingIntent = PendingIntent.getBroadcast(
+        val pendingIntent = PendingIntent.getBroadcast(
                 context,
                 requestCode,
                 intent,
@@ -41,15 +43,17 @@ class TimeFlowAlarmManagerService(
 
             val calendar = Calendar.getInstance().apply {
                 set(Calendar.DAY_OF_MONTH, notificationAlarmManagerModel.localDate.dayOfMonth)
-                set(Calendar.MONTH, notificationAlarmManagerModel.localDate.month.value - 1)
+                set(Calendar.MONTH, notificationAlarmManagerModel.localDate.month.value - 2)
                 set(Calendar.YEAR, notificationAlarmManagerModel.localDate.year)
                 set(Calendar.HOUR_OF_DAY, notificationAlarmManagerModel.hour)
                 set(Calendar.MINUTE, notificationAlarmManagerModel.minute)
                 set(Calendar.SECOND, 0)
                 set(Calendar.MILLISECOND, 0)
-
             }
-
+        Log.d(
+            "TIMEFLOW ALARM MANAGER",
+            "the month is ${notificationAlarmManagerModel.localDate.month.value - 2}"
+        )
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 alarmManager.setExactAndAllowWhileIdle(

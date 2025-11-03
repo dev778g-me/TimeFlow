@@ -18,10 +18,16 @@ class EventRepo @Inject constructor(
             events = events
         )
     }
+
+    // function to update the event
+    suspend fun updateEvent (events: Events){
+        eventDao.updateEvent(events = events)
+    }
   // function to get all events for a particular date
-  suspend fun getEventsForADate(date : Long) : Flow <List<Events>> {
-     return eventDao.getAllEventsForADate(
-          date = date
+  suspend fun getEventsForADate(start: Long, end : Long) : Flow <List<Events>> {
+      return eventDao.getAllEventsForADate(
+          start = start,
+          end = end
       )
   }
 

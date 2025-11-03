@@ -42,35 +42,30 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.dev.timeflow.Data.Model.Events
+import com.dev.timeflow.Managers.utils.toHour
+import com.dev.timeflow.Managers.utils.toMidnight
+import com.dev.timeflow.Managers.utils.toMinute
 import com.dev.timeflow.View.Widget.NewCheckBox
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.serialization.descriptors.PrimitiveKind
 
 @Composable
 fun TaskTile(
     modifier: Modifier,
-    taskName : String,
-    taskDescription  : String ?,
-    taskCreatedAt : Long,
-    taskDate : Long,
-    taskIsCompleted : Boolean,
-    taskImportance : String,
-    taskNotification : Boolean,
-  //  tasks: Tasks,
-    onUpdateTask : (Boolean) -> Unit
+    taskName: String,
+    taskDescription: String?,
+    taskTime: Long,
+    taskIsCompleted: Boolean,
+    taskImportance: String,
+    taskNotification: Boolean,
+    onUpdateTask: (Boolean) -> Unit,
+    onClick : () -> Unit
 ) {
-    var showDetails by rememberSaveable { mutableStateOf(false) }
-    val color by animateColorAsState(
-        targetValue = if (showDetails) MaterialTheme.colorScheme.primaryContainer.copy(
-            alpha = 0.3f
-        ) else Color.Transparent
-    )
-    val textColor by animateColorAsState(
-        targetValue = if (showDetails) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-    )
+
     var animate by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-    val  scale by animateFloatAsState(
+    val scale by animateFloatAsState(
         targetValue = if (animate) 1.02f else 1f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioLowBouncy,
@@ -79,19 +74,17 @@ fun TaskTile(
     )
     Column(
         modifier = modifier
-            .graphicsLayer{
+            .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
             }
             .clip(
                 RoundedCornerShape(16.dp)
             )
-            .background(
-                color = color
-            )
+
             .clickable(
                 onClick = {
-                    showDetails = !showDetails
+                    onClick.invoke()
                 }
             )
             .padding(
@@ -116,11 +109,14 @@ fun TaskTile(
             }
 
             Text(
-                modifier = modifier.weight(1f),
+                modifier = modifier
+                    .weight(1f)
+                    .padding(
+                        end = 4.dp
+                    ),
                 text = taskName,
-                color = textColor,
                 textDecoration = if (taskIsCompleted) TextDecoration.LineThrough else TextDecoration.None,
-                fontWeight = if (showDetails) FontWeight.SemiBold else FontWeight.Normal
+                fontWeight =  FontWeight.Normal
             )
 
             Box(
@@ -176,78 +172,9 @@ fun TaskTile(
             }
 
        }
-       AnimatedContent(
-           targetState = showDetails
-       ) {
-          if (it){
-              Row(verticalAlignment = Alignment.CenterVertically) {
-                  NewCheckBox(
-                      modifier = modifier.alpha(0f),
-                      isSelected = taskIsCompleted
-                  ) {
-                      onUpdateTask.invoke(
-                          it
-                      )
-                  }
 
-                 Column(
-                     modifier = modifier
-                         .weight(1f)
-                 ) {
-                     Text(
-                         text = buildAnnotatedString {
-                             append("description :")
-                             withStyle(
-                                 style = SpanStyle(
-                                     fontWeight = FontWeight.SemiBold,
-                                     color = MaterialTheme.colorScheme.onPrimaryContainer
-                                 )
-                             ){
-                                 if (taskDescription.isNullOrBlank()){
-                                     append(" null")
-                                 } else {
-                                     append(" $taskDescription")
-                                 }
-                             }
-
-                         },
-                         style = MaterialTheme.typography.titleSmall
-                     )
-                     Text(
-                         text = buildAnnotatedString {
-                             append("notification :")
-                             withStyle(
-                                 style = SpanStyle(
-                                     fontWeight = FontWeight.SemiBold,
-                                     color = MaterialTheme.colorScheme.onPrimaryContainer
-                                 )
-                             ) {
-                                 append(" ${taskNotification}")
-                             }
-                         },
-                         style = MaterialTheme.typography.titleSmall
-                     )
-                 }
-             }
-          }
-       }
 
    }
 
 }
 
-@Composable
-fun EventTile(modifier: Modifier = Modifier,events: Events) {
-
-    ListItem(
-        headlineContent = {
-            Text(
-                text = events.title
-            )
-        },
-        supportingContent = {
-
-
-        }
-    )
-}

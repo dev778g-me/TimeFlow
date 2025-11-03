@@ -34,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.composables.icons.lucide.Calendar
 import com.composables.icons.lucide.CalendarDays
 import com.composables.icons.lucide.House
@@ -65,10 +66,10 @@ fun FloatingBottomNav(
             route = Routes.NewTaskScreen
         ),
     )
-
+    val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
     NavigationBar(){
         bottomNavItems.forEachIndexed { index, bottomNav ->
-            val isSelected = selectedIndex == index
+            val isSelected = currentRoute ==bottomNav.route.route
             val scale by animateFloatAsState(
                 targetValue = if (isSelected) 1f else 0.9f,
                 animationSpec = spring(

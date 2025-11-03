@@ -1,8 +1,13 @@
 package com.dev.timeflow.View.Navigation
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -159,7 +164,20 @@ fun NavGraph(modifier: Modifier = Modifier) {
                 },
                 actions = {
                     AnimatedContent(
-                        targetState = navController.currentDestination?.route == Routes.NewTaskScreen.route
+                        targetState = navController.currentDestination?.route == Routes.NewTaskScreen.route,
+                        transitionSpec = {
+                            scaleIn(
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                                    stiffness = Spring.StiffnessLow
+                                )
+                            ) togetherWith scaleOut(
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                                    stiffness = Spring.StiffnessLow
+                                )
+                            )
+                        }
                     ) {
                         if (it){
                             IconButton(
@@ -235,7 +253,7 @@ fun NavGraph(modifier: Modifier = Modifier) {
         },
         bottomBar = {
             FloatingBottomNav(
-            navController = navController
+                navController = navController
             )
         },
 

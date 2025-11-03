@@ -9,7 +9,7 @@ import androidx.room.PrimaryKey
 data class Events(
     @PrimaryKey(autoGenerate = true)
     val id : Long,
-    val title: String,
+    val name: String,
     val description: String,
     val eventTime : Long,
     val notification : Boolean = false,

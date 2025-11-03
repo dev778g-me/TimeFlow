@@ -8,11 +8,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -38,32 +35,29 @@ fun WeekCalender(
     weekDate : WeekDay
 )
 {
-    val date = LocalDate.now()
-    val today = date.dayOfMonth
-    val isToday = today == weekDate.date.dayOfMonth
-    val dayPosition = date.dayOfMonth == weekDate.date.dayOfMonth
-    val isu = selectedDate == weekDate.date
 
-    val color =  if (isu) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+    val isSelected = selectedDate == weekDate.date
+
+    val color =  if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
     val scale by animateFloatAsState(
-        targetValue = if (isu) 1f else 0.9f,
+        targetValue = if (isSelected) 1f else 0.9f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessLow
         )
     )
     Box(
-        modifier = Modifier
-            .graphicsLayer{
-            scaleY = scale
-            scaleX =scale
-        }
+        modifier = modifier
+            .graphicsLayer {
+                scaleY = scale
+                scaleX = scale
+            }
             .padding(
                 horizontal = 2.dp
             )
             .clip(RoundedCornerShape(8.dp))
             .background(
-                if (isu) {
+                if (isSelected) {
                     MaterialTheme.colorScheme.primary
                 } else {
                     Color.Transparent
@@ -80,11 +74,11 @@ fun WeekCalender(
     ) {
 
         Column(
-            modifier = modifier.
-
-            fillMaxWidth().padding(
-                vertical = 8.dp
-            ),
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(
+                    vertical = 8.dp
+                ),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -94,7 +88,7 @@ fun WeekCalender(
             )
             Text(
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = if (isu) FontWeight.ExtraBold else FontWeight.Medium,
+                fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium,
                 color = color,
                 text = weekDate.date.dayOfMonth.toString()
             )

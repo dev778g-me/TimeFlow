@@ -9,8 +9,12 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -35,6 +39,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -139,9 +144,10 @@ fun TodayScreen(modifier: Modifier = Modifier) {
             end = System.currentTimeMillis()
         )
         taskViewModel.getEventForToday(
-            date = today.atStartOfDay(ZoneId.systemDefault())
+            start = today.atStartOfDay(ZoneId.systemDefault())
                 .toInstant()
-                .toEpochMilli()
+                .toEpochMilli(),
+            end = System.currentTimeMillis()
         )
         delay(200)
         animate = true
@@ -156,28 +162,28 @@ fun TodayScreen(modifier: Modifier = Modifier) {
             }
     }
 
-    var highPriorityTask by remember( taskForToday ) {
-        mutableIntStateOf(
-            taskForToday.filter {
+    val highPriorityTask by remember(taskForToday) {
+        derivedStateOf {
+            taskForToday.count {
                 it.importance == "High"
-            }.size
-        )
+            }
+        }
     }
 
-    var mediumPriorityTask by remember(taskForToday) {
-        mutableStateOf(
-            taskForToday.filter {
+    val mediumPriorityTask by remember(taskForToday) {
+        derivedStateOf {
+            taskForToday.count {
                 it.importance == "Medium"
-            }.size
-        )
+            }
+        }
     }
 
-    var lowPriorityTask by remember(taskForToday) {
-        mutableIntStateOf(
-            taskForToday.filter {
+    val lowPriorityTask by remember(taskForToday) {
+        derivedStateOf {
+            taskForToday.count {
                 it.importance == "Low"
-            }.size
-        )
+            }
+        }
     }
     val taskNumber by animateIntAsState(
         targetValue = if (animate) taskForToday.size else 0,
@@ -219,11 +225,6 @@ fun TodayScreen(modifier: Modifier = Modifier) {
 
             item {
                 Text(
-                    modifier = modifier.clickable(
-                        onClick = {
-                            taskViewModel.scheduleNotificationForTaskAndEvents()
-                        }
-                    ),
                     text = "${currentMonth.lowercase().replaceFirstChar { it.uppercase()}} ${currentDate},",
                     style = MaterialTheme.typography.displayMedium.copy(
                         fontWeight = FontWeight.W900,
@@ -417,22 +418,25 @@ fun TodayScreen(modifier: Modifier = Modifier) {
                                                 vertical = 2.dp
                                             )
                                             .animateEnterExit(
-                                            enter = scaleIn(
-                                                animationSpec = spring(
-                                                    dampingRatio = Spring.DampingRatioLowBouncy,
-                                                    stiffness = Spring.StiffnessMedium
-                                                )
+                                                enter = slideInVertically(
+                                                    initialOffsetY = { it / 4 }
+                                                ) + fadeIn(
+                                                    animationSpec = tween(250)
+                                                ) + scaleIn(
+                                                    animationSpec = spring(
+                                                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                                                        stiffness = Spring.StiffnessLow
+                                                    ),
+                                                    initialScale = 0.95f
+                                                ),
+                                                exit = slideOutVertically(
+                                                    targetOffsetY = { it / 4 }
+                                                ) + fadeOut(
+                                                    animationSpec = tween(200)
+                                                ) + scaleOut()
                                             ),
-                                            exit = scaleOut(
-                                                animationSpec = spring(
-                                                    dampingRatio = Spring.DampingRatioLowBouncy,
-                                                    stiffness = Spring.StiffnessLow
-                                                )
-                                            )
-                                    ),
                                         taskName = task.name,
                                         taskDescription = task.description,
-                                        taskDate = task.taskTime,
                                         taskImportance = task.importance,
                                         taskIsCompleted = task.isCompleted,
                                         onUpdateTask = {
@@ -442,8 +446,10 @@ fun TodayScreen(modifier: Modifier = Modifier) {
                                                 )
                                             )
                                         },
-                                        taskCreatedAt = task.createdAt,
-                                        taskNotification = task.notification
+
+                                        taskNotification = task.notification,
+                                        taskTime = task.taskTime!!,
+                                        onClick = {}
                                     )
                                 }
                             }
@@ -469,9 +475,8 @@ fun TodayScreen(modifier: Modifier = Modifier) {
                                                 )
                                             )
                                         ),
-                                        eventName = it.title,
-                                        eventDescription = it.description,
-                                        eventDate = it.eventTime
+                                        eventName = it.name,
+                                        onClick = {},
                                     )
                                 }
                             }

@@ -1,5 +1,6 @@
 package com.dev.timeflow.View.Widget
 
+import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -31,6 +32,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TimePickerState
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.runtime.Composable
@@ -42,6 +44,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.glance.LocalContext
 import com.composables.icons.lucide.Bell
 import com.composables.icons.lucide.Clock
 import com.composables.icons.lucide.FlagTriangleRight
@@ -50,7 +53,7 @@ import com.composables.icons.lucide.Notebook
 import com.composables.icons.lucide.Signature
 import com.dev.timeflow.Data.Model.ImportanceChipModel
 import com.dev.timeflow.Data.Model.SavingModel
-
+import java.time.LocalTime
 
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
@@ -62,13 +65,12 @@ fun SheetToAddEventAndTask(
     onTimeState : (Boolean) -> Unit,
     selectedSavingType : Int,
     isButtonEnabled : Boolean,
+    timerState : TimePickerState,
     onTaskSave : () -> Unit,
     onEventSave : () -> Unit,
-    showCalendar : () -> Unit,
     onSelectedImportantChipChange : (Int) -> Unit,
     onTaskNameChange : (String) -> Unit,
     onTaskDescriptionChange : (String) -> Unit,
-    onSwitchChange : (Boolean) -> Unit,
     changeSavingType: (Int) -> Unit,
     savingChipList : List<SavingModel>,
     importanceChip : List<ImportanceChipModel>,
@@ -80,6 +82,7 @@ fun SheetToAddEventAndTask(
     selectedImportantChip : Int
 
 ) {
+    val localContext = androidx.compose.ui.platform.LocalContext.current
     ModalBottomSheet(
         onDismissRequest = {
             onDismiss.invoke()
@@ -124,29 +127,7 @@ fun SheetToAddEventAndTask(
                 }
             }
             Row {
-                AnimatedContent(
-                    targetState = selectedSavingType == 0,
-                    transitionSpec = {
-                        scaleIn() togetherWith scaleOut()
-                    }
-                ) {
-                    if (it) {
-                        FilledTonalIconButton(
-                            onClick = {
-                                showCalendar.invoke()
-                                hapticFeedback.performHapticFeedback(
-                                    HapticFeedbackType.LongPress
-                                )
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Lucide.Clock,
-                                modifier = modifier.size(IconButtonDefaults.extraSmallIconSize),
-                                contentDescription = null
-                            )
-                        }
-                    }
-                }
+
                 Spacer(
                     modifier = modifier.width(4.dp)
                 )
@@ -334,12 +315,17 @@ fun SheetToAddEventAndTask(
                     ),
                 shape = RoundedCornerShape(12.dp),
                 onClick = {
+                    if (switchState){
+                        if (timerState.hour <= LocalTime.now().hour &&
+                            timerState.minute <= LocalTime.now().minute){
+                            Toast.makeText(localContext,"the timeless", Toast.LENGTH_LONG).show()
+                        }
+                    }
                     if (selectedSavingType == 0) {
                         onEventSave.invoke()
+                    } else {
+                        onTaskSave.invoke()
                     }
-                    else{
-                    onTaskSave.invoke()}
-
                     onDismiss.invoke()
                 }
             ) {

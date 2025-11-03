@@ -1,9 +1,12 @@
 package com.dev.timeflow.Managers.utils
 
 import androidx.compose.ui.text.intl.Locale
+import com.dev.timeflow.View.Screens.CalenderScreen
+import kotlinx.serialization.builtins.serializer
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
@@ -24,10 +27,10 @@ fun Long.toMidnight() : Long{
     return  calendar.timeInMillis
 }
 
-fun Long.toLocalDate() : LocalDate {
-          return Instant.ofEpochMilli(this)
-              .atZone(ZoneId.systemDefault())
-              .toLocalDate()
+fun Long.toLocalDate(): LocalDate {
+    return Instant.ofEpochMilli(this)
+        .atZone(ZoneId.systemDefault())
+        .toLocalDate()
 }
 
 
@@ -35,6 +38,20 @@ fun LocalDate.toMyFormat () : String {
     return  format(
         DateTimeFormatter.ofPattern("dd.MM.yyyy")
     )
+}
+
+fun LocalDate.toMiliis (localTime: LocalTime) : Long {
+    val calendar = Calendar.getInstance().apply {
+        set(Calendar.DAY_OF_MONTH,dayOfMonth)
+        set(Calendar.MONTH,month.value -1 )
+        set(Calendar.YEAR,year)
+        set(Calendar.HOUR_OF_DAY, localTime.hour)
+        set(Calendar.MINUTE, localTime.minute)
+        set(Calendar.SECOND, localTime.second)
+    }
+
+
+    return  calendar.timeInMillis
 }
 
 
@@ -55,6 +72,14 @@ fun Calendar.toDateTimeInMillis(hour : Int, minute : Int, date: LocalDate) : Lon
         set(Calendar.MILLISECOND,0)
     }
     return this.timeInMillis
+}
+
+
+fun LocalDate.endOfDayMillis(): Long {
+    return this.atTime(23, 59, 59, 999_000_000) // 999 ms
+        .atZone(ZoneId.systemDefault())
+        .toInstant()
+        .toEpochMilli()
 }
 
 

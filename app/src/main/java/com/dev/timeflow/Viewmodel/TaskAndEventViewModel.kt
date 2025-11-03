@@ -20,7 +20,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import java.util.Calendar
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.hours
@@ -41,8 +43,31 @@ class TaskAndEventViewModel @Inject constructor(
 
     // variable to hold all the events in the database
     private val _allEvents = MutableStateFlow<List<Events>>(emptyList())
-    var allEvents : StateFlow<List<Events>> = _allEvents
+    var allEvents : StateFlow<List<Events>> = _allEvents.asStateFlow()
 
+    private val _currentTask = MutableStateFlow<Tasks?>(null)
+    var currentTask = _currentTask
+
+    // select task
+    fun selectTask (tasks: Tasks){
+        _currentTask.value = tasks
+    }
+
+    fun clearTask (){
+        _currentTask.value = null
+    }
+
+
+    private val _currentEvent = MutableStateFlow<Events?>(null)
+    var currentEvent = _currentEvent.asStateFlow()
+
+    fun selectEvent(events: Events){
+        _currentEvent.value = events
+    }
+
+    fun clearEvent(){
+        _currentEvent.value = null
+    }
 
     var scrollStateValue = MutableStateFlow<Int>(0)
 
@@ -65,10 +90,11 @@ class TaskAndEventViewModel @Inject constructor(
     var eventForToday : StateFlow<List<Events>> = _eventsForToday
 
     // function to get event for a date
-    fun getEventForToday(date: Long){
+    fun getEventForToday(start: Long, end: Long){
         viewModelScope.launch {
             eventRepo.getEventsForADate(
-                date = date
+                start = start,
+                end = end
             ).collect {
                 _eventsForToday.value = it
                 Log.d("Events","${it}")
@@ -84,6 +110,28 @@ class TaskAndEventViewModel @Inject constructor(
     fun insertEvent(events: Events){
         viewModelScope.launch(Dispatchers.IO) {
             eventRepo.insertEvent(
+                events = events
+            )
+            if (events.notification && events.eventTime != 0.toLong()){
+                TimeFlowAlarmManagerService(context).scheduleNotification(
+                    notificationAlarmManagerModel = NotificationAlarmManagerModel(
+                        title = events.name,
+                        id = events.id,
+                        hour = events.eventTime.toHour(),
+                        minute = events.eventTime.toMinute(),
+                        localDate = events.eventTime.toLocalDate()
+                    )
+                )
+            } else {
+                println("notification has been turned off")
+            }
+        }
+    }
+
+
+    fun updateEvent(events: Events){
+        viewModelScope.launch {
+            eventRepo.updateEvent(
                 events = events
             )
         }
@@ -103,15 +151,16 @@ class TaskAndEventViewModel @Inject constructor(
     private val _eventForDate = MutableStateFlow<List<Events>>(emptyList())
     var eventForDate: StateFlow<List<Events>> = _eventForDate
 
-    fun getAllEventsForADate(date : Long) {
+    fun getAllEventsForADate(start: Long, end: Long) {
 
         // cancel the previous job
         eventJob?.cancel()
 
         _eventForDate.value = emptyList()
-       eventJob =  viewModelScope.launch {
+        eventJob = viewModelScope.launch {
             eventRepo.getEventsForADate(
-                date = date
+                start = start,
+                end = end
             ).collect {
                 _eventForDate.value = it
             }
@@ -137,12 +186,12 @@ class TaskAndEventViewModel @Inject constructor(
             taskRepo.insertTask(
                 tasks = tasks
             )
-            if (tasks.notification){
+            if (tasks.notification && tasks.taskTime != 0.toLong()){
                 TimeFlowAlarmManagerService(context).scheduleNotification(
                     notificationAlarmManagerModel = NotificationAlarmManagerModel(
                         title = tasks.name,
                         id = tasks.id,
-                        hour = tasks.taskTime.toHour(),
+                        hour = tasks.taskTime!!.toHour(),
                         minute = tasks.taskTime.toMinute(),
                         localDate = tasks.taskTime.toLocalDate()
                     )
@@ -151,7 +200,7 @@ class TaskAndEventViewModel @Inject constructor(
                 println("notification has been turned off")
             }
 
-            Log.d("TESTING NOTIFICATION","${tasks.taskTime.toHour()} ${tasks.taskTime.toMinute()}")
+            Log.d("TESTING NOTIFICATION","${tasks.taskTime!!.toHour()} ${tasks.taskTime.toMinute()} task date ${tasks.taskTime.toLocalDate()}")
         }
     }
 
@@ -211,8 +260,8 @@ class TaskAndEventViewModel @Inject constructor(
     }
 
 
-    fun scheduleNotificationForTaskAndEvents() {
 
-    }
 
 }
+
+
