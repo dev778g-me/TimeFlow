@@ -1,8 +1,10 @@
 package com.dev.timeflow.Managers.utils
 
+import android.content.pm.PackageManager
 import androidx.compose.ui.text.intl.Locale
 import com.dev.timeflow.View.Screens.CalenderScreen
 import kotlinx.serialization.builtins.serializer
+import java.security.Permission
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDate
@@ -11,6 +13,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
+import java.util.jar.Manifest
 
 class Utlis {
 
@@ -88,5 +91,10 @@ fun Long.toMinute() : Int{
     val  format = SimpleDateFormat("mm", java.util.Locale.getDefault())
     return  format.format(date). toInt()
 }
+
+
+//fun cheakNotificationPermission(){
+//    if ( == PackageManager.PERMISSION_GRANTED)
+//}
 
 

@@ -53,10 +53,10 @@ import com.composables.icons.lucide.TimerReset
 import com.dev.timeflow.R
 import kotlinx.coroutines.delay
 
-@Preview(showBackground = true)
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun WelcomeScreen(modifier: Modifier = Modifier) {
+fun WelcomeScreen(modifier: Modifier = Modifier,onNavigate :() -> Unit) {
 
     var animateText by remember { mutableStateOf(false) }
     var animateDescText by remember { mutableStateOf(false) }
@@ -70,7 +70,7 @@ fun WelcomeScreen(modifier: Modifier = Modifier) {
         animateDescText = true
         delay(100)
         showImage = true
-        delay(600)
+        delay(300)
         animate = true
     }
 
@@ -89,7 +89,7 @@ fun WelcomeScreen(modifier: Modifier = Modifier) {
         )
     )
     val f3 by animateFloatAsState(
-        targetValue = if (animate) 65f else 40f,
+        targetValue = if (animate) 65f else 0f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioHighBouncy,
             stiffness = Spring.StiffnessLow
@@ -138,7 +138,6 @@ fun WelcomeScreen(modifier: Modifier = Modifier) {
                                     fontStyle = FontStyle.Italic,
                                     fontFamily = FontFamily.Serif,
                                     color = MaterialTheme.colorScheme.primary,
-                                    fontWeight = FontWeight.Bold
                                 )
                             ) {
                                 append("track ")
@@ -149,7 +148,6 @@ fun WelcomeScreen(modifier: Modifier = Modifier) {
                                     fontStyle = FontStyle.Italic,
                                     fontFamily = FontFamily.Serif,
                                     color = MaterialTheme.colorScheme.primary,
-                                    fontWeight = FontWeight.Bold
                                 )
                             ) {
                                 append("time ")
@@ -227,7 +225,7 @@ fun WelcomeScreen(modifier: Modifier = Modifier) {
                 modifier = modifier.padding(
                     horizontal = 34.dp
                 ),
-                model = R.drawable.deadline_rafiki,
+                model = R.drawable.time,
                 contentDescription = null
             )
             Spacer(
@@ -254,37 +252,77 @@ fun WelcomeScreen(modifier: Modifier = Modifier) {
            
 
 
-            Button(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .padding(
-                        horizontal = 16.dp
-                    ),
-                shape = RoundedCornerShape(16.dp),
-                onClick = {
-                    animate = true
-                }
+            AnimatedContent(
+                targetState = animate
             ) {
-//
-                Text(
-                    modifier = modifier.padding(
-                        vertical = 8.dp
-                    ),
-                    text = buildAnnotatedString {
-                        append("Ready? let's flow")
-                        withStyle(
-                            style = SpanStyle(
-                                fontFamily = FontFamily.Serif,
-                                fontStyle = FontStyle.Italic
-                            )
-                        ){
-                           // append("flow")
+                if (it){
+                    Button(
+                        modifier = modifier
+                            .fillMaxWidth()
+                            .padding(
+                                horizontal = 16.dp
+                            ),
+                        shape = RoundedCornerShape(16.dp),
+                        onClick = {
+                            onNavigate.invoke()
                         }
-                    },
-                    style = MaterialTheme.typography.headlineSmall.copy(
-                        fontWeight = FontWeight.SemiBold
-                    )
-                )
+                    ) {
+//
+                        Text(
+                            modifier = modifier.padding(
+                                vertical = 8.dp
+                            ),
+                            text = buildAnnotatedString {
+                                append("Ready? let's flow")
+                                withStyle(
+                                    style = SpanStyle(
+                                        fontFamily = FontFamily.Serif,
+                                        fontStyle = FontStyle.Italic
+                                    )
+                                ) {
+                                    // append("flow")
+                                }
+                            },
+                            style = MaterialTheme.typography.headlineSmall.copy(
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        )
+                    }
+                } else {
+                    Button(
+                        modifier = modifier
+                            .fillMaxWidth()
+                            .alpha(0f)
+                            .padding(
+                                horizontal = 16.dp
+                            ),
+                        shape = RoundedCornerShape(16.dp),
+                        onClick = {
+
+                        }
+                    ) {
+//
+                        Text(
+                            modifier = modifier.padding(
+                                vertical = 8.dp
+                            ),
+                            text = buildAnnotatedString {
+                                append("Ready? let's flow")
+                                withStyle(
+                                    style = SpanStyle(
+                                        fontFamily = FontFamily.Serif,
+                                        fontStyle = FontStyle.Italic
+                                    )
+                                ){
+                                    // append("flow")
+                                }
+                            },
+                            style = MaterialTheme.typography.headlineSmall.copy(
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        )
+                    }
+}
             }
         }
     }

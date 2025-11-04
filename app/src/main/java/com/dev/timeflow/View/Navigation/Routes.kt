@@ -7,7 +7,7 @@ sealed interface Routes {
     val route : String
      @Serializable
     data object TimerScreen : Routes{
-         override val route ="timer_screen"
+         override val route ="m_timer_screen"
     }
     @Serializable
     data object ShowFeaturesScreen : Routes{
@@ -18,12 +18,12 @@ sealed interface Routes {
         override val route = "welcome_screen"
     }
     @Serializable
-    data object AddEventScreen : Routes{
-        override val route = "add_event_screen"
+    data object NotificationScreen : Routes{
+        override val route = "notification_screen"
     }
 
     @Serializable
-    data object NewTaskScreen : Routes{
-        override val route = "new_task_screen"
+    data object CalendarScreen : Routes{
+        override val route = "m_new_task_screen"
     }
 }
