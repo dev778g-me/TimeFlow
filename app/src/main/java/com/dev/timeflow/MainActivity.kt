@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.dev.timeflow.Managers.WidgetAlarmService
 import com.dev.timeflow.View.Navigation.NavGraph
+import com.dev.timeflow.View.Screens.onBoarding.WelcomeScreen
 
 
 import com.example.compose.TimeFlowTheme
@@ -20,7 +21,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             TimeFlowTheme {
-                NavGraph()
+                WelcomeScreen()
             }
         }
     }

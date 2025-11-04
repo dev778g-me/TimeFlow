@@ -10,12 +10,12 @@ sealed interface Routes {
          override val route ="timer_screen"
     }
     @Serializable
-    data object EventScreen : Routes{
-        override val route ="event_screen"
+    data object ShowFeaturesScreen : Routes{
+        override val route ="feature_screen"
     }
     @Serializable
-    data object TaskScreen : Routes{
-        override val route = "task_screen"
+    data object WelcomeScreen : Routes{
+        override val route = "welcome_screen"
     }
     @Serializable
     data object AddEventScreen : Routes{
