@@ -1,5 +1,9 @@
 package com.dev.timeflow.View.Widget
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.Spring
@@ -44,6 +48,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.glance.LocalContext
 import com.composables.icons.lucide.Bell
 import com.composables.icons.lucide.Clock
@@ -63,6 +68,7 @@ fun SheetToAddEventAndTask(
     onDismiss : () -> Unit,
     onSwitchState : (Boolean) -> Unit,
     onTimeState : (Boolean) -> Unit,
+    onPermissionState : (Boolean) -> Unit,
     selectedSavingType : Int,
     isButtonEnabled : Boolean,
     timerState : TimePickerState,
@@ -79,8 +85,8 @@ fun SheetToAddEventAndTask(
     showTimeState : Boolean,
     taskName : String,
     taskDescription : String,
-    selectedImportantChip : Int
-
+    selectedImportantChip : Int,
+    context : Context
 ) {
     val localContext = androidx.compose.ui.platform.LocalContext.current
     ModalBottomSheet(
@@ -137,14 +143,44 @@ fun SheetToAddEventAndTask(
                     ),
                     checked = switchState,
                     onCheckedChange = {
-                        if (!switchState){
-                            onTimeState.invoke(
-                                true
-                            )
-                        }
                         onSwitchState.invoke(
                             it
                         )
+                        if (it) {
+                            // for a13 and a13 + devices
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                val hasPermission = ContextCompat.checkSelfPermission(
+                                    context,
+                                    Manifest.permission.POST_NOTIFICATIONS
+                                ) == PackageManager.PERMISSION_GRANTED
+                                // if permission is denied <umm i can show a dialog to navigate to the app info page
+                                if (!hasPermission) {
+                                    onSwitchState.invoke(false)
+                                    onTimeState.invoke(false)
+                                    Toast.makeText(
+                                        context,
+                                        "Please grant notification permission to enable reminders",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+onPermissionState.invoke(true)
+
+                                } else {
+                                    // if permission is granted we are showwing the picker
+                                    onTimeState.invoke(
+                                        true
+                                    )
+                                }
+
+                            } else {
+                                // for devices below a13 <<<
+                                onTimeState.invoke(true)
+                            }
+                        } else {
+                            // picker will never show cux we are passsing ffalse
+                            onTimeState.invoke(false)
+                        }
+
+
                         hapticFeedback.performHapticFeedback(
                             hapticFeedbackType = HapticFeedbackType.Confirm
                         )

@@ -136,6 +136,7 @@ fun TodayScreen(modifier: Modifier = Modifier) {
             unSelectedIcon = Lucide.CalendarRange
         )
     )
+
     LaunchedEffect(taskForToday) {
         taskViewModel.getTasksForToday(
           start = today.atStartOfDay(ZoneId.systemDefault())

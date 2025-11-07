@@ -18,7 +18,7 @@ import com.composables.icons.lucide.CalendarSearch
 import com.composables.icons.lucide.Lucide
 import com.dev.timeflow.Managers.utils.toLocalDate
 import com.dev.timeflow.Managers.utils.toMyFormat
-import com.maxkeppeker.sheets.core.views.IconComponent
+
 
 @Composable
 fun EventTile(

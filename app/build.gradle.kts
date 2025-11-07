@@ -46,7 +46,8 @@ android {
 }
 
 dependencies {
-
+    implementation("androidx.core:core-splashscreen:1.0.0")
+    implementation("com.google.accompanist:accompanist-permissions:0.37.3")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -64,13 +65,8 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.androidx.material.icons.extended)
     implementation("com.kizitonwose.calendar:compose:2.7.0")
-    //Glance Widget
     implementation(libs.androidx.glance)
-    // For AppWidgets support
     implementation(libs.androidx.glance.appwidget)
-
-    //navigation
-    //lucide icons
     implementation("com.composables:icons-lucide:1.0.0")
     implementation("androidx.navigation:navigation-compose:2.9.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
@@ -80,12 +76,8 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.56.2")
     implementation("androidx.compose.ui:ui-text-google-fonts:1.8.1")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
-    implementation("com.maxkeppeler.sheets-compose-dialogs:core:1.3.0")
-    implementation("com.maxkeppeler.sheets-compose-dialogs:calendar:1.3.0")
     implementation("androidx.room:room-ktx:2.7.2")
-    implementation ("app.rive:rive-android:9.6.5")
     implementation("androidx.core:core-splashscreen:1.0.0")
-    implementation( "androidx.startup:startup-runtime:1.1.1")
     implementation("io.coil-kt.coil3:coil-compose:3.2.0")
 
 }

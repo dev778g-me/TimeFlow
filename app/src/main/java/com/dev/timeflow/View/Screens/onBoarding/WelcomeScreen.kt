@@ -64,13 +64,11 @@ fun WelcomeScreen(modifier: Modifier = Modifier,onNavigate :() -> Unit) {
     var showImage by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        delay(300)
+        delay(200)
         animateText = true
-        delay(300)
+        delay(200)
         animateDescText = true
         delay(100)
-        showImage = true
-        delay(300)
         animate = true
     }
 
@@ -140,9 +138,9 @@ fun WelcomeScreen(modifier: Modifier = Modifier,onNavigate :() -> Unit) {
                                     color = MaterialTheme.colorScheme.primary,
                                 )
                             ) {
-                                append("track ")
+                                append("Track ")
                             }
-                            append("your ")
+                            append("Your ")
                             withStyle(
                                 style = SpanStyle(
                                     fontStyle = FontStyle.Italic,
@@ -150,9 +148,9 @@ fun WelcomeScreen(modifier: Modifier = Modifier,onNavigate :() -> Unit) {
                                     color = MaterialTheme.colorScheme.primary,
                                 )
                             ) {
-                                append("time ")
+                                append("Time ")
                             }
-                            append("now")
+                            append("Now")
                         },
                         style = MaterialTheme.typography.headlineMedium
                     )
@@ -253,7 +251,16 @@ fun WelcomeScreen(modifier: Modifier = Modifier,onNavigate :() -> Unit) {
 
 
             AnimatedContent(
-                targetState = animate
+                targetState = animate,
+                transitionSpec = {
+                    slideInVertically(
+                        initialOffsetY = { it / 2 },
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioLowBouncy,
+                            stiffness = Spring.StiffnessLow
+                        )
+                    ) togetherWith slideOutVertically()
+                }
             ) {
                 if (it){
                     Button(

@@ -91,7 +91,7 @@ class TimeFlowModule (
     }
 
     // provide the datastore prefrences
-    private val PREF_NAME = "event_widget_prefs"
+    private val PREF_NAME = "onboarding_pref"
     @Provides
     @Singleton
     fun provideDataStore(
@@ -105,6 +105,7 @@ class TimeFlowModule (
             }
         )
     }
+
 
 
     @Singleton

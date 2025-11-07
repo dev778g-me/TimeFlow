@@ -30,6 +30,10 @@ interface EventDao {
     @Query("SELECT * FROM events WHERE createdAt BETWEEN :start AND :end")
     fun getAllEventsForADate(start: Long, end: Long): Flow<List<Events>>
 
+    // function to get all events which have notification
+    @Query("SELECT * FROM events WHERE notification =1 AND createdAt > :start")
+    fun getEventsForNotification(start: Long) : Flow<List<Events>>
+
     // function to get an event by the id
     @Query("SELECT * FROM events WHERE id = :id")
     fun getEventById(id: Long): Flow<Events>

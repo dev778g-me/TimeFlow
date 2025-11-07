@@ -1,0 +1,11 @@
+<resources>
+    <style name="Theme.SplashScreen.Timeflow" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/white</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/timeflow_logo</item>
+        <item name="windowSplashScreenAnimationDuration">1000</item>
+        <item name="postSplashScreenTheme">@style/Theme.TimeFlow</item>
+
+        <!-- Proper attribute to hide status bar -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
+</resources>

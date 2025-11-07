@@ -30,6 +30,11 @@ class EventRepo @Inject constructor(
           end = end
       )
   }
+    suspend fun getEventsForNotification (start: Long) : Flow<List<Events>>{
+        return eventDao.getEventsForNotification(
+            start = start
+        )
+    }
 
     // function to delete an event from the database
     suspend fun deleteEvent(events: Events){

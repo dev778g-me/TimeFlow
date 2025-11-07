@@ -1,7 +1,11 @@
 package com.dev.timeflow.View.Screens
 
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import android.util.Log
 import android.view.HapticFeedbackConstants
+import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
@@ -53,12 +57,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.window.DialogProperties
 
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
+import com.composables.icons.lucide.BellOff
 import com.composables.icons.lucide.Calendar
 import com.composables.icons.lucide.CalendarRange
 import com.composables.icons.lucide.ListTodo
@@ -98,6 +104,7 @@ fun CalenderScreen(
     selectedTab : Int
 ) {
     val haptics = LocalHapticFeedback.current
+    val localContext = LocalContext.current
     val taskViewModel: TaskAndEventViewModel = hiltViewModel()
     val currentMonth = remember { YearMonth.now() }
     val startMonth = remember { currentMonth.minusMonths(100) }
@@ -138,6 +145,10 @@ fun CalenderScreen(
 
     // var to hols the timePicker
     var showTime by rememberSaveable { mutableStateOf(false) }
+
+
+    // var to hold the navigate to app info page
+    var showPermissionDialog by rememberSaveable() {mutableStateOf(false) }
 
     // var to hold the state of the task description textfield
     var taskDescription by rememberSaveable { mutableStateOf("") }
@@ -243,6 +254,59 @@ fun CalenderScreen(
             mutableStateOf(taskName.isNotEmpty())
         }
     }
+
+    if (showPermissionDialog){
+        AlertDialog(
+            title = {
+                Text(
+                    text = "Notification Access Required"
+                )
+            },
+            text = {
+                Text(
+                    text = "To ensure your reminders trigger reliably, we need access to send notifications. Please go to Settings to enable this permission"
+                )
+            },
+            onDismissRequest = {
+                showPermissionDialog = false
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showPermissionDialog = false
+                        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                            data = Uri.fromParts("package",localContext.packageName, null)
+                            addCategory(Intent.CATEGORY_DEFAULT)
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+
+                        try {
+                            localContext.startActivity(intent)
+                        }catch (e: Exception){
+                            Toast.makeText(localContext,"Some error has occurred", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                ) {
+                    Text(
+                        text = "Settings"
+                    )
+                }
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = {
+
+                        showPermissionDialog = false
+                    }
+                ) {
+                    Text(
+                        text =  "Cancel"
+                    )
+                }
+            }
+        )
+    }
+
     if (showBottomSheet) {
         SheetToAddEventAndTask(
             onDismiss = {
@@ -324,7 +388,11 @@ fun CalenderScreen(
             onTimeState = {
                 showTime = it
             },
-            timerState = timePickerState
+            timerState = timePickerState,
+            context = localContext,
+            onPermissionState = {
+                showPermissionDialog = it
+            }
         )
     }
 
@@ -456,6 +524,7 @@ fun CalenderScreen(
                 },
                 onDismissRequest = {
                     showTime = false
+                    switchState = false
                 },
                 properties = DialogProperties(),
                 title = {

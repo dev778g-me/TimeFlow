@@ -39,6 +39,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -55,6 +56,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -71,14 +73,17 @@ import com.dev.timeflow.View.Screens.TodayScreen
 import com.dev.timeflow.View.Screens.onBoarding.FeatureScreen
 import com.dev.timeflow.View.Screens.onBoarding.NotificationScreen
 import com.dev.timeflow.View.Screens.onBoarding.WelcomeScreen
+import com.dev.timeflow.Viewmodel.TaskAndEventViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun NavGraph(modifier: Modifier = Modifier) {
+fun NavGraph(modifier: Modifier = Modifier, startDest : String) {
     val navController = rememberNavController()
-    val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
     var showDropDown by remember { mutableStateOf(false) }
     var selectedDropDown by remember { mutableIntStateOf(0) }
+    val isCompleted = startDest == Routes.TimerScreen.route
+
+
 
     val dropdownItem = listOf<DropdownModel>(
         DropdownModel(
@@ -100,163 +105,166 @@ fun NavGraph(modifier: Modifier = Modifier) {
     )
 
 
-   if (currentRoute?.startsWith("m_") == true){
+
        Scaffold(
            modifier = modifier.nestedScroll(
                FloatingToolbarDefaults.exitAlwaysScrollBehavior(exitDirection =Bottom )
            ),
            topBar = {
-               TopAppBar(
-                   navigationIcon = {
-                       Row(
-                           modifier = modifier,
-                           verticalAlignment = Alignment.CenterVertically
-                       ) {
-                           androidx.compose.foundation.Image(
-                               modifier = modifier.size(ButtonDefaults.ExtraLargeIconSize),
-                               painter = painterResource(
-                                   id = R.drawable.timeflow_mono_logo
-                               ),
-                               colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(
-                                   MaterialTheme.colorScheme.onPrimaryContainer
-                               ),
-                               contentDescription = null
-                           )
+              if (isCompleted){
+                  TopAppBar(
+                      navigationIcon = {
+                          Row(
+                              modifier = modifier,
+                              verticalAlignment = Alignment.CenterVertically
+                          ) {
+                              androidx.compose.foundation.Image(
+                                  modifier = modifier.size(ButtonDefaults.ExtraLargeIconSize),
+                                  painter = painterResource(
+                                      id = R.drawable.timeflow_mono_logo
+                                  ),
+                                  colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(
+                                      MaterialTheme.colorScheme.onPrimaryContainer
+                                  ),
+                                  contentDescription = null
+                              )
 //
-                       }
-                   },
-                   title = {
-                       Text(
-                           text = buildAnnotatedString {
-                               withStyle(style = SpanStyle(
-                                   color = MaterialTheme.colorScheme.onSurface.copy(
-                                       alpha = 0.8f
-                                   )
-                               )){
-                                   append("Welcome back, ")
-                               }
+                          }
+                      },
+                      title = {
+                          Text(
+                              text = buildAnnotatedString {
+                                  withStyle(style = SpanStyle(
+                                      color = MaterialTheme.colorScheme.onSurface.copy(
+                                          alpha = 0.8f
+                                      )
+                                  )){
+                                      append("Welcome back, ")
+                                  }
 
-                               withStyle(style = SpanStyle(
-                                   fontWeight = FontWeight.ExtraBold,
-                                   color = MaterialTheme.colorScheme.onSurfaceVariant
-                               )){
-                                   append("Dev")
-                               }
-                           },
-                           style = MaterialTheme.typography.titleMedium.copy(
-                               fontWeight = FontWeight.Normal
-                           )
-                       )
-                   },
-                   actions = {
-                       AnimatedContent(
-                           targetState = navController.currentDestination?.route == Routes.CalendarScreen.route,
-                           transitionSpec = {
-                               scaleIn(
-                                   animationSpec = spring(
-                                       dampingRatio = Spring.DampingRatioMediumBouncy,
-                                       stiffness = Spring.StiffnessLow
-                                   )
-                               ) togetherWith scaleOut(
-                                   animationSpec = spring(
-                                       dampingRatio = Spring.DampingRatioMediumBouncy,
-                                       stiffness = Spring.StiffnessLow
-                                   )
-                               )
-                           }
-                       ) {
-                           if (it){
-                               IconButton(
-                                   onClick = {
-                                       showDropDown = !showDropDown
-                                   }
-                               ) {
-                                   Icon(
-                                       imageVector = Lucide.CalendarRange,
-                                       contentDescription = null
-                                   )
-                               }
+                                  withStyle(style = SpanStyle(
+                                      fontWeight = FontWeight.ExtraBold,
+                                      color = MaterialTheme.colorScheme.onSurfaceVariant
+                                  )){
+                                      append("Dev")
+                                  }
+                              },
+                              style = MaterialTheme.typography.titleMedium.copy(
+                                  fontWeight = FontWeight.Normal
+                              )
+                          )
+                      },
+                      actions = {
+                          AnimatedContent(
+                              targetState = navController.currentDestination?.route == Routes.CalendarScreen.route,
+                              transitionSpec = {
+                                  scaleIn(
+                                      animationSpec = spring(
+                                          dampingRatio = Spring.DampingRatioMediumBouncy,
+                                          stiffness = Spring.StiffnessLow
+                                      )
+                                  ) togetherWith scaleOut(
+                                      animationSpec = spring(
+                                          dampingRatio = Spring.DampingRatioMediumBouncy,
+                                          stiffness = Spring.StiffnessLow
+                                      )
+                                  )
+                              }
+                          ) {
+                              if (it){
+                                  IconButton(
+                                      onClick = {
+                                          showDropDown = !showDropDown
+                                      }
+                                  ) {
+                                      Icon(
+                                          imageVector = Lucide.CalendarRange,
+                                          contentDescription = null
+                                      )
+                                  }
 
-                               DropdownMenu(
-                                   expanded = showDropDown,
-                                   onDismissRequest = { showDropDown = false }
-                               ) {
-                                   dropdownItem.forEachIndexed { index, model ->
+                                  DropdownMenu(
+                                      expanded = showDropDown,
+                                      onDismissRequest = { showDropDown = false }
+                                  ) {
+                                      dropdownItem.forEachIndexed { index, model ->
 
-                                       val isSelected = selectedDropDown == index
+                                          val isSelected = selectedDropDown == index
 
-                                       DropdownMenuItem(
-                                           modifier = Modifier
-                                               .fillMaxWidth()
-                                               .padding(
-                                                   horizontal = 4.dp,
-                                                   vertical = 2.dp
-                                               )
-                                               .clip(RoundedCornerShape(8.dp))
+                                          DropdownMenuItem(
+                                              modifier = Modifier
+                                                  .fillMaxWidth()
+                                                  .padding(
+                                                      horizontal = 4.dp,
+                                                      vertical = 2.dp
+                                                  )
+                                                  .clip(RoundedCornerShape(8.dp))
 
-                                               .background(
-                                                   if (isSelected) MaterialTheme.colorScheme.primaryContainer
-                                                   else MaterialTheme.colorScheme.surface
-                                               ),
-                                           text = {
-                                               Row(
-                                                   verticalAlignment = Alignment.CenterVertically,
-                                                   modifier = Modifier.fillMaxWidth()
-                                               ) {
-                                                   Icon(
-                                                       imageVector = model.icon,
-                                                       contentDescription = null,
-                                                       tint = if (isSelected) MaterialTheme.colorScheme.primary
-                                                       else MaterialTheme.colorScheme.onSurface
-                                                   )
+                                                  .background(
+                                                      if (isSelected) MaterialTheme.colorScheme.primaryContainer
+                                                      else MaterialTheme.colorScheme.surface
+                                                  ),
+                                              text = {
+                                                  Row(
+                                                      verticalAlignment = Alignment.CenterVertically,
+                                                      modifier = Modifier.fillMaxWidth()
+                                                  ) {
+                                                      Icon(
+                                                          imageVector = model.icon,
+                                                          contentDescription = null,
+                                                          tint = if (isSelected) MaterialTheme.colorScheme.primary
+                                                          else MaterialTheme.colorScheme.onSurface
+                                                      )
 
-                                                   Spacer(Modifier.width(8.dp))
+                                                      Spacer(Modifier.width(8.dp))
 
-                                                   Text(
-                                                       text = model.title,
-                                                       color = if (isSelected) MaterialTheme.colorScheme.primary
-                                                       else MaterialTheme.colorScheme.onSurface
-                                                   )
-                                               }
-                                           },
-                                           onClick = {
-                                               model.onClick()
-                                               showDropDown = false
-                                           }
-                                       )
-                                   }
-                               }
+                                                      Text(
+                                                          text = model.title,
+                                                          color = if (isSelected) MaterialTheme.colorScheme.primary
+                                                          else MaterialTheme.colorScheme.onSurface
+                                                      )
+                                                  }
+                                              },
+                                              onClick = {
+                                                  model.onClick()
+                                                  showDropDown = false
+                                              }
+                                          )
+                                      }
+                                  }
 
 
-                           }
-                       }
-                   }
-               )
+                              }
+                          }
+                      }
+                  )
+              }
            },
            floatingActionButtonPosition = FabPosition.Center,
            floatingActionButton = {
 
            },
            bottomBar = {
-               FloatingBottomNav(
-                   navController = navController
-               )
+              if (isCompleted){
+                  FloatingBottomNav(
+                      navController = navController
+                  )
+              }
            },
 
 
            contentWindowInsets = WindowInsets(0.dp),
 
-           ) {
-               p->
+           ) { p ->
            Box(
                contentAlignment = Alignment.Center
-           ){
+           ) {
                NavHost(
                    modifier = modifier
                        .fillMaxSize()
                        .padding(p),
                    navController = navController,
-                   startDestination = Routes.TimerScreen.route,
+                   startDestination = startDest,
                    enterTransition = { slideInHorizontally(initialOffsetX = { it }) },
                    exitTransition = { slideOutHorizontally(targetOffsetX = { -it }) },
                    popEnterTransition = { slideInHorizontally(initialOffsetX = { -it }) },
@@ -272,59 +280,37 @@ fun NavGraph(modifier: Modifier = Modifier) {
                        )
                    }
 
+                   composable(route = Routes.WelcomeScreen.route){
+                       WelcomeScreen(
+                           onNavigate = {
+                               navController.navigate(Routes.ShowFeaturesScreen.route)
+                           }
+                       )
+                   }
+
+                   composable(route = Routes.ShowFeaturesScreen.route){
+                       FeatureScreen(
+                           onNavigate = {
+                               navController.navigate(Routes.NotificationScreen.route)
+                           }
+                       )
+                   }
+
+                   composable(route = Routes.NotificationScreen.route) {
+                       NotificationScreen(
+                           onNavigate = {
+                               navController.navigate(Routes.TimerScreen.route)
+                           }
+                       )
+                   }
 
 
                }
 
            }
        }
-   } else {
-       NavHost(
-           navController = navController,
-           startDestination = Routes.WelcomeScreen.route
-       ){
-           composable(route = Routes.TimerScreen.route) {
-               TodayScreen()
-           }
-
-           composable(route = Routes.CalendarScreen.route) {
-               CalenderScreen(
-                   selectedTab = selectedDropDown
-               )
-           }
-           composable(route = Routes.WelcomeScreen.route){
-               WelcomeScreen(
-                   onNavigate = {
-                       navController.navigate(Routes.ShowFeaturesScreen.route)
-                   }
-               )
-           }
-
-           composable(route = Routes.ShowFeaturesScreen.route){
-               FeatureScreen(
-                   onNavigate = {
-                       navController.navigate(Routes.NotificationScreen.route)
-                   }
-               )
-           }
-
-           composable(route = Routes.NotificationScreen.route) {
-               NotificationScreen(
-                   onNavigate = {
-                       navController.navigate(Routes.TimerScreen.route)
-                   }
-               )
-           }
-       }
    }
 
-
-
-
-
-
-
-}
 
 
 

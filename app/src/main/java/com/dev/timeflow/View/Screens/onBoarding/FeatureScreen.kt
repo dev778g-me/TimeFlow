@@ -48,11 +48,11 @@ fun FeatureScreen(modifier: Modifier = Modifier,onNavigate :() -> Unit) {
     var animateDescText by remember { mutableStateOf(false) }
     var animateButton by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
-        delay(300)
+        delay(100)
         animateText = true
-        delay(300)
+        delay(200)
         animateDescText = true
-        delay(300)
+        delay(100)
         animateButton = true
 
     }
@@ -147,8 +147,8 @@ fun FeatureScreen(modifier: Modifier = Modifier,onNavigate :() -> Unit) {
                         modifier = modifier
                             .alpha(0f)
                             .padding(
-                            horizontal = 8.dp
-                        ),
+                                horizontal = 8.dp
+                            ),
                         textAlign = TextAlign.Center,
                         text = "Add tasks or events and stay focused on what truly matters."
                     )
@@ -182,7 +182,7 @@ fun FeatureScreen(modifier: Modifier = Modifier,onNavigate :() -> Unit) {
                     ) togetherWith slideOutVertically()
                 }
             ) {
-                if (it){
+                if (it) {
                     Button(
                         modifier = modifier
                             .fillMaxWidth()
@@ -191,7 +191,7 @@ fun FeatureScreen(modifier: Modifier = Modifier,onNavigate :() -> Unit) {
                             ),
                         shape = RoundedCornerShape(16.dp),
                         onClick = {
-onNavigate.invoke()
+                            onNavigate.invoke()
                         }
                     ) {
 //

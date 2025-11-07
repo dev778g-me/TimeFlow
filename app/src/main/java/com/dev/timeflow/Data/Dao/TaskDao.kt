@@ -22,8 +22,11 @@ import kotlinx.coroutines.flow.Flow
     @Delete
     suspend fun deleteTask(tasks: Tasks)
 
-    @Query("SELECT * FROM TASKS WHERE createdAt BETWEEN :start AND :end")
+    @Query("SELECT * FROM TASKS WHERE createdAt BETWEEN :start AND :end ORDER BY createdAt DESC ")
     fun getTaskForDate(start: Long, end : Long) : Flow<List<Tasks>>
+
+    @Query("SELECT * FROM Tasks WHERE notification = 1 ORDER BY createdAt DESC")
+    fun getTaskForAlarm(): Flow<List<Tasks>>
 
     // function to get all the tasks
     @Query("SELECT * FROM TASKS ORDER BY createdAt")

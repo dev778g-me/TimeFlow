@@ -2,11 +2,15 @@ package com.dev.timeflow.Viewmodel
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dev.timeflow.Data.Model.Events
 import com.dev.timeflow.Data.Model.NotificationAlarmManagerModel
 import com.dev.timeflow.Data.Model.Tasks
+import com.dev.timeflow.Data.Repo.DataStoreRepo
 import com.dev.timeflow.Data.Repo.EventRepo
 import com.dev.timeflow.Data.Repo.TaskRepo
 import com.dev.timeflow.Managers.notification.TimeFlowAlarmManagerService
@@ -14,15 +18,23 @@ import com.dev.timeflow.Managers.notification.TimeFlowNotificationManager
 import com.dev.timeflow.Managers.utils.toHour
 import com.dev.timeflow.Managers.utils.toLocalDate
 import com.dev.timeflow.Managers.utils.toMinute
+import com.dev.timeflow.View.Navigation.Routes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.ZoneId
 import java.util.Calendar
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.hours
@@ -31,8 +43,34 @@ import kotlin.time.Duration.Companion.hours
 class TaskAndEventViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val eventRepo: EventRepo,
+    private val dataStoreRepo: DataStoreRepo,
     private val taskRepo: TaskRepo
 ) : ViewModel(){
+
+    private val _isLoading: MutableState<Boolean> = mutableStateOf(true)
+    val isLoading: State<Boolean> = _isLoading
+
+    private val _startDestination: MutableState<String> = mutableStateOf(Routes.WelcomeScreen.route)
+    var startDestination : State<String> = _startDestination
+
+    private val  _isCompleted : MutableState<Boolean> = mutableStateOf(false)
+    val isCompleted : State<Boolean> = _isCompleted
+    init {
+        viewModelScope.launch {
+           val i = readOnBoardingState().first()
+            _isCompleted.value = i
+            if (i){
+                _startDestination.value = Routes.TimerScreen.route
+            }else{
+                _startDestination.value = Routes.WelcomeScreen.route
+            }
+            delay(500)
+            _isLoading.value = false
+
+            getAllTasks()
+            getAllEvents()
+        }
+    }
 
     // job to track and cancel the task fetch operation
     private var taskJob: Job? = null
@@ -113,15 +151,7 @@ class TaskAndEventViewModel @Inject constructor(
                 events = events
             )
             if (events.notification && events.eventTime != 0.toLong()){
-                TimeFlowAlarmManagerService(context).scheduleNotification(
-                    notificationAlarmManagerModel = NotificationAlarmManagerModel(
-                        title = events.name,
-                        id = events.id,
-                        hour = events.eventTime.toHour(),
-                        minute = events.eventTime.toMinute(),
-                        localDate = events.eventTime.toLocalDate()
-                    )
-                )
+                scheduleNotification()
             } else {
                 println("notification has been turned off")
             }
@@ -172,9 +202,9 @@ class TaskAndEventViewModel @Inject constructor(
     private val _allTasks = MutableStateFlow<List<Tasks>>(emptyList())
     var allTasks : StateFlow<List<Tasks>> = _allTasks
 
-    fun getAllTasks(){
+    fun getAllTasks() {
         viewModelScope.launch {
-            val tasks =taskRepo.getAllTasks()
+            val tasks = taskRepo.getAllTasks()
             tasks.collect {
                 _allTasks.value = it
             }
@@ -187,15 +217,7 @@ class TaskAndEventViewModel @Inject constructor(
                 tasks = tasks
             )
             if (tasks.notification && tasks.taskTime != 0.toLong()){
-                TimeFlowAlarmManagerService(context).scheduleNotification(
-                    notificationAlarmManagerModel = NotificationAlarmManagerModel(
-                        title = tasks.name,
-                        id = tasks.id,
-                        hour = tasks.taskTime!!.toHour(),
-                        minute = tasks.taskTime.toMinute(),
-                        localDate = tasks.taskTime.toLocalDate()
-                    )
-                )
+               scheduleNotification()
             } else {
                 println("notification has been turned off")
             }
@@ -260,8 +282,57 @@ class TaskAndEventViewModel @Inject constructor(
     }
 
 
+    fun scheduleNotification() {
+        viewModelScope.launch {
+            val tasks = taskRepo.getTaskForScheduling().first()
+            val events = eventRepo.getEventsForNotification(
+                start = LocalDate.now().atStartOfDay().atZone(
+                    ZoneId.systemDefault()
+                ).toInstant().toEpochMilli()
+            ).first()
+
+            Log.d("TESTSCHEDULE", "tasks ---${tasks}")
+            Log.d("TESTSCHEDULE", "events ---${events}")
+
+            val modelEvent = events.map {
+                NotificationAlarmManagerModel(
+                    id = it.id,
+                    title = it.name,
+                    hour = it.eventTime.toHour(),
+                    minute = it.eventTime.toMinute(),
+                    localDate = it.createdAt.toLocalDate()
+                )
+            }
+            val modelTask = tasks.map {
+                NotificationAlarmManagerModel(
+                    id = it.id,
+                    title = it.name,
+                    hour = it.taskTime!!.toHour(),
+                    minute = it.taskTime.toMinute(),
+                    localDate = it.taskTime.toLocalDate()
+                )
+            }
+            Log.d("TESTSCHEDULE", "tasks : ${modelTask}")
+            Log.d("TESTSCHEDULE", "events  : ${modelEvent}")
+//
+
+            val notificationModel =  modelTask + modelEvent
+
+            TimeFlowAlarmManagerService(context = context).scheduleNotification(
+                notificationAlarmManagerModel = notificationModel
+            )
+
+        }
+    }
+        suspend fun saveOnBoarding() {
+            dataStoreRepo.saveOnBoarding(completed = true)
+        }
+
+        fun readOnBoardingState(): Flow<Boolean> {
+            return dataStoreRepo.readOnBoarding()
+        }
 
 
-}
+    }
 
 

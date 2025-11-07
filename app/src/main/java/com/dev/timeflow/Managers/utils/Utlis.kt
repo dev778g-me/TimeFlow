@@ -67,7 +67,7 @@ fun Long.toHour(): Int{
 fun Calendar.toDateTimeInMillis(hour : Int, minute : Int, date: LocalDate) : Long{
     this.apply {
         set(Calendar.DAY_OF_MONTH,date.dayOfMonth)
-        set(Calendar.MONTH, date.month.value)
+        set(Calendar.MONTH, date.month.value -1)
         set(Calendar.YEAR, date.year)
         set(Calendar.HOUR_OF_DAY,hour)
         set(Calendar.MINUTE,minute)

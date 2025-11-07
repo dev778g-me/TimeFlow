@@ -1,5 +1,6 @@
 package com.dev.timeflow.View.Screens.onBoarding
 
+import android.Manifest
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -12,16 +13,19 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,24 +38,65 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.dev.timeflow.R
+import com.dev.timeflow.Viewmodel.TaskAndEventViewModel
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.accompanist.permissions.shouldShowRationale
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun NotificationScreen(modifier: Modifier = Modifier,onNavigate : () -> Unit) {
     var animateText by remember { mutableStateOf(false) }
     var animateDescText by remember { mutableStateOf(false) }
     var animateButton by remember { mutableStateOf(false) }
+    val viewModel : TaskAndEventViewModel = hiltViewModel()
+    val permission = rememberPermissionState(
+        permission = Manifest.permission.POST_NOTIFICATIONS
+    )
+
+ var showDialog by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
-        delay(300)
+        delay(100)
         animateText = true
-        delay(300)
+        delay(200)
         animateDescText = true
-        delay(300)
+        delay(100)
         animateButton = true
 
+    }
+    val scope = rememberCoroutineScope()
+    suspend fun save(){
+        viewModel.saveOnBoarding()
+    }
+    if (showDialog){
+        AlertDialog(
+            onDismissRequest = {
+                showDialog = false
+            },
+            title = {
+                Text(
+                    text = "Allow notification from setting"
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+
+                    }
+                ) {
+                    Text(
+                        text = "Allow"
+                    )
+                }
+            },
+
+        )
     }
     Scaffold(
         topBar = {
@@ -210,8 +255,22 @@ fun NotificationScreen(modifier: Modifier = Modifier,onNavigate : () -> Unit) {
                             ),
                         shape = RoundedCornerShape(16.dp),
                         onClick = {
-                            onNavigate.invoke()
+                            if (permission.status.isGranted) {
+                                onNavigate()
+                            } else {
+                                // Ask permission only once
+                                permission.launchPermissionRequest()
+
+                                // Navigate even if the user denies
+                                onNavigate()
+                            }
+                            scope.launch {
+                                save()
+                            }
+
                         }
+
+
                     ) {
 //
                         androidx.compose.material3.Text(
@@ -265,4 +324,11 @@ fun NotificationScreen(modifier: Modifier = Modifier,onNavigate : () -> Unit) {
             }
         }
     }
+
+
 }
+
+
+
+
+
