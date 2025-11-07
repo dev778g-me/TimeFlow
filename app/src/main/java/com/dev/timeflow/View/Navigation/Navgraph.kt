@@ -44,6 +44,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,6 +58,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -74,23 +76,30 @@ import com.dev.timeflow.View.Screens.onBoarding.FeatureScreen
 import com.dev.timeflow.View.Screens.onBoarding.NotificationScreen
 import com.dev.timeflow.View.Screens.onBoarding.WelcomeScreen
 import com.dev.timeflow.Viewmodel.TaskAndEventViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun NavGraph(modifier: Modifier = Modifier, startDest : String) {
     val navController = rememberNavController()
+    val currentRoute by navController.currentBackStackEntryAsState()
     var showDropDown by remember { mutableStateOf(false) }
-    var selectedDropDown by remember { mutableIntStateOf(0) }
     val isCompleted = startDest == Routes.TimerScreen.route
+    val taskAndEventViewModel : TaskAndEventViewModel = hiltViewModel()
 
-
+    val selectedCalendarType by taskAndEventViewModel.readCalendarType().collectAsStateWithLifecycle(0)
+    val scope = rememberCoroutineScope()
 
     val dropdownItem = listOf<DropdownModel>(
         DropdownModel(
             title = "Week",
             icon = Lucide.CalendarDays,
             onClick = {
-                selectedDropDown = 0
+                scope.launch {
+                    taskAndEventViewModel.saveSelectedCalenderType(
+                        type = 0
+                    )
+                }
                 showDropDown = false
             }
         ),
@@ -98,7 +107,11 @@ fun NavGraph(modifier: Modifier = Modifier, startDest : String) {
             title = "Month",
             icon = Lucide.CalendarX2,
             onClick = {
-                selectedDropDown = 1
+                scope.launch {
+                    taskAndEventViewModel.saveSelectedCalenderType(
+                        type = 1
+                    )
+                }
                 showDropDown = false
             }
         )
@@ -156,7 +169,7 @@ fun NavGraph(modifier: Modifier = Modifier, startDest : String) {
                       },
                       actions = {
                           AnimatedContent(
-                              targetState = navController.currentDestination?.route == Routes.CalendarScreen.route,
+                              targetState = currentRoute?.destination?.route== Routes.CalendarScreen.route,
                               transitionSpec = {
                                   scaleIn(
                                       animationSpec = spring(
@@ -189,7 +202,7 @@ fun NavGraph(modifier: Modifier = Modifier, startDest : String) {
                                   ) {
                                       dropdownItem.forEachIndexed { index, model ->
 
-                                          val isSelected = selectedDropDown == index
+                                          val isSelected = selectedCalendarType == index
 
                                           DropdownMenuItem(
                                               modifier = Modifier
@@ -276,7 +289,7 @@ fun NavGraph(modifier: Modifier = Modifier, startDest : String) {
 
                    composable(route = Routes.CalendarScreen.route) {
                        CalenderScreen(
-                           selectedTab = selectedDropDown
+                           selectedTab = selectedCalendarType
                        )
                    }
 

@@ -324,15 +324,26 @@ class TaskAndEventViewModel @Inject constructor(
 
         }
     }
-        suspend fun saveOnBoarding() {
-            dataStoreRepo.saveOnBoarding(completed = true)
-        }
-
-        fun readOnBoardingState(): Flow<Boolean> {
-            return dataStoreRepo.readOnBoarding()
-        }
-
-
+    suspend fun saveOnBoarding() {
+        dataStoreRepo.saveOnBoarding(completed = true)
     }
+
+    fun readOnBoardingState(): Flow<Boolean> {
+        return dataStoreRepo.readOnBoarding()
+    }
+
+
+    suspend fun saveSelectedCalenderType(type: Int) {
+        dataStoreRepo.selectedCalendar(
+            type = type
+        )
+    }
+
+    fun readCalendarType(): Flow<Int> {
+        return dataStoreRepo.readCalenderType()
+    }
+
+
+}
 
 

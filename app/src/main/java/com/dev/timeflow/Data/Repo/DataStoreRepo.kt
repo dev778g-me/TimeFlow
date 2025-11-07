@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.intPreferencesKey
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -20,6 +21,7 @@ class DataStoreRepo @Inject constructor(
 
    private object PrefKey {
        val onBoardingKey = booleanPreferencesKey("on_boarding_key")
+       val selectedCalendarType = intPreferencesKey("selected_calender_type")
    }
 
 
@@ -38,5 +40,22 @@ class DataStoreRepo @Inject constructor(
                 val onBoardingState = pref[PrefKey.onBoardingKey] ?: false
                 onBoardingState
             }
+    }
+
+
+    suspend fun selectedCalendar(type : Int){
+        dataStore.edit {
+            it[PrefKey.selectedCalendarType] = type
+        }
+    }
+
+    fun readCalenderType () : Flow<Int>{
+        return dataStore.data.catch {
+            if (it is IOException) emit(emptyPreferences()) else throw  it
+        }.map {
+            type ->
+            val calendarType = type[PrefKey.selectedCalendarType] ?:0
+            calendarType
+        }
     }
 }
