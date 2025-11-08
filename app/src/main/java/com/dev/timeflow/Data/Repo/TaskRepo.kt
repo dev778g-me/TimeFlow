@@ -36,8 +36,8 @@ class TaskRepo @Inject constructor(
         )
     }
 
-   suspend fun getTaskForScheduling() : Flow<List<Tasks>>{
-        return taskDao.getTaskForAlarm()
+   suspend fun getTaskForScheduling(start: Long) : Flow<List<Tasks>>{
+        return taskDao.getTaskForAlarm(start = start)
     }
 
     suspend fun getAllTasks() : Flow<List<Tasks>>{

@@ -2,6 +2,7 @@ package com.dev.timeflow.View.Screens
 
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.provider.Settings
 import android.util.Log
 import android.view.HapticFeedbackConstants
@@ -57,6 +58,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
@@ -127,8 +129,6 @@ fun CalenderScreen(
         firstDayOfWeek = firstDayOfWeek
     )
 
-    // local view for haptic feedback
-    val localView = LocalView.current
 
 
     //variable to hold state of the currently selected date
@@ -652,8 +652,8 @@ fun CalenderScreen(
                                           checked = isSelected,
                                           onCheckedChange = {
                                               selectedIndex = index
-                                              localView.performHapticFeedback(
-                                                  HapticFeedbackConstants.CONFIRM
+                                              haptics.performHapticFeedback(
+                                                  hapticFeedbackType = HapticFeedbackType.Confirm
                                               )
                                               scope.launch {
                                                   pageState.animateScrollToPage(

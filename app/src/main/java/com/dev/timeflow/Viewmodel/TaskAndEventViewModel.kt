@@ -14,7 +14,6 @@ import com.dev.timeflow.Data.Repo.DataStoreRepo
 import com.dev.timeflow.Data.Repo.EventRepo
 import com.dev.timeflow.Data.Repo.TaskRepo
 import com.dev.timeflow.Managers.notification.TimeFlowAlarmManagerService
-import com.dev.timeflow.Managers.notification.TimeFlowNotificationManager
 import com.dev.timeflow.Managers.utils.toHour
 import com.dev.timeflow.Managers.utils.toLocalDate
 import com.dev.timeflow.Managers.utils.toMinute
@@ -23,21 +22,16 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.ZoneId
-import java.util.Calendar
 import javax.inject.Inject
-import kotlin.time.Duration.Companion.hours
 
 @HiltViewModel
 class TaskAndEventViewModel @Inject constructor(
@@ -151,7 +145,15 @@ class TaskAndEventViewModel @Inject constructor(
                 events = events
             )
             if (events.notification && events.eventTime != 0.toLong()){
-                scheduleNotification()
+               scheduleNotification(
+                   notificationAlarmManagerModel = NotificationAlarmManagerModel(
+                       id = events.id,
+                       title = events.name,
+                       hour = events.eventTime.toHour(),
+                       minute = events.eventTime.toMinute(),
+                       localDate = events.eventTime.toLocalDate(),
+                   )
+               )
             } else {
                 println("notification has been turned off")
             }
@@ -217,7 +219,15 @@ class TaskAndEventViewModel @Inject constructor(
                 tasks = tasks
             )
             if (tasks.notification && tasks.taskTime != 0.toLong()){
-               scheduleNotification()
+              scheduleNotification(
+                  notificationAlarmManagerModel = NotificationAlarmManagerModel(
+                      id = tasks.id,
+                      hour = tasks.taskTime!!.toHour(),
+                      minute = tasks.taskTime.toMinute(),
+                      title = tasks.name,
+                      localDate = tasks.taskTime.toLocalDate()
+                  )
+              )
             } else {
                 println("notification has been turned off")
             }
@@ -282,9 +292,21 @@ class TaskAndEventViewModel @Inject constructor(
     }
 
 
-    fun scheduleNotification() {
+
+    fun scheduleNotification (notificationAlarmManagerModel: NotificationAlarmManagerModel){
         viewModelScope.launch {
-            val tasks = taskRepo.getTaskForScheduling().first()
+            TimeFlowAlarmManagerService(context = context).scheduleSingleAlarm(notificationAlarmManagerModel = notificationAlarmManagerModel)
+        }
+    }
+
+
+    fun scheduleAllNotification() {
+        viewModelScope.launch {
+            val tasks = taskRepo.getTaskForScheduling(
+                start = LocalDate.now().atStartOfDay().atZone(
+                    ZoneId.systemDefault()
+                ).toInstant().toEpochMilli()
+            ).first()
             val events = eventRepo.getEventsForNotification(
                 start = LocalDate.now().atStartOfDay().atZone(
                     ZoneId.systemDefault()

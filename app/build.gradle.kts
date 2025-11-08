@@ -46,6 +46,7 @@ android {
 }
 
 dependencies {
+    implementation("androidx.work:work-runtime-ktx:2.11.0")
     implementation("androidx.core:core-splashscreen:1.0.0")
     implementation("com.google.accompanist:accompanist-permissions:0.37.3")
     implementation(libs.androidx.core.ktx)
