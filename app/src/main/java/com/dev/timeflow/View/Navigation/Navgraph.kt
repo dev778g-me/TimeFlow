@@ -134,7 +134,7 @@ fun NavGraph(modifier: Modifier = Modifier, startDest : String) {
                               androidx.compose.foundation.Image(
                                   modifier = modifier.size(ButtonDefaults.ExtraLargeIconSize),
                                   painter = painterResource(
-                                      id = R.drawable.timeflow_mono_logo
+                                      id = R.drawable.mono_logo
                                   ),
                                   colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(
                                       MaterialTheme.colorScheme.onPrimaryContainer

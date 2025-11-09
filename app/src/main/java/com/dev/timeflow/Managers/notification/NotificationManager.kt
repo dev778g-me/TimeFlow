@@ -23,7 +23,7 @@ class TimeFlowNotificationManager (
         val intent = Intent(context, MainActivity::class.java)
         Log.d("TESTING NOTIFICATION","the notification received for the task_event")
         val notification = NotificationCompat.Builder(context, Application.TIMEFLOW_NOTIFICATION_ID)
-            .setSmallIcon(R.drawable.timeflow_mono_logo)
+            .setSmallIcon(R.drawable.mono_logo)
             .setContentTitle("Timeflow")
             .setContentText(message)
             .setPriority(NotificationManager.IMPORTANCE_HIGH)

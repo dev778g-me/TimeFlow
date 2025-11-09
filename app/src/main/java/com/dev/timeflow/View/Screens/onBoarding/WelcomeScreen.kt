@@ -89,8 +89,8 @@ fun WelcomeScreen(modifier: Modifier = Modifier,onNavigate :() -> Unit) {
     val f3 by animateFloatAsState(
         targetValue = if (animate) 65f else 0f,
         animationSpec = spring(
-            dampingRatio = Spring.DampingRatioHighBouncy,
-            stiffness = Spring.StiffnessLow
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMediumLow
         )
     )
 
@@ -154,7 +154,7 @@ fun WelcomeScreen(modifier: Modifier = Modifier,onNavigate :() -> Unit) {
                         },
                         style = MaterialTheme.typography.headlineMedium
                     )
-                }else {
+                } else {
                     Text(
                         modifier = modifier
                             .alpha(0f)
@@ -267,7 +267,7 @@ fun WelcomeScreen(modifier: Modifier = Modifier,onNavigate :() -> Unit) {
                         modifier = modifier
                             .fillMaxWidth()
                             .padding(
-                                horizontal = 16.dp
+                                horizontal = 12.dp
                             ),
                         shape = RoundedCornerShape(16.dp),
                         onClick = {

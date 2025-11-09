@@ -1,7 +1,7 @@
 <resources>
     <style name="Theme.SplashScreen.Timeflow" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/black</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/timeflow_mono_logo</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/timeflow_logo_dark</item>
         <item name="windowSplashScreenAnimationDuration">1000</item>
         <item name="postSplashScreenTheme">@style/Theme.TimeFlow</item>
 

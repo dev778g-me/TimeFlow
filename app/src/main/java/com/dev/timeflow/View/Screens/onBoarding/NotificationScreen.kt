@@ -71,10 +71,10 @@ fun NotificationScreen(modifier: Modifier = Modifier,onNavigate : () -> Unit) {
 
     }
     val scope = rememberCoroutineScope()
-    suspend fun save(){
+    suspend fun save() {
         viewModel.saveOnBoarding()
     }
-    if (showDialog){
+    if (showDialog) {
         AlertDialog(
             onDismissRequest = {
                 showDialog = false
@@ -251,7 +251,7 @@ fun NotificationScreen(modifier: Modifier = Modifier,onNavigate : () -> Unit) {
                         modifier = modifier
                             .fillMaxWidth()
                             .padding(
-                                horizontal = 16.dp
+                                horizontal = 12.dp
                             ),
                         shape = RoundedCornerShape(16.dp),
                         onClick = {
@@ -292,7 +292,7 @@ fun NotificationScreen(modifier: Modifier = Modifier,onNavigate : () -> Unit) {
                             .fillMaxWidth()
                             .alpha(0f)
                             .padding(
-                                horizontal = 16.dp
+                                horizontal = 12.dp
                             ),
                         shape = RoundedCornerShape(16.dp),
                         onClick = {

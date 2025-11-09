@@ -187,7 +187,7 @@ fun FeatureScreen(modifier: Modifier = Modifier,onNavigate :() -> Unit) {
                         modifier = modifier
                             .fillMaxWidth()
                             .padding(
-                                horizontal = 16.dp
+                                horizontal = 12.dp
                             ),
                         shape = RoundedCornerShape(16.dp),
                         onClick = {
@@ -214,7 +214,7 @@ fun FeatureScreen(modifier: Modifier = Modifier,onNavigate :() -> Unit) {
                             .fillMaxWidth()
                             .alpha(0f)
                             .padding(
-                                horizontal = 16.dp
+                                horizontal = 12.dp
                             ),
                         shape = RoundedCornerShape(16.dp),
                         onClick = {
