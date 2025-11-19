@@ -1,21 +1,16 @@
 package com.dev.timeflow.View.Widget
 
-import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -40,10 +35,9 @@ import com.composables.icons.lucide.Bell
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.PenLine
 import com.dev.timeflow.Data.Model.Tasks
-import com.dev.timeflow.Managers.utils.toHour
-import com.dev.timeflow.Managers.utils.toMinute
+import com.dev.timeflow.View.utils.toHour
+import com.dev.timeflow.View.utils.toMinute
 import kotlinx.coroutines.delay
-import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlin.text.ifEmpty
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -1,19 +1,14 @@
-package com.dev.timeflow.Managers.utils
+package com.dev.timeflow.View.utils
 
-import android.content.pm.PackageManager
-import androidx.compose.ui.text.intl.Locale
-import com.dev.timeflow.View.Screens.CalenderScreen
-import kotlinx.serialization.builtins.serializer
-import java.security.Permission
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
-import java.util.jar.Manifest
 
 class Utlis {
 
@@ -43,7 +38,7 @@ fun LocalDate.toMyFormat () : String {
     )
 }
 
-fun LocalDate.toMiliis (localTime: LocalTime) : Long {
+fun LocalDate.toMillis (localTime: LocalTime) : Long {
     val calendar = Calendar.getInstance().apply {
         set(Calendar.DAY_OF_MONTH,dayOfMonth)
         set(Calendar.MONTH,month.value -1 )
@@ -52,7 +47,6 @@ fun LocalDate.toMiliis (localTime: LocalTime) : Long {
         set(Calendar.MINUTE, localTime.minute)
         set(Calendar.SECOND, localTime.second)
     }
-
 
     return  calendar.timeInMillis
 }
@@ -85,6 +79,11 @@ fun LocalDate.endOfDayMillis(): Long {
         .toEpochMilli()
 }
 
+fun LocalDate.toUtcMillis(): Long {
+    return this.atStartOfDay(ZoneOffset.UTC)
+        .toInstant()
+        .toEpochMilli()
+}
 
 fun Long.toMinute() : Int{
     val date = Date(this)

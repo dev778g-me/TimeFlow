@@ -2,10 +2,8 @@ package com.dev.timeflow.View.Screens
 
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.provider.Settings
 import android.util.Log
-import android.view.HapticFeedbackConstants
 import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateContentSize
@@ -28,14 +26,21 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonGroup
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
 import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerDialog
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -61,12 +66,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.window.DialogProperties
 
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
-import com.composables.icons.lucide.BellOff
 import com.composables.icons.lucide.Calendar
 import com.composables.icons.lucide.CalendarRange
 import com.composables.icons.lucide.ListTodo
@@ -77,11 +80,11 @@ import com.dev.timeflow.Data.Model.ImportanceChipModel
 import com.dev.timeflow.Data.Model.SavingModel
 import com.dev.timeflow.Data.Model.TabModel
 import com.dev.timeflow.Data.Model.Tasks
-import com.dev.timeflow.Managers.utils.componets.EventTile
-import com.dev.timeflow.Managers.utils.componets.TaskTile
-import com.dev.timeflow.Managers.utils.endOfDayMillis
-import com.dev.timeflow.Managers.utils.toDateTimeInMillis
-import com.dev.timeflow.Managers.utils.toMiliis
+import com.dev.timeflow.View.utils.componets.EventTile
+import com.dev.timeflow.View.utils.componets.TaskTile
+import com.dev.timeflow.View.utils.endOfDayMillis
+import com.dev.timeflow.View.utils.toDateTimeInMillis
+import com.dev.timeflow.View.utils.toMillis
 import com.dev.timeflow.Viewmodel.TaskAndEventViewModel
 import com.dev.timeflow.R
 import com.dev.timeflow.View.Screens.calenderScreen.MonthCalender
@@ -90,12 +93,21 @@ import com.dev.timeflow.View.Screens.calenderScreen.WeekCalender
 import com.dev.timeflow.View.Widget.SheetToAddEventAndTask
 import com.dev.timeflow.View.Widget.SheetToEditEvent
 import com.dev.timeflow.View.Widget.SheetToEditTask
+import com.dev.timeflow.View.utils.toHour
+import com.dev.timeflow.View.utils.toLocalDate
+import com.dev.timeflow.View.utils.toMinute
+import com.dev.timeflow.View.utils.toUtcMillis
 import com.kizitonwose.calendar.compose.WeekCalendar
 import com.kizitonwose.calendar.compose.weekcalendar.rememberWeekCalendarState
+import com.kizitonwose.calendar.core.CalendarDay
+import com.kizitonwose.calendar.core.DayPosition
 import com.kizitonwose.calendar.core.atStartOfMonth
+import com.kizitonwose.calendar.core.yearMonth
 import kotlinx.coroutines.launch
+import java.time.Instant
 import java.time.LocalTime
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.util.Calendar
 
 
@@ -146,6 +158,19 @@ fun CalenderScreen(
     // var to hols the timePicker
     var showTime by rememberSaveable { mutableStateOf(false) }
 
+    // var to hold the from timepicker  state
+    var showFromTimePicker by rememberSaveable() {mutableStateOf(false) }
+
+    // var to hold the to timepicker state
+
+    var showToTimePicker by rememberSaveable() { mutableStateOf(false)}
+
+    // var to  hold the datePicker
+    var showDate by rememberSaveable() {mutableStateOf(false) }
+
+    // var to hold the second datePicker
+
+    var showToDate by rememberSaveable() {mutableStateOf(false) }
 
     // var to hold the navigate to app info page
     var showPermissionDialog by rememberSaveable() {mutableStateOf(false) }
@@ -165,8 +190,47 @@ fun CalenderScreen(
 
     // state for the timePicker
     val timePickerState = rememberTimePickerState(
+        is24Hour = false,
         initialHour = localTime.hour,
         initialMinute = localTime.minute
+    )
+
+    val fromToTime = LocalTime.of(12,0)
+    // timepicker for the from time
+    val fromTimePickerState = rememberTimePickerState(
+        //is24Hour =  false,
+        initialHour =  fromToTime.hour,
+        initialMinute = fromToTime.minute
+    )
+
+    // timePicker for the to time
+    val toTimeTimePickerState = rememberTimePickerState(
+        is24Hour =  false,
+        initialHour = fromToTime.hour,
+        initialMinute = fromToTime.minute
+    )
+
+    val fromDatePickerState = rememberDatePickerState(
+        initialSelectedDate = currentSelectedDate,
+        initialDisplayedMonth = currentMonth,
+        selectableDates =  object : SelectableDates {
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                val date = Instant.ofEpochMilli(utcTimeMillis)
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate()
+
+                return !date.isBefore(currentDate)
+            }
+        },
+        yearRange = currentDate.year .. currentDate.plusYears(20).year,
+        initialDisplayMode = DisplayMode.Picker,
+    )
+
+    val toDatePickerState = rememberDatePickerState(
+        initialSelectedDate = currentSelectedDate.plusDays(1),
+        initialDisplayedMonth = currentSelectedDate.plusDays(1).yearMonth,
+        yearRange = currentDate.year .. currentDate.plusYears(20).year,
+        initialDisplayMode = DisplayMode.Picker
     )
 
     val pageState = rememberPagerState(initialPage = 0, pageCount = { 2 })
@@ -193,6 +257,17 @@ fun CalenderScreen(
                 .toEpochMilli(),
             end = currentSelectedDate.endOfDayMillis()
         )
+
+        val currentSelectedDateUtc = currentSelectedDate.toUtcMillis()
+        val tomorrowSelectedDateUtc = currentSelectedDate.plusDays(1).toUtcMillis()
+        if (fromDatePickerState.selectedDateMillis != currentSelectedDateUtc){
+            fromDatePickerState.selectedDateMillis = currentSelectedDateUtc
+            toDatePickerState.selectedDateMillis = tomorrowSelectedDateUtc
+        }
+
+        fromDatePickerState.displayedMonthMillis = currentSelectedDateUtc
+        toDatePickerState.displayedMonthMillis = tomorrowSelectedDateUtc
+
     }
 
     val tasksForDate by taskViewModel.taskForDate.collectAsState(emptyList())
@@ -337,7 +412,8 @@ fun CalenderScreen(
                             date = currentSelectedDate
                         ) else {
                             0
-                        }, createdAt = currentSelectedDate.toMiliis(localTime = localTime)
+                        },
+                        createdAt = currentSelectedDate.toMillis(localTime = localTime)
                     )
                 )
                 switchState = false
@@ -350,14 +426,30 @@ fun CalenderScreen(
                         name = taskName,
                         notification = switchState,
                         description = taskDescription,
-                        eventTime = if (switchState) Calendar.getInstance().toDateTimeInMillis(
+                        eventNotificationTime = if (switchState) Calendar.getInstance().toDateTimeInMillis(
                             hour = timePickerState.hour,
                             minute = timePickerState.minute,
                             date = currentSelectedDate
                         ) else {
                             0
                         },
-                        createdAt = currentSelectedDate.toMiliis(localTime = localTime)
+                        createdAt = currentSelectedDate.toMillis(localTime = localTime),
+                        eventStartTime = fromDatePickerState.selectedDateMillis?.toLocalDate()
+                            ?.toMillis(
+                                localTime = LocalTime.of(
+                                    fromTimePickerState.hour,
+                                    fromTimePickerState.minute
+                                )
+                            )!!,
+                        eventEndTime = toDatePickerState.selectedDateMillis?.toLocalDate()
+                            ?.toMillis(
+                                localTime = LocalTime.of(
+                                    toTimeTimePickerState.hour,
+                                    toTimeTimePickerState.minute
+                                )
+                            )!!
+
+
                     )
                 )
                 switchState = false
@@ -392,6 +484,22 @@ fun CalenderScreen(
             context = localContext,
             onPermissionState = {
                 showPermissionDialog = it
+            },
+            onFromTileClick = {
+                showDate = !showDate
+            },
+            onToTileClick = {
+                showToDate = true
+            },
+            fromTimePickerState = fromTimePickerState,
+            toTimePickerState = toTimeTimePickerState,
+            fromDatePickerState = fromDatePickerState,
+            toDatePickerState = toDatePickerState,
+            onFromTimePicker = {
+                showFromTimePicker = true
+            },
+            onToTimePicker = {
+                showToTimePicker = true
             }
         )
     }
@@ -447,6 +555,8 @@ fun CalenderScreen(
     if (showEventDetails && currentEvent != null) {
         val latestEvent = eventsForDate.find { it.id == currentEvent!!.id } ?: currentEvent!!
 
+        var showEditFromDatePicker by remember { mutableStateOf(false) }
+        var showEditToDatePicker by remember { mutableStateOf(false) }
         var editedDescription by remember(latestEvent.id) { mutableStateOf(latestEvent.description) }
         var editedName by remember(latestEvent.id) { mutableStateOf(latestEvent.name) }
         LaunchedEffect(editedDescription) {
@@ -469,7 +579,95 @@ fun CalenderScreen(
             }
         }
 
+        val editFromDatePicker = rememberDatePickerState(
+            initialSelectedDateMillis = latestEvent.eventStartTime.toLocalDate()
+                .atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli(),
+            selectableDates = object : SelectableDates {
+                override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                    val minDate = latestEvent.eventStartTime.toLocalDate()
+                        .atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                    return utcTimeMillis >= minDate
+                }
+            }
+        )
 
+        val editToDatePicker = rememberDatePickerState(
+            initialSelectedDate = latestEvent.eventEndTime.toLocalDate()
+        )
+        val editFromTimePickerState = rememberTimePickerState(
+            initialHour = latestEvent.eventStartTime.toHour(),
+            initialMinute = latestEvent.eventStartTime.toMinute()
+        )
+        val editToTimePickerState = rememberTimePickerState(
+            initialHour =  latestEvent.eventEndTime.toHour(),
+            initialMinute = latestEvent.eventEndTime.toMinute()
+        )
+
+        if (showEditToDatePicker){
+            DatePickerDialog(
+                onDismissRequest = {
+                    showEditToDatePicker = false
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showEditToDatePicker = false
+                        }
+                    ) {
+                        Text(text = "Confirm")
+                    }
+                },
+                dismissButton = {
+                    OutlinedButton(
+                        onClick = {}
+                    ) {
+                        Text(
+                            text = "Cancel"
+                        )
+                    }
+                }
+            ) {
+
+                DatePicker(
+                    state = editToDatePicker
+                )
+            }
+        }
+
+        if (showEditFromDatePicker){
+           DatePickerDialog(
+               onDismissRequest = {
+                   showEditFromDatePicker = false
+               },
+               dismissButton = {
+                   OutlinedButton(
+                       onClick = {
+                           showEditFromDatePicker = false
+                       }
+                   ) {
+                       Text(
+                           text = "Cancel"
+                       )
+                   }
+               },
+               confirmButton = {
+                   Button(
+                       onClick = {
+                           showEditFromDatePicker = false
+
+                       }
+                   ) {
+                       Text(
+                           text = "Confirm"
+                       )
+                   }
+               }
+           ) {
+               DatePicker(
+                   state = editFromDatePicker
+               )
+           }
+        }
         SheetToEditEvent(
             onDismiss = {
                 showEventDetails = false
@@ -477,7 +675,52 @@ fun CalenderScreen(
             },
             onValueChange = {},
             onNameValueChange = {},
-            event = currentEvent!!
+            onStartTimeChipClick = {
+                showEditFromDatePicker = true
+            },
+            onEndTimeChipClick = {
+                showEditToDatePicker = true
+            },
+            event = currentEvent!!,
+            fromDatePickerState = editFromDatePicker,
+            toDatePickerState = editToDatePicker,
+            fromTimePickerState = editFromTimePickerState,
+            toTimePickerState = editToTimePickerState,
+            onUpdateEvent = {
+                if (editToDatePicker.selectedDateMillis!! < editFromDatePicker.selectedDateMillis!!.toLong()) {
+                    Toast.makeText(
+                        localContext,
+                        "Start date must be earlier than or equal to the end date.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } else {
+                    taskViewModel.updateEvent(
+
+                        latestEvent.copy(
+                            name = editedName,
+                            description = editedDescription,
+                            eventStartTime = editFromDatePicker.selectedDateMillis!!.toLocalDate()
+                                .toMillis(
+                                    localTime = LocalTime.of(
+                                        editFromTimePickerState.hour, editFromTimePickerState.minute
+                                    ),
+                                ),
+                            eventEndTime = editToDatePicker.selectedDateMillis!!.toLocalDate()
+                                .toMillis(
+                                    localTime = LocalTime.of(
+                                        editToTimePickerState.hour, editToTimePickerState.minute
+                                    )
+                                )
+                        )
+                    )
+                }
+
+            },
+            onDeleteEvent = {
+                taskViewModel.deleteEvent(
+                    latestEvent
+                )
+            }
         )
     }
 
@@ -506,6 +749,9 @@ fun CalenderScreen(
                     OutlinedButton(
                         onClick = {
                             showTime = false
+                            switchState =false
+                            timePickerState.hour = localTime.hour
+                            timePickerState.minute = localTime.minute
                         }
                     ) {
                         Text(
@@ -525,6 +771,8 @@ fun CalenderScreen(
                 onDismissRequest = {
                     showTime = false
                     switchState = false
+                    timePickerState.hour = localTime.hour
+                    timePickerState.minute = localTime.minute
                 },
                 properties = DialogProperties(),
                 title = {
@@ -534,6 +782,159 @@ fun CalenderScreen(
                 },
 
                 )
+        }
+
+        if (showFromTimePicker){
+            TimePickerDialog(
+                title = {
+                    Text(
+                        text = "Select from time "
+                    )
+                },
+                onDismissRequest = {
+                    showFromTimePicker = false
+                },
+                dismissButton = {
+                    OutlinedButton(
+                        onClick = {
+                            showFromTimePicker = false
+                        }
+                    ) {
+                        Text(
+                            text = "Cancel"
+                        )
+                    }
+                },
+
+                confirmButton = {
+                    Button(
+                        modifier = modifier.padding(
+                            start = 8.dp
+                        ),
+                        onClick = {
+
+                            showFromTimePicker = false
+                        }
+                    ) {
+                        Text(
+                            text = "Confirm"
+                        )
+                    }
+                }
+            ) {
+                TimePicker(
+                    state = fromTimePickerState
+                )
+            }
+        }
+        if (showToTimePicker){
+            TimePickerDialog(
+                title = {
+                    Text(
+                        text = "Select To time "
+                    )
+                },
+                onDismissRequest = {
+                    showToTimePicker = false
+                },
+                dismissButton = {
+                    OutlinedButton(
+                        onClick = {
+                           showToTimePicker = false
+                        }
+                    ) {
+                        Text(
+                            text = "Cancel"
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        modifier = modifier.padding(
+                            start = 8.dp
+                        ),
+                        onClick = {
+                            showToTimePicker = false
+                        }
+                    ) {
+                        Text(
+                            text = "Confirm"
+                        )
+                    }
+                }
+            ) {
+                TimePicker(
+                    state = toTimeTimePickerState
+                )
+            }
+        }
+        if (showDate){
+            DatePickerDialog(
+                onDismissRequest = {
+                    showDate = false
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showDate = false
+                        }
+                    ) {
+                        Text(
+                            text = "Confirm"
+                        )
+                    }
+                },
+                dismissButton = {
+                    OutlinedButton(
+                        onClick = {
+                            showDate = false
+                        }
+                    ) {
+                        Text(
+                            text = "Cancel"
+                        )
+                    }
+                }
+            ) {
+                DatePicker(
+                    state = fromDatePickerState
+                )
+            }
+
+        }
+        if (showToDate){
+            DatePickerDialog(
+                onDismissRequest = {
+                    showToDate = false
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                           showToDate = false
+                        }
+                    ) {
+                        Text(
+                            text = "Confirm"
+                        )
+                    }
+                },
+                dismissButton = {
+                    OutlinedButton(
+                        onClick = {
+                            showToDate = false
+                        }
+                    ) {
+                        Text(
+                            text = "Cancel"
+                        )
+                    }
+                }
+            ) {
+                DatePicker(
+                    state = toDatePickerState
+                )
+            }
+
         }
         Column(
             modifier = modifier
@@ -603,12 +1004,20 @@ fun CalenderScreen(
                      },
                      monthHeader = {
                          MonthHeader(
+
                              monthName = it.yearMonth.month.toString(),
                              weekName = it.weekDays.first().map {
                                  it.date.dayOfWeek.toString().take(3).lowercase()
                                      .replaceFirstChar {
                                          it.uppercase()
                                      }
+                             },
+                             onClick = {
+                                 scope.launch {
+                                     state
+                                     state.animateScrollToMonth(currentMonth)
+
+                                 }
                              }
                          )
                      }
@@ -618,12 +1027,12 @@ fun CalenderScreen(
 
 
           Column(
-              modifier = modifier.animateContentSize()
+              modifier = modifier
           ) {
               AnimatedContent(
                   modifier = modifier
-                      .align(Alignment.CenterHorizontally)
-                      .animateContentSize(),
+                     // .animateContentSize()
+                      .align(Alignment.CenterHorizontally),
                   targetState = tasksForDate.isNotEmpty() || eventsForDate.isNotEmpty()
               ) { it ->
 
@@ -633,7 +1042,7 @@ fun CalenderScreen(
                               .padding(
                                   horizontal = 16.dp
                               )
-                              .animateContentSize()
+
                       ) {
                           item {
                               ButtonGroup(
@@ -683,21 +1092,6 @@ fun CalenderScreen(
                                                               .padding(
                                                                   vertical = 2.dp
                                                               ),
-                                                          //.animateEnterExit(),
-//                                                              .animateEnterExit(
-//                                                                  enter = scaleIn(
-//                                                                      animationSpec = spring(
-//                                                                          dampingRatio = Spring.DampingRatioMediumBouncy,
-//                                                                          stiffness = Spring.StiffnessMedium
-//                                                                      )
-//                                                                  ),
-//                                                                  exit = scaleOut(
-//                                                                      animationSpec = spring(
-//                                                                          dampingRatio = Spring.DampingRatioMediumBouncy,
-//                                                                          stiffness = Spring.StiffnessMedium
-//                                                                      )
-//                                                                  )
-//                                                              ),
                                                           onUpdateTask = { value ->
                                                               taskViewModel.updateTask(
                                                                   tasks = it.copy(
@@ -722,41 +1116,30 @@ fun CalenderScreen(
                                               }
                                           }
                                       }
-                                      1-> AnimatedContent(
-                                          targetState = eventsForDate.isNotEmpty(),
-                                          transitionSpec = {
-                                              scaleIn() togetherWith scaleOut()
-                                          }
-                                      ) {
-                                          if (it){
-                                              Column {
-                                                  eventsForDate.forEach {
-                                                      EventTile(
-                                                          modifier = modifier.animateEnterExit(
-                                                              enter = scaleIn(
-                                                                  animationSpec = spring(
-                                                                      dampingRatio = Spring.DampingRatioMediumBouncy,
-                                                                      stiffness = Spring.StiffnessMedium
-                                                                  )
-                                                              ),
-                                                              exit = scaleOut(
-                                                                  animationSpec = spring(
-                                                                      dampingRatio = Spring.DampingRatioMediumBouncy,
-                                                                      stiffness = Spring.StiffnessMedium
-                                                                  )
-                                                              )
-                                                          ),
-                                                          eventName = it.name,
-                                                         onClick = {
-                                                             taskViewModel.selectEvent(
-                                                                 events = it
-                                                             )
-                                                         }
+                                      1->  Column {
+                                          eventsForDate.forEach {
+                                              EventTile(
+                                                  eventName = it.name,
+                                                  onClick = {
+                                                      taskViewModel.selectEvent(
+                                                          events = it
                                                       )
-                                                  }
-                                              }
+                                                      showEventDetails = true
+                                                  },
+                                                  eventFromDay = it.eventStartTime,
+                                                  eventEndDay = it.eventEndTime
+                                              )
                                           }
                                       }
+
+//                                      1-> AnimatedContent(
+//                                          targetState = eventsForDate.isNotEmpty(),
+////
+//                                      ) {
+//                                          if (it){
+//
+//                                          }
+//                                      }
                                   }
                               }
                           }

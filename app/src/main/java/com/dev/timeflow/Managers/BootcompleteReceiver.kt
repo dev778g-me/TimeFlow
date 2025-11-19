@@ -4,13 +4,12 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import com.dev.timeflow.Data.Model.NotificationAlarmManagerModel
-import com.dev.timeflow.Data.Repo.DataStoreRepo
 import com.dev.timeflow.Data.Repo.EventRepo
 import com.dev.timeflow.Data.Repo.TaskRepo
 import com.dev.timeflow.Managers.notification.TimeFlowAlarmManagerService
-import com.dev.timeflow.Managers.utils.toHour
-import com.dev.timeflow.Managers.utils.toLocalDate
-import com.dev.timeflow.Managers.utils.toMinute
+import com.dev.timeflow.View.utils.toHour
+import com.dev.timeflow.View.utils.toLocalDate
+import com.dev.timeflow.View.utils.toMinute
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -62,9 +61,9 @@ class BootCompleteReceiver (
                         NotificationAlarmManagerModel(
                             id = it.id,
                             title = it.name,
-                            hour = it.eventTime.toHour(),
-                            minute = it.eventTime.toMinute(),
-                            localDate = it.eventTime.toLocalDate()
+                            hour = it.eventNotificationTime.toHour(),
+                            minute = it.eventNotificationTime.toMinute(),
+                            localDate = it.eventNotificationTime.toLocalDate()
                         )
                     }
 

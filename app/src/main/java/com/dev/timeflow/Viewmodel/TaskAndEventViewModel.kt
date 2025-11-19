@@ -14,9 +14,9 @@ import com.dev.timeflow.Data.Repo.DataStoreRepo
 import com.dev.timeflow.Data.Repo.EventRepo
 import com.dev.timeflow.Data.Repo.TaskRepo
 import com.dev.timeflow.Managers.notification.TimeFlowAlarmManagerService
-import com.dev.timeflow.Managers.utils.toHour
-import com.dev.timeflow.Managers.utils.toLocalDate
-import com.dev.timeflow.Managers.utils.toMinute
+import com.dev.timeflow.View.utils.toHour
+import com.dev.timeflow.View.utils.toLocalDate
+import com.dev.timeflow.View.utils.toMinute
 import com.dev.timeflow.View.Navigation.Routes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -144,14 +144,14 @@ class TaskAndEventViewModel @Inject constructor(
             eventRepo.insertEvent(
                 events = events
             )
-            if (events.notification && events.eventTime != 0.toLong()){
+            if (events.notification && events.eventNotificationTime != 0.toLong()){
                scheduleNotification(
                    notificationAlarmManagerModel = NotificationAlarmManagerModel(
                        id = events.id,
                        title = events.name,
-                       hour = events.eventTime.toHour(),
-                       minute = events.eventTime.toMinute(),
-                       localDate = events.eventTime.toLocalDate(),
+                       hour = events.eventNotificationTime.toHour(),
+                       minute = events.eventNotificationTime.toMinute(),
+                       localDate = events.eventNotificationTime.toLocalDate(),
                    )
                )
             } else {
@@ -320,8 +320,8 @@ class TaskAndEventViewModel @Inject constructor(
                 NotificationAlarmManagerModel(
                     id = it.id,
                     title = it.name,
-                    hour = it.eventTime.toHour(),
-                    minute = it.eventTime.toMinute(),
+                    hour = it.eventNotificationTime.toHour(),
+                    minute = it.eventNotificationTime.toMinute(),
                     localDate = it.createdAt.toLocalDate()
                 )
             }
@@ -363,6 +363,17 @@ class TaskAndEventViewModel @Inject constructor(
 
     fun readCalendarType(): Flow<Int> {
         return dataStoreRepo.readCalenderType()
+    }
+
+
+    fun saveName(name: String) {
+        viewModelScope.launch {
+            dataStoreRepo.saveName(name = name)
+        }
+    }
+
+    fun readName(): Flow<String> {
+        return dataStoreRepo.readName()
     }
 
 

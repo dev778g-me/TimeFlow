@@ -6,11 +6,10 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,25 +22,33 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
+import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TimePickerState
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.ToggleButtonDefaults
+import androidx.compose.material3.isPm
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -49,16 +56,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import androidx.glance.LocalContext
 import com.composables.icons.lucide.Bell
-import com.composables.icons.lucide.Clock
 import com.composables.icons.lucide.FlagTriangleRight
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Notebook
 import com.composables.icons.lucide.Signature
 import com.dev.timeflow.Data.Model.ImportanceChipModel
 import com.dev.timeflow.Data.Model.SavingModel
+import com.dev.timeflow.View.utils.toLocalDate
+import java.time.LocalDate
 import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
@@ -72,8 +80,16 @@ fun SheetToAddEventAndTask(
     selectedSavingType : Int,
     isButtonEnabled : Boolean,
     timerState : TimePickerState,
+    fromTimePickerState : TimePickerState,
+    toTimePickerState: TimePickerState,
+    fromDatePickerState: DatePickerState,
+    toDatePickerState: DatePickerState,
+    onFromTimePicker: () -> Unit,
+    onToTimePicker : () -> Unit,
     onTaskSave : () -> Unit,
     onEventSave : () -> Unit,
+    onFromTileClick : () -> Unit,
+    onToTileClick : () -> Unit,
     onSelectedImportantChipChange : (Int) -> Unit,
     onTaskNameChange : (String) -> Unit,
     onTaskDescriptionChange : (String) -> Unit,
@@ -86,10 +102,26 @@ fun SheetToAddEventAndTask(
     taskName : String,
     taskDescription : String,
     selectedImportantChip : Int,
+
     context : Context
 ) {
     val localContext = androidx.compose.ui.platform.LocalContext.current
+    val primary = MaterialTheme.colorScheme.primary
+    val formatter = DateTimeFormatter.ofPattern("h:mm a")
+    val fromFormattedTime = remember(fromTimePickerState.hour, fromTimePickerState.minute) {
+        val localTime = LocalTime.of(fromTimePickerState.hour, fromTimePickerState.minute)
+
+        localTime.format(formatter)
+    }
+    val toFormattedTime = remember(toTimePickerState.hour, toTimePickerState.minute) {
+        val localTime = LocalTime.of(toTimePickerState.hour, toTimePickerState.minute)
+        localTime.format(formatter)
+    }
+
     ModalBottomSheet(
+      sheetState = rememberModalBottomSheetState(
+          skipPartiallyExpanded = true
+      ),
         onDismissRequest = {
             onDismiss.invoke()
         }
@@ -162,7 +194,7 @@ fun SheetToAddEventAndTask(
                                         "Please grant notification permission to enable reminders",
                                         Toast.LENGTH_LONG
                                     ).show()
-onPermissionState.invoke(true)
+                                    onPermissionState.invoke(true)
 
                                 } else {
                                     // if permission is granted we are showwing the picker
@@ -268,6 +300,115 @@ onPermissionState.invoke(true)
                 modifier = modifier.height(8.dp)
             )
 
+           AnimatedContent(
+               targetState = selectedSavingType == 0
+           ) {
+               if (it){
+                   Column() {
+                       ListItem(
+                           colors = ListItemDefaults.colors(
+                               containerColor = MaterialTheme.colorScheme.surfaceContainer
+                           ),
+                           modifier = modifier
+                               .clip(RoundedCornerShape(12.dp))
+                               .clickable(
+                                   onClick = {
+
+                                   }
+                               ),
+                           overlineContent = {
+                               Text(
+                                   text = "From"
+                               )
+                           },
+                           headlineContent = {
+                               Row(
+                                   modifier = modifier.fillMaxWidth(),
+                                   verticalAlignment = Alignment.CenterVertically,
+                                   horizontalArrangement = Arrangement.SpaceBetween
+                               ) {
+                                   AssistChip(
+                                       label = {
+                                           Text(
+                                               text = fromDatePickerState.selectedDateMillis?.toLocalDate()!!.format(
+                                                   DateTimeFormatter.ofPattern("MMMM d yyyy")
+                                               ),
+                                               color = primary
+                                           )
+                                       },
+                                       onClick = {
+                                           onFromTileClick.invoke()
+                                       }
+                                   )
+
+
+                                   TextButton(
+                                       onClick = {
+                                           onFromTimePicker.invoke()
+                                       }
+                                   ) {
+                                       Text(
+                                           text = fromFormattedTime,
+                                           color = primary
+                                       )
+                                   }
+
+                               }
+                           },
+
+                       )
+                       Spacer(
+                           modifier = modifier.height(8.dp)
+                       )
+                       ListItem(
+                           colors = ListItemDefaults.colors(
+                               containerColor = MaterialTheme.colorScheme.surfaceContainer
+                           ),
+                           modifier = modifier.clip(RoundedCornerShape(12.dp)),
+                           overlineContent = {
+                               Text(
+                                   text = "To"
+                               )
+                           },
+                           headlineContent = {
+                               Row(
+                                   modifier = modifier.fillMaxWidth(),
+                                   verticalAlignment = Alignment.CenterVertically,
+                                   horizontalArrangement = Arrangement.SpaceBetween
+                               ) {
+                                   AssistChip(
+                                       onClick = {
+                                           onToTileClick.invoke()
+                                       },
+                                       label = {
+                                           Text(
+                                               text = toDatePickerState.selectedDateMillis!!.toLocalDate()
+                                                   .format(
+                                                       DateTimeFormatter.ofPattern("MMMM d yyyy")
+                                                   ),
+                                               color = primary
+                                           )
+                                       }
+                                   )
+
+                                   TextButton(
+                                           onClick = {
+                                               onToTimePicker.invoke()
+                                           }
+                                       ) {
+                                           Text(
+                                               text = toFormattedTime,
+                                               color = primary
+                                           )
+                                       }
+
+                               }
+                           },
+
+                       )
+                   }
+               }
+           }
             AnimatedContent(
                 targetState = selectedSavingType == 1
             ) {
@@ -324,22 +465,22 @@ onPermissionState.invoke(true)
                 }
             }
             AnimatedContent(
-                targetState = switchState, transitionSpec = {
+                targetState = switchState && selectedSavingType ==1, transitionSpec = {
                     scaleIn() togetherWith scaleOut()
                 }) {
                 if (it) {
-                 Button(
-                     modifier = modifier.fillMaxWidth(),
-                     onClick = {
-                        onTimeState.invoke(
-                            !showTimeState
+                    Button(
+                        modifier = modifier.fillMaxWidth(),
+                        onClick = {
+                            onTimeState.invoke(
+                                !showTimeState
+                            )
+                        }
+                    ) {
+                        Text(
+                            text = "${timerState.hour} ${timerState.minute}"
                         )
-                     }
-                 ) {
-                     Text(
-                         text = "Select Time"
-                     )
-                 }
+                    }
                 }
             }
             Button(
@@ -351,10 +492,11 @@ onPermissionState.invoke(true)
                     ),
                 shape = RoundedCornerShape(12.dp),
                 onClick = {
-                    if (switchState){
+                    if (switchState) {
                         if (timerState.hour <= LocalTime.now().hour &&
-                            timerState.minute <= LocalTime.now().minute){
-                            Toast.makeText(localContext,"the timeless", Toast.LENGTH_LONG).show()
+                            timerState.minute <= LocalTime.now().minute
+                        ) {
+                            Toast.makeText(localContext, "the timeless", Toast.LENGTH_LONG).show()
                         }
                     }
                     if (selectedSavingType == 0) {

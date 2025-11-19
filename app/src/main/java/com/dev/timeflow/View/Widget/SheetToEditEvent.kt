@@ -1,22 +1,35 @@
 package com.dev.timeflow.View.Widget
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TimePickerState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -27,26 +40,35 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Bell
+import com.composables.icons.lucide.Delete
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.PenLine
+import com.composables.icons.lucide.Trash
 import com.dev.timeflow.Data.Model.Events
-import com.dev.timeflow.Data.Model.Tasks
-import com.dev.timeflow.Managers.utils.toHour
-import com.dev.timeflow.Managers.utils.toMinute
+import com.dev.timeflow.View.utils.toHour
+import com.dev.timeflow.View.utils.toLocalDate
+import com.dev.timeflow.View.utils.toMinute
 import kotlinx.coroutines.delay
+import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SheetToEditEvent(
     modifier: Modifier = Modifier,
+    fromDatePickerState: DatePickerState,
+    toDatePickerState: DatePickerState,
+    fromTimePickerState: TimePickerState,
+    toTimePickerState: TimePickerState,
     onDismiss :() -> Unit,
     onValueChange : (String) -> Unit,
     onNameValueChange : (String) -> Unit,
+    onStartTimeChipClick : () -> Unit,
+    onEndTimeChipClick : () -> Unit,
+    onUpdateEvent : () -> Unit,
+    onDeleteEvent : () -> Unit,
     event: Events
 ) {
     var description by remember(event.id) { mutableStateOf(event.description ?: "") }
@@ -68,6 +90,10 @@ fun SheetToEditEvent(
     }
 
     ModalBottomSheet(
+        contentWindowInsets = { WindowInsets(0.dp) },
+        sheetState = rememberModalBottomSheetState (
+            skipPartiallyExpanded = true
+        ),
         onDismissRequest = {
             onDismiss.invoke()
         }
@@ -95,7 +121,27 @@ fun SheetToEditEvent(
                         name = it
                     }
                 )
-
+                Spacer(
+                    modifier = modifier.weight(1f)
+                )
+                IconButton(
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError
+                    ),
+                    onClick = {
+                        onDeleteEvent()
+                        onDismiss.invoke()
+                    }
+                ) {
+                    Icon(
+                        modifier = modifier.size(
+                            ButtonDefaults.IconSize
+                        ),
+                        imageVector = Lucide.Trash,
+                        contentDescription = null
+                    )
+                }
             }
             TextField(
                 colors = TextFieldDefaults.colors(
@@ -112,7 +158,7 @@ fun SheetToEditEvent(
                     description = it
                 },
                 placeholder = {
-                    event.description?.ifEmpty { "Enter description" }?.let { Text(text = it) }
+                    event.description.ifEmpty { "Enter description" }.let { Text(text = it) }
                 },
                 label = {
 
@@ -138,9 +184,9 @@ fun SheetToEditEvent(
             )
 
             ListItem(
-                modifier = modifier.
-                padding(top = 8.dp).
-                clip(RoundedCornerShape(12.dp)),
+                modifier = modifier
+                    .padding(vertical = 8.dp)
+                    .clip(RoundedCornerShape(12.dp)),
                 tonalElevation = 10.dp,
                 overlineContent = {
                     Text("notification time")
@@ -154,7 +200,7 @@ fun SheetToEditEvent(
                 }, headlineContent = {
                     if (event.notification){
                         Text(
-                            text = "${event.eventTime?.toHour()}:${event.eventTime?.toMinute()}"
+                            text = "${event.eventNotificationTime?.toHour()}:${event.eventNotificationTime?.toMinute()}"
                         )
                     } else {
                         Text(
@@ -162,6 +208,113 @@ fun SheetToEditEvent(
                         )
                     }
                 })
+            ListItem(
+                colors = ListItemDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                ),
+                modifier = modifier.clip(RoundedCornerShape(12.dp)),
+                overlineContent = {
+                    Text(
+                        text = "To"
+                    )
+                },
+                headlineContent = {
+                    Row(
+                        modifier = modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        AssistChip(onClick = {
+                            onStartTimeChipClick.invoke()
+                        }, label = {
+                            Text(
+                                text = fromDatePickerState.selectedDateMillis!!.toLocalDate()
+                                    .format(
+                                        DateTimeFormatter.ofPattern("MMMM d yyyy")
+                                    ), color = MaterialTheme.colorScheme.primary
+                            )
+                        })
+
+                        TextButton(
+                            onClick = {
+                                onEndTimeChipClick.invoke()
+                            }) {
+                            Text(
+                                text = "${event.eventStartTime.toHour()} ${event.eventStartTime.toMinute()} ",
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+
+                    }
+                },
+
+                )
+            ListItem(
+                colors = ListItemDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                ),
+                modifier = modifier
+                    .padding(
+                        vertical = 8.dp
+                    )
+                    .clip(RoundedCornerShape(12.dp)),
+                overlineContent = {
+                    Text(
+                        text = "To"
+                    )
+                },
+                headlineContent = {
+                    Row(
+                        modifier = modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        AssistChip(
+                            onClick = {
+                                //onToTileClick.invoke()
+                            },
+                            label = {
+                                Text(
+                                    text = event.eventEndTime.toLocalDate()
+                                        .format(
+                                            DateTimeFormatter.ofPattern("MMMM d yyyy")
+                                        ),
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        )
+
+                        TextButton(
+                            onClick = {
+
+                            }
+                        ) {
+                            Text(
+                                text = "${event.eventEndTime.toHour()} ${event.eventEndTime.toMinute()} ",
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+
+                    }
+                },
+
+                )
+
+            OutlinedButton(
+                shape = RoundedCornerShape(12.dp),
+                modifier = modifier.fillMaxWidth(),
+                onClick = {
+                    onUpdateEvent.invoke()
+                    onDismiss.invoke()
+                }
+            ) {
+                Text(
+                    modifier = modifier.padding(
+                        vertical = 8.dp
+                    ),
+                    text = "Update Event"
+                )
+            }
         }
     }
 }

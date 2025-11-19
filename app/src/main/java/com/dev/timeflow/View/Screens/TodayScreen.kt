@@ -15,7 +15,6 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -41,7 +40,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -60,8 +58,8 @@ import com.composables.icons.lucide.CalendarRange
 import com.composables.icons.lucide.ListTodo
 import com.composables.icons.lucide.Lucide
 import com.dev.timeflow.Data.Model.TabModel
-import com.dev.timeflow.Managers.utils.componets.EventTile
-import com.dev.timeflow.Managers.utils.componets.TaskTile
+import com.dev.timeflow.View.utils.componets.EventTile
+import com.dev.timeflow.View.utils.componets.TaskTile
 import com.dev.timeflow.Viewmodel.TaskAndEventViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -478,6 +476,8 @@ fun TodayScreen(modifier: Modifier = Modifier) {
                                         ),
                                         eventName = it.name,
                                         onClick = {},
+                                        eventFromDay = it.eventStartTime,
+                                        eventEndDay = it.eventEndTime
                                     )
                                 }
                             }

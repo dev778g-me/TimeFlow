@@ -26,4 +26,9 @@ sealed interface Routes {
     data object CalendarScreen : Routes{
         override val route = "m_new_task_screen"
     }
+
+@Serializable
+    data object PrivacyScreen : Routes{
+        override val route = "privacy_screen"
+    }
 }

@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -22,6 +23,8 @@ class DataStoreRepo @Inject constructor(
    private object PrefKey {
        val onBoardingKey = booleanPreferencesKey("on_boarding_key")
        val selectedCalendarType = intPreferencesKey("selected_calender_type")
+
+       val userName = stringPreferencesKey("user_name")
    }
 
 
@@ -46,6 +49,23 @@ class DataStoreRepo @Inject constructor(
     suspend fun selectedCalendar(type : Int){
         dataStore.edit {
             it[PrefKey.selectedCalendarType] = type
+        }
+    }
+
+    suspend fun saveName (name : String){
+        dataStore.edit {
+            it[PrefKey.userName] = name
+        }
+    }
+
+
+    fun readName () : Flow<String>{
+        return dataStore.data.catch {
+            if (it is IOException) emit(emptyPreferences()) else it
+        }.map {
+            value ->
+            val userName  = value[PrefKey.userName] ?:""
+            userName
         }
     }
 

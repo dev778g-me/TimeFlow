@@ -9,7 +9,9 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,6 +25,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,7 +51,7 @@ fun MonthCalender(
     val todayDayOfMonth = date.dayOfMonth
     val dayPosition = day.position == DayPosition.MonthDate
     val isSelected = selectedDate == day.date
-
+    val isToday = date == day.date
     val boxSelectedColor by animateColorAsState(
 
         targetValue = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent
@@ -70,6 +73,11 @@ fun MonthCalender(
                 .aspectRatio(1f)
                 .padding(4.dp)
                 .clip(CircleShape)
+                .border(
+                    width = if (isToday) 2.dp else 0.dp,
+                    color = if (isToday) MaterialTheme.colorScheme.primary else Color.Transparent,
+                    shape = CircleShape
+                )
                 .background(
                     boxSelectedColor
                 )
@@ -106,6 +114,7 @@ fun MonthCalender(
 fun MonthHeader(
     modifier: Modifier = Modifier,
     weekName : List<String>,
+    onClick: () -> Unit,
     monthName : String
     ) {
     Column(
@@ -116,11 +125,17 @@ fun MonthHeader(
                 bottom = 8.dp,
                 start = 12.dp
 
+            ).clickable(
+                onClick = {
+                    onClick.invoke()
+                },
+                indication = null,
+                interactionSource = remember{MutableInteractionSource()}
             ),
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.primary,
-            text = monthName.toLowerCase().replaceFirstChar {
-                it.toUpperCase()
+            text = monthName.lowercase().replaceFirstChar {
+                it.uppercase()
             },
             fontWeight = FontWeight.Bold
         )

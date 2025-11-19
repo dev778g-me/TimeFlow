@@ -1,4 +1,4 @@
-package com.dev.timeflow.Managers.utils.componets
+package com.dev.timeflow.View.utils.componets
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
