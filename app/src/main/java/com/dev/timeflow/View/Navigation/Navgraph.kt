@@ -1,5 +1,6 @@
 package com.dev.timeflow.View.Navigation
 
+import android.content.Intent
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -26,6 +27,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.TaskAlt
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.TaskAlt
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenu
@@ -38,9 +40,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -59,6 +63,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
@@ -73,19 +78,24 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import coil3.Uri
 import com.composables.icons.lucide.CalendarDays
 import com.composables.icons.lucide.CalendarRange
 import com.composables.icons.lucide.CalendarX2
+import com.composables.icons.lucide.Dock
+import com.composables.icons.lucide.EllipsisVertical
 import com.composables.icons.lucide.House
 import com.composables.icons.lucide.Info
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Menu
+import com.composables.icons.lucide.Star
+import com.composables.icons.lucide.User
 import com.dev.timeflow.Data.Model.DropdownModel
 import com.dev.timeflow.Data.Model.NavigationDrawerModel
 import com.dev.timeflow.R
 
 import com.dev.timeflow.View.Screens.CalenderScreen
-import com.dev.timeflow.View.Screens.PrivacyPolicyScreen
+
 import com.dev.timeflow.View.Screens.TodayScreen
 import com.dev.timeflow.View.Screens.onBoarding.FeatureScreen
 import com.dev.timeflow.View.Screens.onBoarding.NotificationScreen
@@ -98,19 +108,67 @@ import kotlinx.coroutines.launch
 fun NavGraph(modifier: Modifier = Modifier, startDest : String) {
     val navController = rememberNavController()
     val currentRoute by navController.currentBackStackEntryAsState()
-    var showDropDown by remember { mutableStateOf(false) }
-    var selectedDrawerItem by rememberSaveable() {mutableStateOf(0) }
+    var showNameChange by rememberSaveable() {mutableStateOf(false) }
+    var showDropDown by rememberSaveable() { mutableStateOf(false) }
+    var showTimerScreenDropDown by rememberSaveable() { mutableStateOf(false) }
+
     val isCompleted = startDest == Routes.TimerScreen.route
     var userName by rememberSaveable() {mutableStateOf("") }
     val taskAndEventViewModel : TaskAndEventViewModel = hiltViewModel()
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val selectedCalendarType by taskAndEventViewModel.readCalendarType().collectAsStateWithLifecycle(0)
     val scope = rememberCoroutineScope()
-    val keyboardController = LocalSoftwareKeyboardController.current
+    val name by taskAndEventViewModel.readName().collectAsStateWithLifecycle("")
+    val context = LocalContext.current
+if (showNameChange){
+    ModalBottomSheet(
+        onDismissRequest = {
+            showNameChange = false
+        }
+    ) {
+        Column(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(
+                    horizontal = 16.dp
+                )
+        ) {
+            OutlinedTextField(
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                modifier = modifier.fillMaxWidth(),
+                value = userName,
+                onValueChange = {
+                    userName = it
+                },
+                placeholder = { Text("What should we call you?") },
+                label = { Text("Your name") }
 
-    LaunchedEffect(drawerState.isClosed) {
-        keyboardController?.hide()
+            )
+            Spacer(
+                modifier = modifier.height(16.dp)
+            )
+            Button(
+                shape = RoundedCornerShape(12.dp),
+                modifier = modifier.fillMaxWidth(),
+                onClick = {
+                    showNameChange = false
+                    if (userName.isNotEmpty()){
+                        taskAndEventViewModel.saveName(
+                            name = userName
+                        )
+                    }
+                }
+            ) {
+
+                Text(
+                    modifier = modifier.padding(
+                        vertical = 8.dp
+                    ),
+                    text = "Save")
+            }
+        }
     }
+}
     val dropdownItem = listOf<DropdownModel>(
         DropdownModel(
             title = "Week",
@@ -161,133 +219,32 @@ fun NavGraph(modifier: Modifier = Modifier, startDest : String) {
 
 
 
-    ModalNavigationDrawer(
-       // gesturesEnabled = false,
-        drawerState = drawerState,
-        drawerContent = {
-            ModalDrawerSheet(
 
-            ) {
-
-                Column(
-                //    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = modifier.padding(
-                        horizontal = 16.dp,
-                        vertical = 16.dp
-                    )
-                ) {
-
-                   ListItem(
-                       modifier = modifier.fillMaxWidth(0.7f),
-                       colors = ListItemDefaults.colors(
-                           containerColor = Color.Transparent
-                       ),
-                       headlineContent = {
-                           Row(
-                               modifier = modifier.fillMaxWidth(),
-                               verticalAlignment = Alignment.CenterVertically
-                           ) {
-
-                               Text(
-                                   modifier = modifier.weight(1f),
-                                   text = "Timeflow",
-                                   style = MaterialTheme.typography.headlineSmall
-                               )
-                               Icon(
-                                   modifier = modifier.size(ButtonDefaults.LargeIconSize + 12.dp),
-                                   painter = painterResource(
-                                       id = R.drawable.timeflow_mono_logo,
-
-                                       ),
-                                   contentDescription = null
-                              )
-                          }
-                       },
-                       supportingContent = {
-                           Text(
-                               text = "Version 1.2",
-                               fontFamily = FontFamily.Monospace
-                           )
-                       }
-
-                   )
-                    Spacer(modifier = modifier.height(40.dp))
-                    TextField(
-                        modifier = modifier.padding(
-                            bottom = 8.dp
-                        ),
-                        value = userName,
-                        onValueChange = {
-                            userName = it
-                        },
-                        label = {
-                            Text("user name")
-                        }
-                    )
-
-                    navigationDrawerItems.forEachIndexed { index , item ->
-                        val isSelected = selectedDrawerItem == index
-                        NavigationDrawerItem(
-                            modifier = modifier
-                                .fillMaxWidth(0.7f)
-                                .padding(
-                                    vertical = 8.dp
-                                ),
-                            selected = isSelected,
-                            label = {
-                                Text(
-                                    item.name
-                                )
-                            },
-                            onClick = {
-                                selectedDrawerItem = index
-                              //  navController.navigate(Routes.PrivacyScreen.route)
-                            },
-                            icon = {
-                                Icon(
-                                    imageVector = item.selectedIcon, contentDescription = null
-                                )
-                            })
-                    }
-                }
-            }
-
-        },
-
-        ) {
        Scaffold(
            topBar = {
-              if (isCompleted){
+              if (isCompleted) {
                   TopAppBar(
-                      navigationIcon = {
 
-                          IconButton(
-                              onClick = {
-                                  scope.launch {
-                                      drawerState.open()
-                                  }
-                              }
-                          ) {
-                              Icon(imageVector = Lucide.Menu, contentDescription = null)
-                          }
-
-                      },
                       title = {
                           Text(
                               text = buildAnnotatedString {
-                                  withStyle(style = SpanStyle(
-                                      color = MaterialTheme.colorScheme.onSurface.copy(
-                                          alpha = 0.8f
+                                  withStyle(
+                                      style = SpanStyle(
+                                          color = MaterialTheme.colorScheme.onSurface.copy(
+                                              alpha = 0.8f
+                                          )
                                       )
-                                  )){
-                                      append("Welcome back, ")
+                                  ) {
+                                      append("Welcome back ")
                                   }
 
-                                  withStyle(style = SpanStyle(
-                                      fontWeight = FontWeight.ExtraBold,
-                                      color = MaterialTheme.colorScheme.onSurfaceVariant
-                                  )){
-                                      append("Dev")
+                                  withStyle(
+                                      style = SpanStyle(
+                                          fontWeight = FontWeight.ExtraBold,
+                                          color = MaterialTheme.colorScheme.onSurfaceVariant
+                                      )
+                                  ) {
+                                      append(name)
                                   }
                               },
                               style = MaterialTheme.typography.titleMedium.copy(
@@ -374,6 +331,73 @@ fun NavGraph(modifier: Modifier = Modifier, startDest : String) {
                                   }
 
 
+                              }else{
+                                  IconButton(
+                                      onClick = {
+                                          showTimerScreenDropDown = true
+                                      }
+                                  ) {
+                                      Icon(
+                                          imageVector = Lucide.EllipsisVertical,
+                                          contentDescription = null
+                                      )
+                                  }
+
+                                  DropdownMenu(
+                                      expanded = showTimerScreenDropDown,
+                                      onDismissRequest = {
+                                          showTimerScreenDropDown = false
+                                      }
+                                  ) {
+                                      DropdownMenuItem(
+                                          leadingIcon = {
+                                              Icon(
+                                                  imageVector = Lucide.User,
+                                                  contentDescription = null
+                                              )
+                                          },
+                                          onClick = {
+                                              showTimerScreenDropDown = false
+                                              showNameChange = true
+                                          },
+                                          text = {
+                                              Text("Change name")
+                                          }
+                                      )
+                                      DropdownMenuItem(
+                                          leadingIcon = {
+                                              Icon(
+                                                  imageVector = Lucide.Dock,
+                                                  contentDescription = null
+                                              )
+                                          },
+                                          onClick = {
+                                              showTimerScreenDropDown = false
+                                              val url = "https://timeflow.framer.website/privacypolicy"
+                                              val intent =
+                                                  Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url))
+                                              context.startActivity(intent)
+                                          },
+                                          text = {
+                                              Text("Privacy Policy")
+                                          }
+                                      )
+                                      DropdownMenuItem(
+                                          leadingIcon = {
+                                              Icon(
+                                                  imageVector = Lucide.Star,
+                                                  contentDescription = null
+                                              )
+                                          },
+                                          onClick = {
+                                              showTimerScreenDropDown = false
+
+                                          },
+                                          text = {
+                                              Text("Rate Timeflow")
+                                          }
+                                      )
+                                  }
                               }
                           }
                       }
@@ -385,11 +409,11 @@ fun NavGraph(modifier: Modifier = Modifier, startDest : String) {
 
            },
            bottomBar = {
-              if (isCompleted){
-                  FloatingBottomNav(
-                      navController = navController
-                  )
-              }
+               if (isCompleted) {
+                   FloatingBottomNav(
+                       navController = navController
+                   )
+               }
            },
 
 
@@ -444,17 +468,12 @@ fun NavGraph(modifier: Modifier = Modifier, startDest : String) {
                        )
                    }
 
-                   composable(route = Routes.PrivacyScreen.route) {
-                       PrivacyPolicyScreen()
-                   }
-
 
                }
 
            }
        }
        }
-   }
 
 
 
