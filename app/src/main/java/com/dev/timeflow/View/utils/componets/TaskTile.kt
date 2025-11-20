@@ -33,13 +33,12 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import com.dev.timeflow.View.Widget.NewCheckBox
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
 fun TaskTile(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     taskName: String,
     taskDescription: String?,
     taskTime: Long,

@@ -15,12 +15,15 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.AlertDialog
@@ -33,7 +36,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SelectableDates
@@ -90,17 +93,15 @@ import com.dev.timeflow.R
 import com.dev.timeflow.View.Screens.calenderScreen.MonthCalender
 import com.dev.timeflow.View.Screens.calenderScreen.MonthHeader
 import com.dev.timeflow.View.Screens.calenderScreen.WeekCalender
-import com.dev.timeflow.View.Widget.SheetToAddEventAndTask
-import com.dev.timeflow.View.Widget.SheetToEditEvent
-import com.dev.timeflow.View.Widget.SheetToEditTask
+import com.dev.timeflow.View.utils.componets.SheetToAddEventAndTask
+import com.dev.timeflow.View.utils.componets.SheetToEditEvent
+import com.dev.timeflow.View.utils.componets.SheetToEditTask
 import com.dev.timeflow.View.utils.toHour
 import com.dev.timeflow.View.utils.toLocalDate
 import com.dev.timeflow.View.utils.toMinute
 import com.dev.timeflow.View.utils.toUtcMillis
 import com.kizitonwose.calendar.compose.WeekCalendar
 import com.kizitonwose.calendar.compose.weekcalendar.rememberWeekCalendarState
-import com.kizitonwose.calendar.core.CalendarDay
-import com.kizitonwose.calendar.core.DayPosition
 import com.kizitonwose.calendar.core.atStartOfMonth
 import com.kizitonwose.calendar.core.yearMonth
 import kotlinx.coroutines.launch
@@ -219,7 +220,7 @@ fun CalenderScreen(
                     .atZone(ZoneId.systemDefault())
                     .toLocalDate()
 
-                return !date.isBefore(currentDate)
+                return !date.isBefore(currentSelectedDate)
             }
         },
         yearRange = currentDate.year .. currentDate.plusYears(20).year,
@@ -229,6 +230,15 @@ fun CalenderScreen(
     val toDatePickerState = rememberDatePickerState(
         initialSelectedDate = currentSelectedDate.plusDays(1),
         initialDisplayedMonth = currentSelectedDate.plusDays(1).yearMonth,
+        selectableDates =  object : SelectableDates {
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                val date = Instant.ofEpochMilli(utcTimeMillis)
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate()
+
+                return !date.isBefore(currentSelectedDate.plusDays(1))
+            }
+        },
         yearRange = currentDate.year .. currentDate.plusYears(20).year,
         initialDisplayMode = DisplayMode.Picker
     )
@@ -511,25 +521,7 @@ fun CalenderScreen(
 
         var editedDescription by remember(latestTask.id) { mutableStateOf(latestTask.description) }
         var editedName by remember(latestTask.id) { mutableStateOf(latestTask.name) }
-        LaunchedEffect(editedDescription) {
-            if (editedDescription != latestTask.description) {
-                taskViewModel.updateTask(
-                    tasks = latestTask.copy(
-                        description = editedDescription
-                    )
-                )
-            }
-        }
 
-        LaunchedEffect(editedName) {
-            if (editedName != latestTask.name) {
-                taskViewModel.updateTask(
-                    tasks = latestTask.copy(
-                        name = editedName
-                    )
-                )
-            }
-        }
         SheetToEditTask(
             tasks = latestTask,
             onDismiss = {
@@ -557,42 +549,45 @@ fun CalenderScreen(
 
         var showEditFromDatePicker by remember { mutableStateOf(false) }
         var showEditToDatePicker by remember { mutableStateOf(false) }
+        var showEditFromTimePicker by remember { mutableStateOf(false) }
+        var showEditToTimePicker by remember { mutableStateOf(false) }
         var editedDescription by remember(latestEvent.id) { mutableStateOf(latestEvent.description) }
         var editedName by remember(latestEvent.id) { mutableStateOf(latestEvent.name) }
-        LaunchedEffect(editedDescription) {
-            if (editedDescription != latestEvent.description) {
-                taskViewModel.updateEvent(
-                    events = latestEvent.copy(
-                        description = editedDescription
-                    )
-                )
-            }
-        }
 
-        LaunchedEffect(editedName) {
-            if (editedName != latestEvent.name) {
-                taskViewModel.updateEvent(
-                    events = latestEvent.copy(
-                        name = editedName
-                    )
-                )
-            }
-        }
 
         val editFromDatePicker = rememberDatePickerState(
-            initialSelectedDateMillis = latestEvent.eventStartTime.toLocalDate()
-                .atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli(),
+            initialSelectedDateMillis = latestEvent.eventStartTime
+                .toLocalDate()
+                .atStartOfDay(ZoneOffset.UTC)
+                .toInstant()
+                .toEpochMilli(),
             selectableDates = object : SelectableDates {
                 override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-                    val minDate = latestEvent.eventStartTime.toLocalDate()
-                        .atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                    val minDate = latestEvent.eventStartTime
+                        .toLocalDate()
+                        .atStartOfDay(ZoneOffset.UTC)
+                        .toInstant()
+                        .toEpochMilli()
+
                     return utcTimeMillis >= minDate
                 }
             }
         )
 
+
         val editToDatePicker = rememberDatePickerState(
-            initialSelectedDate = latestEvent.eventEndTime.toLocalDate()
+            initialSelectedDate = latestEvent.eventEndTime.toLocalDate(),
+            selectableDates = object : SelectableDates {
+                override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                    val minDate = latestEvent.eventStartTime
+                        .toLocalDate().plusDays(1)
+                        .atStartOfDay(ZoneOffset.UTC)
+                        .toInstant()
+                        .toEpochMilli()
+
+                    return utcTimeMillis >= minDate
+                }
+            }
         )
         val editFromTimePickerState = rememberTimePickerState(
             initialHour = latestEvent.eventStartTime.toHour(),
@@ -617,15 +612,7 @@ fun CalenderScreen(
                         Text(text = "Confirm")
                     }
                 },
-                dismissButton = {
-                    OutlinedButton(
-                        onClick = {}
-                    ) {
-                        Text(
-                            text = "Cancel"
-                        )
-                    }
-                }
+
             ) {
 
                 DatePicker(
@@ -639,17 +626,7 @@ fun CalenderScreen(
                onDismissRequest = {
                    showEditFromDatePicker = false
                },
-               dismissButton = {
-                   OutlinedButton(
-                       onClick = {
-                           showEditFromDatePicker = false
-                       }
-                   ) {
-                       Text(
-                           text = "Cancel"
-                       )
-                   }
-               },
+
                confirmButton = {
                    Button(
                        onClick = {
@@ -668,18 +645,92 @@ fun CalenderScreen(
                )
            }
         }
+
+        if (showEditFromTimePicker){
+            TimePickerDialog(
+                title = {
+                    Text(
+                        modifier = modifier.padding(
+                            bottom = 8.dp
+                        ),
+                        text = "Select start time",
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                },
+                onDismissRequest = {
+                    showEditFromTimePicker = false
+                },
+
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showEditFromTimePicker = false
+                        }
+                    ) {
+                        Text(
+                            text = "Confirm"
+                        )
+                    }
+                }
+            ) {
+                TimePicker(
+                    state = editFromTimePickerState
+                )
+            }
+        }
+        if (showEditToTimePicker){
+            TimePickerDialog(
+                title = {
+                    Text(
+                        modifier = modifier.padding(
+                            bottom = 8.dp
+                        ),
+                        text = "Select end time",
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                },
+                onDismissRequest = {
+                    showEditToTimePicker = false
+                },
+                confirmButton = {
+                      Button(
+                          onClick = {
+                              showEditToTimePicker = false
+                          }
+                      ) {
+                          Text(
+                              text = "Confirm"
+                          )
+                      }
+                }
+            ) {
+                TimePicker(
+                    state = editToTimePickerState
+                )
+            }
+        }
         SheetToEditEvent(
             onDismiss = {
                 showEventDetails = false
                 taskViewModel.clearEvent()
             },
-            onValueChange = {},
-            onNameValueChange = {},
-            onStartTimeChipClick = {
+            onValueChange = {
+                editedDescription = it
+            },
+            onNameValueChange = {
+                editedName = it
+            },
+            onStartDateChipClick = {
                 showEditFromDatePicker = true
             },
-            onEndTimeChipClick = {
+            onEndDateChipClick = {
                 showEditToDatePicker = true
+            },
+            onStartTimeChipClick = {
+               showEditFromTimePicker = true
+            },
+            onEndTimeChipClick = {
+                showEditToTimePicker = true
             },
             event = currentEvent!!,
             fromDatePickerState = editFromDatePicker,
@@ -1037,14 +1088,15 @@ fun CalenderScreen(
               ) { it ->
 
                   if (it) {
-                      LazyColumn(
+                      Column(
                           modifier = modifier
+                              .fillMaxSize()
                               .padding(
                                   horizontal = 16.dp
                               )
 
                       ) {
-                          item {
+
                               ButtonGroup(
                                   modifier = modifier
                                       .fillMaxWidth()
@@ -1070,28 +1122,33 @@ fun CalenderScreen(
                                                   )
                                               }
                                           },
-                                          label = model.title
+                                          label = if (model.title == "Tasks") "${model.title} ${tasksForDate.size}" else "${model.title} ${eventsForDate.size}",
                                       )
                                   }
                               }
-                          }
 
-                          item {
-                              HorizontalPager(
-                                  state = pageState
-                              ) { page ->
-                                  when(page) {
-                                      0 -> AnimatedContent(
-                                          targetState = tasksForDate.isNotEmpty(),
-                                      ) {
-                                          if (it){
-                                              Column {
-                                                  tasksForDate.forEach {
+
+
+
+                                  HorizontalPager(
+                                      modifier = modifier
+                                          .fillMaxWidth()
+                                          .weight(1f),
+                                      state = pageState,
+                                      beyondViewportPageCount = 0,
+                                      key = {
+                                          it
+                                      }
+                                  ) { page ->
+                                      Box(modifier = modifier
+                                          .fillMaxSize()
+                                          .wrapContentHeight(),contentAlignment = Alignment.TopStart){
+                                          when(page) {
+                                              0 -> LazyColumn(
+                                                  modifier = modifier.fillMaxSize()
+                                              ) {
+                                                  items(tasksForDate){
                                                       TaskTile(
-                                                          modifier = modifier
-                                                              .padding(
-                                                                  vertical = 2.dp
-                                                              ),
                                                           onUpdateTask = { value ->
                                                               taskViewModel.updateTask(
                                                                   tasks = it.copy(
@@ -1114,35 +1171,29 @@ fun CalenderScreen(
                                                       )
                                                   }
                                               }
-                                          }
-                                      }
-                                      1->  Column {
-                                          eventsForDate.forEach {
-                                              EventTile(
-                                                  eventName = it.name,
-                                                  onClick = {
-                                                      taskViewModel.selectEvent(
-                                                          events = it
+                                              1->  LazyColumn (
+                                                  modifier = modifier.fillMaxSize()
+                                              ){
+                                                  items(eventsForDate){
+                                                      EventTile(
+                                                          eventName = it.name,
+                                                          onClick = {
+                                                              taskViewModel.selectEvent(
+                                                                  events = it
+                                                              )
+                                                              showEventDetails = true
+                                                          },
+                                                          eventFromDay = it.eventStartTime,
+                                                          eventEndDay = it.eventEndTime
                                                       )
-                                                      showEventDetails = true
-                                                  },
-                                                  eventFromDay = it.eventStartTime,
-                                                  eventEndDay = it.eventEndTime
-                                              )
+                                                  }
+                                              }
+
                                           }
                                       }
-
-//                                      1-> AnimatedContent(
-//                                          targetState = eventsForDate.isNotEmpty(),
-////
-//                                      ) {
-//                                          if (it){
-//
-//                                          }
-//                                      }
                                   }
-                              }
-                          }
+
+
 
                       }
                   } else {

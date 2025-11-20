@@ -149,6 +149,9 @@ class TaskAndEventViewModel @Inject constructor(
                    notificationAlarmManagerModel = NotificationAlarmManagerModel(
                        id = events.id,
                        title = events.name,
+                       type = 0,
+                       startTime = events.eventStartTime,
+                       endTime = events.eventEndTime,
                        hour = events.eventNotificationTime.toHour(),
                        minute = events.eventNotificationTime.toMinute(),
                        localDate = events.eventNotificationTime.toLocalDate(),
@@ -222,6 +225,7 @@ class TaskAndEventViewModel @Inject constructor(
               scheduleNotification(
                   notificationAlarmManagerModel = NotificationAlarmManagerModel(
                       id = tasks.id,
+                      type = 1,
                       hour = tasks.taskTime!!.toHour(),
                       minute = tasks.taskTime.toMinute(),
                       title = tasks.name,
@@ -300,52 +304,52 @@ class TaskAndEventViewModel @Inject constructor(
     }
 
 
-    fun scheduleAllNotification() {
-        viewModelScope.launch {
-            val tasks = taskRepo.getTaskForScheduling(
-                start = LocalDate.now().atStartOfDay().atZone(
-                    ZoneId.systemDefault()
-                ).toInstant().toEpochMilli()
-            ).first()
-            val events = eventRepo.getEventsForNotification(
-                start = LocalDate.now().atStartOfDay().atZone(
-                    ZoneId.systemDefault()
-                ).toInstant().toEpochMilli()
-            ).first()
-
-            Log.d("TESTSCHEDULE", "tasks ---${tasks}")
-            Log.d("TESTSCHEDULE", "events ---${events}")
-
-            val modelEvent = events.map {
-                NotificationAlarmManagerModel(
-                    id = it.id,
-                    title = it.name,
-                    hour = it.eventNotificationTime.toHour(),
-                    minute = it.eventNotificationTime.toMinute(),
-                    localDate = it.createdAt.toLocalDate()
-                )
-            }
-            val modelTask = tasks.map {
-                NotificationAlarmManagerModel(
-                    id = it.id,
-                    title = it.name,
-                    hour = it.taskTime!!.toHour(),
-                    minute = it.taskTime.toMinute(),
-                    localDate = it.taskTime.toLocalDate()
-                )
-            }
-            Log.d("TESTSCHEDULE", "tasks : ${modelTask}")
-            Log.d("TESTSCHEDULE", "events  : ${modelEvent}")
+//    fun scheduleAllNotification() {
+//        viewModelScope.launch {
+//            val tasks = taskRepo.getTaskForScheduling(
+//                start = LocalDate.now().atStartOfDay().atZone(
+//                    ZoneId.systemDefault()
+//                ).toInstant().toEpochMilli()
+//            ).first()
+//            val events = eventRepo.getEventsForNotification(
+//                start = LocalDate.now().atStartOfDay().atZone(
+//                    ZoneId.systemDefault()
+//                ).toInstant().toEpochMilli()
+//            ).first()
 //
-
-            val notificationModel =  modelTask + modelEvent
-
-            TimeFlowAlarmManagerService(context = context).scheduleNotification(
-                notificationAlarmManagerModel = notificationModel
-            )
-
-        }
-    }
+//            Log.d("TESTSCHEDULE", "tasks ---${tasks}")
+//            Log.d("TESTSCHEDULE", "events ---${events}")
+//
+//            val modelEvent = events.map {
+//                NotificationAlarmManagerModel(
+//                    id = it.id,
+//                    title = it.name,
+//                    hour = it.eventNotificationTime.toHour(),
+//                    minute = it.eventNotificationTime.toMinute(),
+//                    localDate = it.createdAt.toLocalDate()
+//                )
+//            }
+//            val modelTask = tasks.map {
+//                NotificationAlarmManagerModel(
+//                    id = it.id,
+//                    title = it.name,
+//                    hour = it.taskTime!!.toHour(),
+//                    minute = it.taskTime.toMinute(),
+//                    localDate = it.taskTime.toLocalDate()
+//                )
+//            }
+//            Log.d("TESTSCHEDULE", "tasks : ${modelTask}")
+//            Log.d("TESTSCHEDULE", "events  : ${modelEvent}")
+////
+//
+//            val notificationModel =  modelTask + modelEvent
+//
+//            TimeFlowAlarmManagerService(context = context).scheduleNotification(
+//                notificationAlarmManagerModel = notificationModel
+//            )
+//
+//        }
+//    }
     suspend fun saveOnBoarding() {
         dataStoreRepo.saveOnBoarding(completed = true)
     }

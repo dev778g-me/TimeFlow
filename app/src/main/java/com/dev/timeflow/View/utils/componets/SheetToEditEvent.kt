@@ -1,4 +1,4 @@
-package com.dev.timeflow.View.Widget
+package com.dev.timeflow.View.utils.componets
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,7 +12,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -43,7 +42,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Bell
-import com.composables.icons.lucide.Delete
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.PenLine
 import com.composables.icons.lucide.Trash
@@ -52,6 +50,7 @@ import com.dev.timeflow.View.utils.toHour
 import com.dev.timeflow.View.utils.toLocalDate
 import com.dev.timeflow.View.utils.toMinute
 import kotlinx.coroutines.delay
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,12 +64,15 @@ fun SheetToEditEvent(
     onDismiss :() -> Unit,
     onValueChange : (String) -> Unit,
     onNameValueChange : (String) -> Unit,
+    onStartDateChipClick : () -> Unit,
+    onEndDateChipClick : () -> Unit,
     onStartTimeChipClick : () -> Unit,
     onEndTimeChipClick : () -> Unit,
     onUpdateEvent : () -> Unit,
     onDeleteEvent : () -> Unit,
     event: Events
 ) {
+   val formatter =  DateTimeFormatter.ofPattern("hh:mm a")
     var description by remember(event.id) { mutableStateOf(event.description ?: "") }
     var name by remember(event.id) {mutableStateOf(event.name) }
     LaunchedEffect(description) {
@@ -215,7 +217,7 @@ fun SheetToEditEvent(
                 modifier = modifier.clip(RoundedCornerShape(12.dp)),
                 overlineContent = {
                     Text(
-                        text = "To"
+                        text = "From"
                     )
                 },
                 headlineContent = {
@@ -225,7 +227,7 @@ fun SheetToEditEvent(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         AssistChip(onClick = {
-                            onStartTimeChipClick.invoke()
+                            onStartDateChipClick.invoke()
                         }, label = {
                             Text(
                                 text = fromDatePickerState.selectedDateMillis!!.toLocalDate()
@@ -237,10 +239,13 @@ fun SheetToEditEvent(
 
                         TextButton(
                             onClick = {
-                                onEndTimeChipClick.invoke()
+                                onStartTimeChipClick.invoke()
                             }) {
                             Text(
-                                text = "${event.eventStartTime.toHour()} ${event.eventStartTime.toMinute()} ",
+                                text = LocalTime.of(
+                                    fromTimePickerState.hour,
+                                    fromTimePickerState.minute
+                                ).format(formatter),
                                 color = MaterialTheme.colorScheme.primary
                             )
                         }
@@ -271,26 +276,28 @@ fun SheetToEditEvent(
                     ) {
                         AssistChip(
                             onClick = {
-                                //onToTileClick.invoke()
+                                onEndDateChipClick.invoke()
                             },
                             label = {
                                 Text(
-                                    text = event.eventEndTime.toLocalDate()
+                                    text = toDatePickerState.selectedDateMillis!!.toLocalDate()
                                         .format(
                                             DateTimeFormatter.ofPattern("MMMM d yyyy")
-                                        ),
-                                    color = MaterialTheme.colorScheme.primary
+                                        ), color = MaterialTheme.colorScheme.primary
                                 )
                             }
                         )
 
                         TextButton(
                             onClick = {
-
+                                onEndTimeChipClick.invoke()
                             }
                         ) {
                             Text(
-                                text = "${event.eventEndTime.toHour()} ${event.eventEndTime.toMinute()} ",
+                                text = LocalTime.of(
+                                    toTimePickerState.hour,
+                                    toTimePickerState.minute
+                                ).format(formatter),
                                 color = MaterialTheme.colorScheme.primary
                             )
                         }

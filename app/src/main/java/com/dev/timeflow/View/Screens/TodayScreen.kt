@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -205,7 +206,7 @@ fun TodayScreen(modifier: Modifier = Modifier) {
         ),
         contentWindowInsets = WindowInsets(0.dp)
     ) { paddingValues ->
-        LazyColumn(
+        Column(
             modifier = modifier
                 .fillMaxSize()
                 .padding(
@@ -213,185 +214,188 @@ fun TodayScreen(modifier: Modifier = Modifier) {
                 )
 
         ) {
-            item {
-                Text(
-                    text = "today is",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.SemiBold
+
+            Text(
+                text = "today is",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.SemiBold
+                )
+            )
+
+
+
+            Text(
+                text = "${
+                    currentMonth.lowercase().replaceFirstChar { it.uppercase() }
+                } ${currentDate},",
+                style = MaterialTheme.typography.displayMedium.copy(
+                    fontWeight = FontWeight.W900,
+                    color = primary
+                )
+            )
+
+
+
+            Text(
+                text = today.dayOfWeek.name.lowercase().replaceFirstChar {
+                    it.uppercase()
+                },
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    fontWeight = FontWeight.W100,
+
                     )
+            )
+
+
+            Spacer(
+                modifier = modifier.height(8.dp)
+            )
+
+
+            Column() {
+                ProgressCard(
+                    percent = dayPercentage,
+                    type = "day"
+                )
+                ProgressCard(
+                    percent = weekPercentage,
+                    type = "week"
+                )
+                ProgressCard(
+                    percent = monthPercentage,
+                    type = "month"
+                )
+                ProgressCard(
+                    percent = yearPercentage,
+                    type = "year"
                 )
             }
 
-            item {
-                Text(
-                    text = "${currentMonth.lowercase().replaceFirstChar { it.uppercase()}} ${currentDate},",
-                    style = MaterialTheme.typography.displayMedium.copy(
-                        fontWeight = FontWeight.W900,
-                        color = primary
-                    )
-                )
-            }
-
-           item {
-               Text(
-                   text = today.dayOfWeek.name.lowercase().replaceFirstChar {
-                       it.uppercase()
-                   },
-                   style = MaterialTheme.typography.headlineMedium.copy(
-                       fontWeight = FontWeight.W100,
-
-                       )
-               )
-           }
-           item {
-               Spacer(
-                   modifier = modifier.height(8.dp)
-               )
-           }
-            item {
-                Column() {
-                    ProgressCard(
-                        percent = dayPercentage,
-                        type = "day"
-                    )
-                    ProgressCard(
-                        percent = weekPercentage,
-                        type = "week"
-                    )
-                    ProgressCard(
-                        percent = monthPercentage,
-                        type = "month"
-                    )
-                    ProgressCard(
-                        percent = yearPercentage,
-                        type = "year"
-                    )
-                }
-            }
 
 
-           item {
-               Spacer(
-                   modifier = modifier.height(8.dp)
-               )
-           }
+
+            Spacer(
+                modifier = modifier.height(8.dp)
+            )
+
 
             // texts for the task and events
-           item {
-               Text(
-                   text = buildAnnotatedString {
-                       append("you have")
-                       withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold)) {
-                           append(" $taskNumber tasks")
-                       }
-                       append(" today")
-                   },
-                   style = MaterialTheme.typography.headlineSmall.copy(
 
-                   )
-               )
-           }
-            item {
-                Text(
-                    text = buildAnnotatedString {
-                        // for high priority
-                        withStyle(
-                            style = SpanStyle(
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.Bold
-                            )
+            Text(
+                text = buildAnnotatedString {
+                    append("you have")
+                    withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold)) {
+                        append(" $taskNumber tasks")
+                    }
+                    append(" today")
+                },
+                style = MaterialTheme.typography.headlineSmall.copy(
 
-                        ){
-                            append("$highPriorityTask high priority\n")
-                        }
-
-                        withStyle(
-                            style = SpanStyle(
-                                color = MaterialTheme.colorScheme.primary.copy(
-                                    alpha = 0.8f
-                                ),
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        ){
-                            append("$mediumPriorityTask medium priority\n")
-                        }
-                        withStyle(
-                            style = SpanStyle(
-                                color = MaterialTheme.colorScheme.primary.copy(
-                                    alpha = 0.6f
-                                ),
-                                fontWeight = FontWeight.Normal
-                            )
-                        ){
-                            append("$lowPriorityTask low priority &")
-                        }
-                    },
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        lineHeight = 34.sp
-                    )
                 )
-            }
-           item {
-               Text(
-                   text = buildAnnotatedString {
-                       withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold)){
-                           append("$eventNumber events")
-                       }
-                       append(" planned")
-                   },
-                   style = MaterialTheme.typography.headlineSmall.copy(
+            )
 
-                   )
-               )
-           }
 
-            item {
-                AnimatedVisibility(
-                    visible = taskForToday.isNotEmpty() || eventForToday.isNotEmpty(),
-                    enter = scaleIn(
-                        animationSpec =  spring(
-                            dampingRatio = Spring.DampingRatioLowBouncy,
-                            stiffness = Spring.StiffnessMediumLow
+            Text(
+                text = buildAnnotatedString {
+                    // for high priority
+                    withStyle(
+                        style = SpanStyle(
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold
                         )
-                    ),
-                    exit = scaleOut(
-                        animationSpec =  spring(
-                            dampingRatio = Spring.DampingRatioLowBouncy,
-                            stiffness = Spring.StiffnessMediumLow
-                        )
-                    ),
-                ) {
-                    ButtonGroup(
-                        modifier = modifier.fillMaxWidth(),
-                        overflowIndicator = {}
+
                     ) {
-                        tabs.forEachIndexed { index, model ->
-                            val isSelected = index == selectedTab
-                            toggleableItem(
-                                weight = 1f,
-                                checked = isSelected,
-                                label = if (model.title =="Tasks") "${model.title} ${taskForToday.size}" else "${model.title} ${eventForToday.size}",
-                                onCheckedChange = {
-                                    selectedTab = index
-                                    scope.launch {
-                                        pagerState.animateScrollToPage(
-                                            page = index
-                                        )
-                                    }
-                                }
-                            )
+                        append("$highPriorityTask high priority\n")
+                    }
 
-                        }
+                    withStyle(
+                        style = SpanStyle(
+                            color = MaterialTheme.colorScheme.primary.copy(
+                                alpha = 0.8f
+                            ),
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    ) {
+                        append("$mediumPriorityTask medium priority\n")
+                    }
+                    withStyle(
+                        style = SpanStyle(
+                            color = MaterialTheme.colorScheme.primary.copy(
+                                alpha = 0.6f
+                            ),
+                            fontWeight = FontWeight.Normal
+                        )
+                    ) {
+                        append("$lowPriorityTask low priority &")
+                    }
+                },
+                style = MaterialTheme.typography.titleLarge.copy(
+                    lineHeight = 34.sp
+                )
+            )
+
+
+            Text(
+                text = buildAnnotatedString {
+                    withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold)) {
+                        append("$eventNumber events")
+                    }
+                    append(" planned")
+                },
+                style = MaterialTheme.typography.headlineSmall.copy(
+
+                )
+            )
+
+            AnimatedVisibility(
+                visible = taskForToday.isNotEmpty() || eventForToday.isNotEmpty(),
+                enter = scaleIn(
+                    animationSpec =  spring(
+                        dampingRatio = Spring.DampingRatioLowBouncy,
+                        stiffness = Spring.StiffnessMediumLow
+                    )
+                ),
+                exit = scaleOut(
+                    animationSpec =  spring(
+                        dampingRatio = Spring.DampingRatioLowBouncy,
+                        stiffness = Spring.StiffnessMediumLow
+                    )
+                ),
+            ) {
+                ButtonGroup(
+                    modifier = modifier.fillMaxWidth(),
+                    overflowIndicator = {}
+                ) {
+                    tabs.forEachIndexed { index, model ->
+                        val isSelected = index == selectedTab
+                        toggleableItem(
+                            weight = 1f,
+                            checked = isSelected,
+                            label = if (model.title == "Tasks") "${model.title} ${taskForToday.size}" else "${model.title} ${eventForToday.size}",
+                            onCheckedChange = {
+                                selectedTab = index
+                                scope.launch {
+                                    pagerState.animateScrollToPage(
+                                        page = index
+                                    )
+                                }
+                            }
+                        )
+
                     }
                 }
+
             }
 
-            item {
+
                 HorizontalPager(
-                    modifier = modifier.padding(
-                        top = 8.dp
+                    modifier = modifier
+                        .weight(1f)
+                        .padding(
+                        //top = 8.dp
                     ),
                     state = pagerState,
+                    beyondViewportPageCount = 0
                 ) { page ->
                     when (page) {
                         0 -> AnimatedVisibility(
@@ -409,13 +413,11 @@ fun TodayScreen(modifier: Modifier = Modifier) {
                                 )
                             )
                         ) {
-                            Column() {
-                                taskForToday.forEach { task ->
+                            LazyColumn() {
+                                items(taskForToday){  task ->
                                     TaskTile(
                                         modifier = modifier
-                                            .padding(
-                                                vertical = 2.dp
-                                            )
+
                                             .animateEnterExit(
                                                 enter = slideInVertically(
                                                     initialOffsetY = { it / 4 }
@@ -457,42 +459,42 @@ fun TodayScreen(modifier: Modifier = Modifier) {
                         1 -> AnimatedVisibility(
                             visible = eventForToday.isNotEmpty()
                         ) {
-                            Column() {
-                                eventForToday.forEach {
-                                    EventTile(
-                                        modifier = modifier.animateEnterExit(
-                                            enter = scaleIn(
-                                                animationSpec = spring(
-                                                    dampingRatio = Spring.DampingRatioLowBouncy,
-                                                    stiffness = Spring.StiffnessLow
-                                                )
-                                            ),
-                                            exit = scaleOut(
-                                                animationSpec = spring(
-                                                    dampingRatio = Spring.DampingRatioLowBouncy,
-                                                    stiffness = Spring.StiffnessLow
-                                                )
-                                            )
-                                        ),
-                                        eventName = it.name,
-                                        onClick = {},
-                                        eventFromDay = it.eventStartTime,
-                                        eventEndDay = it.eventEndTime
-                                    )
-                                }
-                            }
+                           LazyColumn() {
+                               items(eventForToday){
+                                   EventTile(
+                                       modifier = modifier.animateEnterExit(
+                                           enter = scaleIn(
+                                               animationSpec = spring(
+                                                   dampingRatio = Spring.DampingRatioLowBouncy,
+                                                   stiffness = Spring.StiffnessLow
+                                               )
+                                           ),
+                                           exit = scaleOut(
+                                               animationSpec = spring(
+                                                   dampingRatio = Spring.DampingRatioLowBouncy,
+                                                   stiffness = Spring.StiffnessLow
+                                               )
+                                           )
+                                       ),
+                                       eventName = it.name,
+                                       onClick = {},
+                                       eventFromDay = it.eventStartTime,
+                                       eventEndDay = it.eventEndTime
+                                   )
+                               }
+                           }
                         }
                     }
                 }
-            }
-
-
-
-
 
         }
+
+
     }
 }
+
+
+
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -533,7 +535,7 @@ fun ProgressCard(
                 .fillMaxWidth()
                 .padding(vertical = 2.dp)
         )
-    }
-}
+    }}
+
 
 

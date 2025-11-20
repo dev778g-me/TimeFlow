@@ -9,9 +9,10 @@ import android.util.Log
 import com.dev.timeflow.Data.Model.NotificationAlarmManagerModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Calendar
+import javax.inject.Inject
 
 
-class TimeFlowAlarmManagerService(
+class TimeFlowAlarmManagerService @Inject constructor(
     @ApplicationContext private val context: Context,
 ){
     val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -28,7 +29,13 @@ class TimeFlowAlarmManagerService(
                 "TIMEFLOW ALARM MANAGER",
                 "the current task_event_name is ${notificationAlarmManagerModel.title}"
             )
+            Log.d("NOTIFICATION BROADCAST RECEIVER ", "type is - ${notificationAlarmManagerModel.type}")
             val intent = Intent(context, NotificationAlarmManagerReceiver::class.java).apply {
+                val type = notificationAlarmManagerModel.type
+                putExtra("task_event_type", type)
+                Log.d("NOTIFICATION BROADCAST RECEIVER ", "type is - ${notificationAlarmManagerModel.type}")
+                putExtra("event_start_time", notificationAlarmManagerModel.startTime)
+                putExtra("event_end_time", notificationAlarmManagerModel.endTime)
                 putExtra("task_event_name", notificationAlarmManagerModel.title)
                 putExtra(
                     "task_event_id",
@@ -40,7 +47,10 @@ class TimeFlowAlarmManagerService(
             }
 
             val requestCode =
-                (notificationAlarmManagerModel.id + notificationAlarmManagerModel.hour * 100 + notificationAlarmManagerModel.minute).hashCode()
+                notificationAlarmManagerModel.id.toInt() * 10000 +
+                        notificationAlarmManagerModel.hour * 100 +
+                        notificationAlarmManagerModel.minute
+
 
             val pendingIntent = PendingIntent.getBroadcast(
                 context,
@@ -90,6 +100,10 @@ class TimeFlowAlarmManagerService(
         fun scheduleSingleAlarm(notificationAlarmManagerModel: NotificationAlarmManagerModel) {
             val intent = Intent(context, NotificationAlarmManagerReceiver::class.java).apply {
                 putExtra("task_event_name", notificationAlarmManagerModel.title)
+                putExtra("task_event_type", type)
+                Log.d("NOTIFICATION BROADCAST RECEIVER ", "type is - ${notificationAlarmManagerModel.type}")
+                putExtra("event_start_time", notificationAlarmManagerModel.startTime)
+                putExtra("event_end_time", notificationAlarmManagerModel.endTime)
                 putExtra(
                     "task_event_id",
                     notificationAlarmManagerModel.id.toInt() * 5 + notificationAlarmManagerModel.hour

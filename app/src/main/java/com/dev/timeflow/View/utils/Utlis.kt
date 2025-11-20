@@ -91,6 +91,14 @@ fun Long.toMinute() : Int{
     return  format.format(date). toInt()
 }
 
+fun Long.toFormattedTime(): String {
+    return Instant.ofEpochMilli(this)
+        .atZone(ZoneId.systemDefault())
+        .toLocalTime()
+        .format(DateTimeFormatter.ofPattern("h:mm a"))
+}
+
+
 
 //fun cheakNotificationPermission(){
 //    if ( == PackageManager.PERMISSION_GRANTED)

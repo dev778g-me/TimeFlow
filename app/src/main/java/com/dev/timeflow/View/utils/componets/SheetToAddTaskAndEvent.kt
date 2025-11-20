@@ -1,4 +1,4 @@
-package com.dev.timeflow.View.Widget
+package com.dev.timeflow.View.utils.componets
 
 import android.Manifest
 import android.content.Context
@@ -27,7 +27,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
@@ -42,7 +41,6 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TimePickerState
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.ToggleButtonDefaults
-import androidx.compose.material3.isPm
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -52,6 +50,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -64,7 +63,6 @@ import com.composables.icons.lucide.Signature
 import com.dev.timeflow.Data.Model.ImportanceChipModel
 import com.dev.timeflow.Data.Model.SavingModel
 import com.dev.timeflow.View.utils.toLocalDate
-import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -105,7 +103,7 @@ fun SheetToAddEventAndTask(
 
     context : Context
 ) {
-    val localContext = androidx.compose.ui.platform.LocalContext.current
+    val localContext = LocalContext.current
     val primary = MaterialTheme.colorScheme.primary
     val formatter = DateTimeFormatter.ofPattern("h:mm a")
     val fromFormattedTime = remember(fromTimePickerState.hour, fromTimePickerState.minute) {
@@ -318,7 +316,7 @@ fun SheetToAddEventAndTask(
                                ),
                            overlineContent = {
                                Text(
-                                   text = "From"
+                                   text = "Start"
                                )
                            },
                            headlineContent = {
@@ -367,7 +365,7 @@ fun SheetToAddEventAndTask(
                            modifier = modifier.clip(RoundedCornerShape(12.dp)),
                            overlineContent = {
                                Text(
-                                   text = "To"
+                                   text = "End"
                                )
                            },
                            headlineContent = {

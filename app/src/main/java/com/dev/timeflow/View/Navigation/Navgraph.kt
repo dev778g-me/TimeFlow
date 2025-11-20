@@ -196,7 +196,7 @@ fun NavGraph(modifier: Modifier = Modifier, startDest : String) {
                                Icon(
                                    modifier = modifier.size(ButtonDefaults.LargeIconSize + 12.dp),
                                    painter = painterResource(
-                                       id = R.drawable.mono_logo,
+                                       id = R.drawable.timeflow_mono_logo,
 
                                        ),
                                    contentDescription = null

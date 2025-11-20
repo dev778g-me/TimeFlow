@@ -10,14 +10,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.dev.timeflow.Data.Repo.DataStoreRepo
 import com.dev.timeflow.Managers.WidgetAlarmService
 import com.dev.timeflow.View.Navigation.NavGraph
 import com.dev.timeflow.View.Navigation.Routes
-import com.dev.timeflow.View.Screens.onBoarding.FeatureScreen
-import com.dev.timeflow.View.Screens.onBoarding.WelcomeScreen
-import com.dev.timeflow.Viewmodel.TaskAndEventViewModel
 
 
 import com.example.compose.TimeFlowTheme

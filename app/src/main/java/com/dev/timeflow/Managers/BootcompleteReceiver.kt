@@ -49,6 +49,7 @@ class BootCompleteReceiver (
                         NotificationAlarmManagerModel(
                             id = it.id,
                             title = it.name,
+                            type = 1,
                             hour = it.taskTime!!.toHour(),
                             minute = it.taskTime.toMinute(),
                             localDate = it.taskTime.toLocalDate()
@@ -61,6 +62,9 @@ class BootCompleteReceiver (
                         NotificationAlarmManagerModel(
                             id = it.id,
                             title = it.name,
+                            type = 0,
+                            startTime = it.eventStartTime,
+                            endTime = it.eventEndTime,
                             hour = it.eventNotificationTime.toHour(),
                             minute = it.eventNotificationTime.toMinute(),
                             localDate = it.eventNotificationTime.toLocalDate()

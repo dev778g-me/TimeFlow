@@ -1,4 +1,4 @@
-package com.dev.timeflow.View.Widget
+package com.dev.timeflow.View.utils.componets
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
