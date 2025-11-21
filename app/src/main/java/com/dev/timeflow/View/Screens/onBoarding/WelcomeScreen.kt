@@ -314,7 +314,7 @@ fun WelcomeScreen(modifier: Modifier = Modifier,onNavigate :() -> Unit) {
                                 vertical = 8.dp
                             ),
                             text = buildAnnotatedString {
-                                append("Ready? let's flow")
+                                append(" Ready Set Flow")
                                 withStyle(
                                     style = SpanStyle(
                                         fontFamily = FontFamily.Serif,
