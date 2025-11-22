@@ -47,7 +47,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -78,7 +81,7 @@ fun TodayScreen(modifier: Modifier = Modifier) {
     val calendar = Calendar.getInstance()
     val currentMonth = today.month.name
     val currentDate = today.dayOfMonth
-
+    val haptics = LocalHapticFeedback.current
 
     // year logic
     val dayOfTheYear = calendar.get(Calendar.DAY_OF_YEAR)
@@ -373,6 +376,9 @@ fun TodayScreen(modifier: Modifier = Modifier) {
                             checked = isSelected,
                             label = if (model.title == "Tasks") "${model.title} ${taskForToday.size}" else "${model.title} ${eventForToday.size}",
                             onCheckedChange = {
+                                haptics.performHapticFeedback(
+                                    hapticFeedbackType = HapticFeedbackType.Confirm
+                                )
                                 selectedTab = index
                                 scope.launch {
                                     pagerState.animateScrollToPage(
@@ -416,26 +422,6 @@ fun TodayScreen(modifier: Modifier = Modifier) {
                             LazyColumn() {
                                 items(taskForToday){  task ->
                                     TaskTile(
-                                        modifier = modifier
-
-                                            .animateEnterExit(
-                                                enter = slideInVertically(
-                                                    initialOffsetY = { it / 4 }
-                                                ) + fadeIn(
-                                                    animationSpec = tween(250)
-                                                ) + scaleIn(
-                                                    animationSpec = spring(
-                                                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                                                        stiffness = Spring.StiffnessLow
-                                                    ),
-                                                    initialScale = 0.95f
-                                                ),
-                                                exit = slideOutVertically(
-                                                    targetOffsetY = { it / 4 }
-                                                ) + fadeOut(
-                                                    animationSpec = tween(200)
-                                                ) + scaleOut()
-                                            ),
                                         taskName = task.name,
                                         taskDescription = task.description,
                                         taskImportance = task.importance,
@@ -462,20 +448,6 @@ fun TodayScreen(modifier: Modifier = Modifier) {
                            LazyColumn() {
                                items(eventForToday){
                                    EventTile(
-                                       modifier = modifier.animateEnterExit(
-                                           enter = scaleIn(
-                                               animationSpec = spring(
-                                                   dampingRatio = Spring.DampingRatioLowBouncy,
-                                                   stiffness = Spring.StiffnessLow
-                                               )
-                                           ),
-                                           exit = scaleOut(
-                                               animationSpec = spring(
-                                                   dampingRatio = Spring.DampingRatioLowBouncy,
-                                                   stiffness = Spring.StiffnessLow
-                                               )
-                                           )
-                                       ),
                                        eventName = it.name,
                                        onClick = {},
                                        eventFromDay = it.eventStartTime,

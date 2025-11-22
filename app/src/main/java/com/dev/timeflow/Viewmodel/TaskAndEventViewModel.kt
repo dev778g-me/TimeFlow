@@ -144,6 +144,8 @@ class TaskAndEventViewModel @Inject constructor(
             )
             if (events.notification && events.eventNotificationTime != 0.toLong()){
                scheduleNotification(
+
+                   // type -0
                    notificationAlarmManagerModel = NotificationAlarmManagerModel(
                        id = events.id,
                        title = events.name,
@@ -220,6 +222,8 @@ class TaskAndEventViewModel @Inject constructor(
                 tasks = tasks
             )
             if (tasks.notification && tasks.taskTime != 0.toLong()){
+                //type 1
+
               scheduleNotification(
                   notificationAlarmManagerModel = NotificationAlarmManagerModel(
                       id = tasks.id,

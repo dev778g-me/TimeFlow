@@ -100,7 +100,7 @@ class TimeFlowAlarmManagerService @Inject constructor(
         fun scheduleSingleAlarm(notificationAlarmManagerModel: NotificationAlarmManagerModel) {
             val intent = Intent(context, NotificationAlarmManagerReceiver::class.java).apply {
                 putExtra("task_event_name", notificationAlarmManagerModel.title)
-                putExtra("task_event_type", type)
+                putExtra("task_event_type", notificationAlarmManagerModel.type)
                 Log.d("NOTIFICATION BROADCAST RECEIVER ", "type is - ${notificationAlarmManagerModel.type}")
                 putExtra("event_start_time", notificationAlarmManagerModel.startTime)
                 putExtra("event_end_time", notificationAlarmManagerModel.endTime)

@@ -124,6 +124,7 @@ if (showNameChange){
                 modifier = modifier.height(16.dp)
             )
             Button(
+                enabled = userName.isNotEmpty(),
                 shape = RoundedCornerShape(12.dp),
                 modifier = modifier.fillMaxWidth(),
                 onClick = {
@@ -132,7 +133,9 @@ if (showNameChange){
                         taskAndEventViewModel.saveName(
                             name = userName
                         )
+                        userName = ""
                     }
+
                 }
             ) {
 
@@ -184,6 +187,7 @@ if (showNameChange){
 
                       title = {
                           Text(
+                              maxLines = 1,
                               text = buildAnnotatedString {
                                   withStyle(
                                       style = SpanStyle(
