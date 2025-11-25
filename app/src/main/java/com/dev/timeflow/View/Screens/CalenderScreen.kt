@@ -540,6 +540,11 @@ fun CalenderScreen(
             },
             onNameValueChange = {
                 editedName = it
+            },
+            onDeleteTask = {
+                taskViewModel.deleteTask(
+                    latestTask
+                )
             }
         )
     }

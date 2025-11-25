@@ -26,7 +26,6 @@ class TimeFlowNotificationManager (
         val notification = NotificationCompat.Builder(context, Application.TIMEFLOW_NOTIFICATION_ID)
             .setSmallIcon(R.drawable.timeflow_mono_logo)
             .setContentTitle(message)
-            .setContentText(message)
             .setPriority(NotificationManager.IMPORTANCE_HIGH)
             .build()
 

@@ -73,6 +73,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.Calendar
 
+
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun TodayScreen(modifier: Modifier = Modifier) {
@@ -396,6 +397,7 @@ fun TodayScreen(modifier: Modifier = Modifier) {
 
                 HorizontalPager(
                     modifier = modifier
+                        .fillMaxWidth()
                         .weight(1f)
                         .padding(
                         //top = 8.dp
@@ -419,7 +421,9 @@ fun TodayScreen(modifier: Modifier = Modifier) {
                                 )
                             )
                         ) {
-                            LazyColumn() {
+                            LazyColumn(
+                                modifier = modifier.fillMaxSize()
+                            ) {
                                 items(taskForToday){  task ->
                                     TaskTile(
                                         taskName = task.name,
@@ -445,7 +449,9 @@ fun TodayScreen(modifier: Modifier = Modifier) {
                         1 -> AnimatedVisibility(
                             visible = eventForToday.isNotEmpty()
                         ) {
-                           LazyColumn() {
+                           LazyColumn(
+                               modifier = modifier.fillMaxSize()
+                           ) {
                                items(eventForToday){
                                    EventTile(
                                        eventName = it.name,

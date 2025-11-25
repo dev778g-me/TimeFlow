@@ -476,7 +476,11 @@ fun SheetToAddEventAndTask(
                         }
                     ) {
                         Text(
-                            text = "${timerState.hour} ${timerState.minute}"
+                            text = "${
+                                LocalTime.of(timerState.hour, timerState.minute).format(
+                                    DateTimeFormatter.ofPattern("hh : mm a")
+                                )
+                            }"
                         )
                     }
                 }

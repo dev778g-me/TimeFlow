@@ -98,6 +98,7 @@ fun NavGraph(modifier: Modifier = Modifier, startDest : String) {
 if (showNameChange){
     ModalBottomSheet(
         onDismissRequest = {
+            userName = ""
             showNameChange = false
         }
     ) {
@@ -184,7 +185,6 @@ if (showNameChange){
            topBar = {
               if (isCompleted) {
                   TopAppBar(
-
                       title = {
                           Text(
                               maxLines = 1,

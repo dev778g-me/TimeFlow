@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">TimeFlow</string>
+    <string name="app_name">Timeflow</string>
     <string name="yearly_progress">Yearly Progress</string>
     <string name="monthly_progress">Monthly Progress</string>
     <string name="event_progress">Event Progress</string>
