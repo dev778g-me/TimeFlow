@@ -36,11 +36,7 @@ import java.text.SimpleDateFormat
 
 class WeekProgress : GlanceAppWidget(){
 
-    companion object {
-        private val SMALL_SQUARE = DpSize(100.dp, 100.dp)
-        private val HORIZONTAL_RECTANGLE = DpSize(250.dp, 100.dp)
-        private val BIG_SQUARE = DpSize(250.dp, 250.dp)
-    }
+
 
     override val sizeMode = SizeMode.Exact
     override suspend fun provideGlance(
@@ -75,18 +71,27 @@ fun WeekProgressWidget(modifier: Modifier = Modifier) {
             .fillMaxSize()
             .cornerRadius(16.dp)
     ){
+        Box {
+            LinearProgressIndicator(
+                progress = weekProgressPercentage / 100,
+                modifier = GlanceModifier.fillMaxSize(),
+                color = GlanceTheme.colors.primary,
+                backgroundColor = GlanceTheme.colors.primaryContainer
+            )
+        }
         Column(
             modifier = GlanceModifier
                 .fillMaxSize()
                 .padding(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(text = "Week-${currentWeek}($dayName)", style = TextStyle(
 
                 fontWeight = FontWeight.Bold,
                 fontStyle = FontStyle.Normal,
                 fontSize = 16.sp,
-                color = GlanceTheme.colors.onPrimaryContainer
+                color = GlanceTheme.colors.surface
 
             ))
             Text(
@@ -97,7 +102,7 @@ fun WeekProgressWidget(modifier: Modifier = Modifier) {
                 style = TextStyle(
                     fontWeight = FontWeight.Medium,
                     fontSize = 12.sp,
-                    color = GlanceTheme.colors.onPrimaryContainer
+                    color = GlanceTheme.colors.surface
                 ),
 
 
@@ -110,19 +115,12 @@ fun WeekProgressWidget(modifier: Modifier = Modifier) {
                 style = TextStyle(
                     fontWeight = FontWeight.Medium,
                     fontSize = 10.sp,
-                    color = GlanceTheme.colors.onPrimaryContainer
+                    color = GlanceTheme.colors.surface
                 )
             )
 
-            Spacer(modifier = GlanceModifier.defaultWeight())
-            Box {
-                LinearProgressIndicator(
-                    progress = weekProgressPercentage / 100,
-                    modifier = GlanceModifier.fillMaxWidth().height(10.dp),
-                    color = GlanceTheme.colors.primary,
-                    backgroundColor = GlanceTheme.colors.primaryContainer
-                )
-            }
+
+
         }
     }
 }

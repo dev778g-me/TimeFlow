@@ -34,6 +34,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.composables.icons.lucide.Bell
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.PenLine
@@ -58,6 +59,18 @@ fun SheetToEditTask(
     var description by remember(tasks.id) { mutableStateOf(tasks.description ?: "") }
     var name by remember(tasks.id) {mutableStateOf(tasks.name) }
     val localHapticFeedback = LocalHapticFeedback.current
+    val baseFontSize = MaterialTheme.typography.headlineSmall.fontSize.value
+    val minFontSize = 14.sp.value
+    val maxLength = 50
+
+    val fontSize = if (name.length > 15) {
+        maxOf(
+            minFontSize,
+            baseFontSize * (1 - (name.length - 15).toFloat() / maxLength)
+        )
+    } else {
+        baseFontSize
+    }
     LaunchedEffect(description) {
         delay(500)
         if (description != tasks.description) {
@@ -95,6 +108,7 @@ fun SheetToEditTask(
                    onCheckBoxValueChange(it)
                }
                TextField(
+                   modifier = modifier.weight(1f),
                    colors = TextFieldDefaults.colors(
                        disabledContainerColor = Color.Transparent,
                        focusedContainerColor = Color.Transparent,
@@ -104,14 +118,14 @@ fun SheetToEditTask(
                        unfocusedIndicatorColor = Color.Transparent,
                    ),
                    value = name,
-                   textStyle = MaterialTheme.typography.headlineSmall,
+                   textStyle = MaterialTheme.typography.headlineSmall.copy(
+                       fontSize = fontSize.sp
+                   ),
                    onValueChange = {
                        name = it
                    }
                )
-               Spacer(
-                   modifier = modifier.weight(1f)
-               )
+
                IconButton(
                    colors = IconButtonDefaults.iconButtonColors(
                        containerColor = MaterialTheme.colorScheme.error,

@@ -11,8 +11,10 @@ import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
+import androidx.glance.LocalSize
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.LinearProgressIndicator
+import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
@@ -20,6 +22,7 @@ import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
 import androidx.glance.layout.Spacer
+import androidx.glance.layout.fillMaxHeight
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
@@ -34,7 +37,7 @@ import java.util.Calendar
 
 class MonthProgress : GlanceAppWidget() {
 
-
+    override val sizeMode: SizeMode = SizeMode.Exact
 
     override suspend fun provideGlance(
         context: Context,
@@ -65,7 +68,7 @@ fun MonthProgressWidget(modifier: Modifier = Modifier) {
      val remainingDays = totalDaysInMonth - currentDay
     val monthlyPercentage = currentDay.toFloat() / totalDaysInMonth.toFloat() * 100
     val formatedMonthlyPercentage = decimalFormat.format(monthlyPercentage).toString() + "%"
-
+     val size = LocalSize.current
     Box (
         modifier = GlanceModifier
             .background(GlanceTheme.colors.widgetBackground)
@@ -73,10 +76,27 @@ fun MonthProgressWidget(modifier: Modifier = Modifier) {
             .cornerRadius(16.dp),
 
     ){
+        Box(
+            modifier = GlanceModifier.padding(
+                bottom = 0.dp
+            )
+        ) {
+
+                LinearProgressIndicator(
+                    progress = monthlyPercentage / 100,
+                    modifier = GlanceModifier.
+                    fillMaxSize(),
+                    color = GlanceTheme.colors.primary,
+                    backgroundColor = GlanceTheme.colors.primaryContainer
+                )
+
+        }
         Column(
             modifier = GlanceModifier
-                .fillMaxSize()
-                .padding(12.dp),
+                .padding(12.dp)
+                .fillMaxSize(),
+
+            verticalAlignment = Alignment.CenterVertically,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
@@ -85,7 +105,7 @@ fun MonthProgressWidget(modifier: Modifier = Modifier) {
                     fontWeight = FontWeight.Bold,
                     fontStyle = FontStyle.Normal,
                     fontSize = 16.sp,
-                    color = GlanceTheme.colors.onPrimaryContainer
+                    color = GlanceTheme.colors.onPrimary
                 )
             )
 
@@ -97,7 +117,7 @@ fun MonthProgressWidget(modifier: Modifier = Modifier) {
                 style = TextStyle(
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium,
-                    color = GlanceTheme.colors.onPrimaryContainer
+                    color = GlanceTheme.colors.onPrimary
                 )
             )
             Text(
@@ -108,25 +128,12 @@ fun MonthProgressWidget(modifier: Modifier = Modifier) {
                 style = TextStyle(
                     fontWeight = FontWeight.Medium,
                     fontSize = 10.sp,
-                    color = GlanceTheme.colors.onPrimaryContainer
+                    color = GlanceTheme.colors.onPrimary
                 )
             )
-            Spacer(modifier = GlanceModifier.defaultWeight())
 
-            Box(
-                modifier = GlanceModifier.padding(
-                    bottom = 0.dp
-                )
-            ) {
-                LinearProgressIndicator(
-                    progress = monthlyPercentage / 100,
-                    modifier = GlanceModifier.
-                    fillMaxWidth()
-                        .height(10.dp),
-                    color = GlanceTheme.colors.primary,
-                    backgroundColor = GlanceTheme.colors.primaryContainer
-                )
-            }
+
+
         }
     }
 

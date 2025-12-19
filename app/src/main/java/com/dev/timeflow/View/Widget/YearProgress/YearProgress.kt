@@ -1,6 +1,7 @@
 package com.dev.timeflow.View.Widget.YearProgress
 
 import android.content.Context
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -57,29 +58,31 @@ fun YearProgressWidget() {
                 .fillMaxSize()
                 .cornerRadius(16.dp)
         ){
+
             Column(
                 modifier = GlanceModifier
                     .fillMaxSize()
                     .padding(12.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = year.toString(), style = TextStyle(
                         fontWeight = FontWeight.Bold,
-                    fontStyle = FontStyle.Normal,
-                    fontSize = 16.sp,
-                    color = GlanceTheme.colors.onPrimaryContainer
-                ))
+                        fontStyle = FontStyle.Normal,
+                        fontSize = 16.sp,
+                        color = GlanceTheme.colors.primary
+                    ))
 
-                 Text(
-                     modifier = GlanceModifier.padding(vertical = 2.dp),
-                     text = "Progress : $formattedYearPercentage",
-                     style = TextStyle(
-                         fontWeight = FontWeight.Medium,
-                         fontSize = 12.sp,
-                         color = GlanceTheme.colors.onPrimaryContainer
-                     )
-                 )
+                Text(
+                    modifier = GlanceModifier.padding(vertical = 2.dp),
+                    text = "Progress : $formattedYearPercentage",
+                    style = TextStyle(
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 12.sp,
+                        color = GlanceTheme.colors.primary
+                    )
+                )
                 Text(
                     modifier = GlanceModifier.padding(
                         vertical = 0.dp
@@ -88,11 +91,13 @@ fun YearProgressWidget() {
                     style = TextStyle(
                         fontWeight = FontWeight.Medium,
                         fontSize = 10.sp,
-                        color = GlanceTheme.colors.onPrimaryContainer
+                        color = GlanceTheme.colors.primary
                     )
                 )
-                Spacer(modifier = GlanceModifier.defaultWeight())
 
+                Spacer(
+                    modifier = GlanceModifier.defaultWeight()
+                )
                 Box(
                     modifier = GlanceModifier.padding(
                         bottom = 0.dp
@@ -100,11 +105,12 @@ fun YearProgressWidget() {
                 ) {
                     LinearProgressIndicator(
                         progress = yearPercentage / 100,
-                        modifier = GlanceModifier.fillMaxWidth().height(10.dp),
+                        modifier = GlanceModifier.fillMaxWidth().height(12.dp).cornerRadius(12.dp),
                         color = GlanceTheme.colors.primary,
                         backgroundColor = GlanceTheme.colors.primaryContainer
                     )
                 }
+
 
             }
         }

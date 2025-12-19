@@ -3,6 +3,7 @@
     android:description="@string/monthly_progress"
     android:minWidth="100dp"
     android:minHeight="50dp"
+
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen"
 

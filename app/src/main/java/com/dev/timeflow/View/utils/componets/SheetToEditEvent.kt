@@ -20,6 +20,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
@@ -41,6 +42,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.composables.icons.lucide.Bell
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.PenLine
@@ -72,9 +74,22 @@ fun SheetToEditEvent(
     onDeleteEvent : () -> Unit,
     event: Events
 ) {
-   val formatter =  DateTimeFormatter.ofPattern("hh:mm a")
-    var description by remember(event.id) { mutableStateOf(event.description ?: "") }
-    var name by remember(event.id) {mutableStateOf(event.name) }
+    val formatter = DateTimeFormatter.ofPattern("hh:mm a")
+    var description by remember(event.id) { mutableStateOf(event.description) }
+    var name by remember(event.id) { mutableStateOf(event.name) }
+    val baseFontSize = MaterialTheme.typography.headlineSmall.fontSize.value
+    val minFontSize = 14.sp.value
+    val maxLength = 50
+
+    val fontSize = if (name.length > 15) {
+        maxOf(
+            minFontSize,
+            baseFontSize * (1 - (name.length - 15).toFloat() / maxLength)
+        )
+    } else {
+        baseFontSize
+    }
+
     LaunchedEffect(description) {
         delay(500)
         if (description != event.description) {
@@ -109,6 +124,8 @@ fun SheetToEditEvent(
             Row(modifier = modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
 
                 TextField(
+                    maxLines = 5,
+                    modifier = modifier.weight(1f),
                     colors = TextFieldDefaults.colors(
                         disabledContainerColor = Color.Transparent,
                         focusedContainerColor = Color.Transparent,
@@ -118,14 +135,16 @@ fun SheetToEditEvent(
                         unfocusedIndicatorColor = Color.Transparent,
                     ),
                     value = name,
-                    textStyle = MaterialTheme.typography.headlineSmall,
+                    textStyle = MaterialTheme.typography.headlineSmall.copy(
+                        fontSize = fontSize.sp
+                    ),
                     onValueChange = {
                         name = it
                     }
                 )
-                Spacer(
-                    modifier = modifier.weight(1f)
-                )
+//                Spacer(
+//                    modifier = modifier.weight(1f)
+//                )
                 IconButton(
                     colors = IconButtonDefaults.iconButtonColors(
                         containerColor = MaterialTheme.colorScheme.error,
