@@ -16,7 +16,7 @@ android {
         applicationId = "com.dev.timeflow"
         minSdk = 27
         targetSdk = 36
-        versionCode = 3
+        versionCode = 4
         versionName = "1.2.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

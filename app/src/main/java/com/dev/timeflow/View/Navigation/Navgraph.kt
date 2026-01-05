@@ -56,6 +56,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
@@ -354,7 +355,15 @@ if (showNameChange){
                                               )
                                           },
                                           onClick = {
+
                                               showTimerScreenDropDown = false
+
+                                              val url =
+                                                  "https://play.google.com/store/apps/details?id=com.dev.timeflow"
+                                              val intent =
+                                                  Intent(Intent.ACTION_VIEW, url.toUri())
+                                              context.startActivity(intent)
+
 
                                           },
                                           text = {

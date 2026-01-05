@@ -25,14 +25,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.glance.LocalContext
+import androidx.core.net.toUri
 import com.composables.icons.lucide.Code
 import com.composables.icons.lucide.Github
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Star
 import com.composables.icons.lucide.Twitter
 import com.dev.timeflow.R
-import androidx.core.net.toUri
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)

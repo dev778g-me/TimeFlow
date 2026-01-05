@@ -182,7 +182,7 @@ fun CalenderScreen(
 
     var showTaskDetails by rememberSaveable { mutableStateOf(false) }
 
-    var showEventDetails by rememberSaveable() { mutableStateOf(false) }
+    var showEventDetails by rememberSaveable { mutableStateOf(false) }
 
 
     var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
