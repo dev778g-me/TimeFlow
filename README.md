@@ -29,9 +29,18 @@ Calendar View: Seamlessly add and manage tasks or life events in an intuitive ca
 Smart Scheduling: Organize your timeline to ensure you’re meeting your long-term goals.
 
 <p align="center">
+<img src="./screenshots/calview.png" width="350" alt="Material 3 Progress Bars">
+<img src="./screenshots/calView2.png" width="350" alt="Material 3 Progress Bars">
+</p>
+
+<p align="center">
 <img src="./screenshots/addTask.png" width="350" alt="Material 3 Progress Bars">
-<img src="./screenshots/addTask.png" width="350" alt="Material 3 Progress Bars">
-<img src="./screenshots/addEvent.png.png" width="350" alt="Material 3 Progress Bars">
+<img src="./screenshots/addEvent.png" width="350" alt="Material 3 Progress Bars">
+</p>
+
+<p align="center">
+<img src="./screenshots/events.png" width="350" alt="Material 3 Progress Bars">
+<img src="./screenshots/event2.png" width="350" alt="Material 3 Progress Bars">
 </p>
 
 #### 🔔 Smart Notifications
