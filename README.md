@@ -3,9 +3,6 @@
 **Time Flow** is a modern **Material 3** based tracking application designed to help you to visualize how your time is spent across days, weeks,months & years 
 
 
-> See the time slipping away — and make every moment count.
-
----
 
 
 ## Features
@@ -19,7 +16,7 @@ Home Screen Widgets: Keep your progress at a glance without ever opening the app
 <!--suppress ALL -->
 <p align="center">
 <img src="./screenshots/home1.png" width="350" alt="Material 3 Progress Bars">
-<img src="./screenshots/oldWidgets.png" width="350" alt="Material 3 Progress Bars">
+<img src="./screenshots/widgets.png" width="350" alt="Material 3 Progress Bars">
 </p>
 
 #### 📅 Event & Task Management
@@ -50,19 +47,6 @@ Custom Timers: Set specific notification timers for your tasks so you never miss
 Timely Reminders: Get nudged exactly when you need to focus or transition to your next event.
 
 
-## 📷 Screenshots
-<img src="./screenshots/home1.png" alt="homescreen">
-<img src="./screenshots/home2.png" alt="">
-<img src="screenshots/calview.png" alt="">
-<img src="screenshots/calView2.png" alt="">
-<img src="screenshots/addTask.png" alt="">
-<img src="screenshots/addEvent.png" alt="">
-<img src="screenshots/name.png" alt="">
-<img src="screenshots/events.png" alt="">
-<img src="screenshots/event2.png" alt="">
-
-
----
 
 ## 📲 How It Works
 
