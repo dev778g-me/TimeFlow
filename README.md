@@ -1,49 +1,37 @@
 # ⏳ Time Flow
 
-**Time Flow** is a widget-based productivity app that helps you **visualize your time** directly on your home screen. It shows how much of your **day, week, month, and year** has passed using elegant progress bars and percentage displays — so you stay mindful and stop wasting time.
+**Time Flow** is a modern **Material 3** based tracking application designed to help you to visualize how your time is spent across days, weeks,months & years 
+
 
 > See the time slipping away — and make every moment count.
 
 ---
 
-## 🧠 Why Time Flow?
 
-We often lose track of time. Time Flow makes time **visible** so you can:
+## Features
 
-- Refocus your energy
-- Beat procrastination
-- Work with intention
+#### 📊 Progress Tracking
 
-It displays real-time progress for:
-- 🕐 **Today**
-- 📅 **This Week**
-- 📆 **This Month**
-- 📈 **This Year**
+    Visual Life Bars: Track the passage of your day, week, month, and year with elegant Material 3 progress bars. 
 
----
+    Home Screen Widgets: Keep your progress at a glance without ever opening the app.
+
+#### 📅 Event & Task Management
+
+    Calendar View: Seamlessly add and manage tasks or life events in an intuitive calendar interface.
+
+    Smart Scheduling: Organize your timeline to ensure you’re meeting your long-term goals.
+
+#### 🔔 Smart Notifications
+
+    Custom Timers: Set specific notification timers for your tasks so you never miss a deadline.
+
+    Timely Reminders: Get nudged exactly when you need to focus or transition to your next event.
+
+
 ## 📷 Screenshots
+<img src="./screenshots/home1.png" alt="">
 
-### 🔹 Home Screen Widget  
-Shows the progress of your **day, week, month, and year** at a glance.  
-<p align="center">
-  <img src="https://github.com/dev778g-me/TimeFlow/blob/26cc58067f961002ee162e100317fce180a0fbeb/TimeFlow%20W2.png" width="300" alt="Time Flow Widget Screenshot"/>
-</p>
-
----
-
-### 🔹 App Interface  
-Minimal and focused interface for configuring your experience.  
-<p align="center">
-  <img src="https://github.com/dev778g-me/TimeFlow/blob/a5a4032b1e0855bf2cd873afc1de032b07536510/Timeflow1.png" width="300" alt="Time Flow App UI Screenshot"/>
-</p>
-
-## 🚀 Features
-
-- 🖼️ **Home Screen Widgets** built using [Jetpack Glance](https://developer.android.com/jetpack/androidx/releases/glance)
-- 📊 Clean and minimal **progress bars** with percentage indicators
-- 🌙 **Dark mode** compatible
-- 🔋 Lightweight and **battery-friendly**
-- 🧘‍♂️ Focus-oriented design — no distractions
 
 ---
 
@@ -65,15 +53,7 @@ Minimal and focused interface for configuring your experience.
 
 ---
 
-## 🧪 Roadmap
 
-- ✅ Basic day/week/month/year tracking
-- 🧪 Custom widget themes
-- 🔔 Smart time-based reminders
-- 🔒 Lock screen widget support (where applicable)
-- ☁️ Cloud sync for settings (future)
-
----
 
 ## 📄 License
 
