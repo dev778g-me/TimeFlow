@@ -22,6 +22,7 @@ import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
+import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
@@ -71,14 +72,6 @@ fun WeekProgressWidget(modifier: Modifier = Modifier) {
             .fillMaxSize()
             .cornerRadius(16.dp)
     ){
-        Box {
-            LinearProgressIndicator(
-                progress = weekProgressPercentage / 100,
-                modifier = GlanceModifier.fillMaxSize(),
-                color = GlanceTheme.colors.primary,
-                backgroundColor = GlanceTheme.colors.primaryContainer
-            )
-        }
         Column(
             modifier = GlanceModifier
                 .fillMaxSize()
@@ -86,39 +79,80 @@ fun WeekProgressWidget(modifier: Modifier = Modifier) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = "Week-${currentWeek}($dayName)", style = TextStyle(
+            Row(
+                modifier = GlanceModifier.fillMaxWidth(),
 
-                fontWeight = FontWeight.Bold,
-                fontStyle = FontStyle.Normal,
-                fontSize = 16.sp,
-                color = GlanceTheme.colors.surface
-
-            ))
-            Text(
-                modifier = GlanceModifier.padding(
-                    vertical = 2.dp
-                ),
-                text = "Progress-${formattedWeekPercentage}",
-                style = TextStyle(
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 12.sp,
-                    color = GlanceTheme.colors.surface
-                ),
-
-
-            )
-            Text(
-                modifier = GlanceModifier.padding(
-                    vertical = 0.dp
-                ),
-                text = "Day $currentDate • $remainingDay left",
-                style = TextStyle(
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 10.sp,
-                    color = GlanceTheme.colors.surface
+                ) {
+                Text(
+                    text = dayName.toString(), style = TextStyle(
+                        fontWeight = FontWeight.Bold,
+                        //fontStyle = FontStyle.Italic,
+                        fontSize = 20.sp,
+                        color = GlanceTheme.colors.primary
+                    ))
+                Spacer(
+                    modifier = GlanceModifier.defaultWeight()
                 )
-            )
+                Text(
+                    text = formattedWeekPercentage, style = TextStyle(
+                        fontWeight = FontWeight.Bold,
+                        //  fontStyle = FontStyle.Italic,
+                        fontSize = 20.sp,
+                        color = GlanceTheme.colors.primary
+                    ))
+            }
 
+
+            Spacer(
+                modifier = GlanceModifier.defaultWeight()
+            )
+            Row(
+                modifier = GlanceModifier.fillMaxWidth(),
+
+                ) {
+                Text(
+                    modifier = GlanceModifier.padding(
+                        bottom = 4.dp
+                    ),
+                    text = "Day $currentDate ",
+                    style = TextStyle(
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 12.sp,
+                        color = GlanceTheme.colors.secondary
+                    )
+                )
+                Spacer(
+                    modifier = GlanceModifier.defaultWeight()
+                )
+                Text(
+                    modifier = GlanceModifier.padding(
+                        bottom = 4.dp
+                    ),
+                    text = "$remainingDay left",
+                    style = TextStyle(
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 12.sp,
+                        color = GlanceTheme.colors.secondary
+                    )
+                )
+            }
+
+
+            Spacer(
+                modifier = GlanceModifier.defaultWeight()
+            )
+            Box(
+                modifier = GlanceModifier.padding(
+                    bottom = 0.dp
+                )
+            ) {
+                LinearProgressIndicator(
+                    progress = weekProgressPercentage / 100,
+                    modifier = GlanceModifier.fillMaxWidth().height(12.dp).cornerRadius(12.dp),
+                    color = GlanceTheme.colors.primary,
+                    backgroundColor = GlanceTheme.colors.primaryContainer
+                )
+            }
 
 
         }

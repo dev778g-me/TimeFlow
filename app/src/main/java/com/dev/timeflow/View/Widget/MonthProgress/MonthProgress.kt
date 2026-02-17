@@ -21,6 +21,7 @@ import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
+import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxHeight
 import androidx.glance.layout.fillMaxSize
@@ -60,78 +61,103 @@ fun MonthProgressWidget(modifier: Modifier = Modifier) {
     val calendar = Calendar.getInstance()
     val decimalFormat = DecimalFormat("#.##")
 
-    val monthFormat = SimpleDateFormat("MMMM")
+    val monthFormat = SimpleDateFormat("MMM")
     val monthName = monthFormat.format(calendar.time)
     //current day of month
     val currentDay = calendar.get(Calendar.DAY_OF_MONTH)
     val totalDaysInMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
-     val remainingDays = totalDaysInMonth - currentDay
+    val remainingDays = totalDaysInMonth - currentDay
     val monthlyPercentage = currentDay.toFloat() / totalDaysInMonth.toFloat() * 100
     val formatedMonthlyPercentage = decimalFormat.format(monthlyPercentage).toString() + "%"
-     val size = LocalSize.current
-    Box (
+    val size = LocalSize.current
+    Box(
         modifier = GlanceModifier
             .background(GlanceTheme.colors.widgetBackground)
             .fillMaxSize()
             .cornerRadius(16.dp),
 
-    ){
-        Box(
-            modifier = GlanceModifier.padding(
-                bottom = 0.dp
-            )
         ) {
+        Column(
+            modifier = GlanceModifier
+                .fillMaxSize()
+                .padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                modifier = GlanceModifier.fillMaxWidth(),
 
+                ) {
+                Text(
+                    text = monthName.toString(), style = TextStyle(
+                        fontWeight = FontWeight.Bold,
+                        //fontStyle = FontStyle.Italic,
+                        fontSize = 20.sp,
+                        color = GlanceTheme.colors.primary
+                    ))
+                Spacer(
+                    modifier = GlanceModifier.defaultWeight()
+                )
+                Text(
+                    text = formatedMonthlyPercentage, style = TextStyle(
+                        fontWeight = FontWeight.Bold,
+                        //  fontStyle = FontStyle.Italic,
+                        fontSize = 20.sp,
+                        color = GlanceTheme.colors.primary
+                    ))
+            }
+
+
+            Spacer(
+                modifier = GlanceModifier.defaultWeight()
+            )
+            Row(
+                modifier = GlanceModifier.fillMaxWidth(),
+
+                ) {
+                Text(
+                    modifier = GlanceModifier.padding(
+                        bottom = 4.dp
+                    ),
+                    text = "Day $currentDay ",
+                    style = TextStyle(
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 12.sp,
+                        color = GlanceTheme.colors.secondary
+                    )
+                )
+                Spacer(
+                    modifier = GlanceModifier.defaultWeight()
+                )
+                Text(
+                    modifier = GlanceModifier.padding(
+                        bottom = 4.dp
+                    ),
+                    text = "$remainingDays left",
+                    style = TextStyle(
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 12.sp,
+                        color = GlanceTheme.colors.secondary
+                    )
+                )
+            }
+
+
+            Spacer(
+                modifier = GlanceModifier.defaultWeight()
+            )
+            Box(
+                modifier = GlanceModifier.padding(
+                    bottom = 0.dp
+                )
+            ) {
                 LinearProgressIndicator(
                     progress = monthlyPercentage / 100,
-                    modifier = GlanceModifier.
-                    fillMaxSize(),
+                    modifier = GlanceModifier.fillMaxWidth().height(12.dp).cornerRadius(12.dp),
                     color = GlanceTheme.colors.primary,
                     backgroundColor = GlanceTheme.colors.primaryContainer
                 )
-
-        }
-        Column(
-            modifier = GlanceModifier
-                .padding(12.dp)
-                .fillMaxSize(),
-
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "$monthName",
-                style = TextStyle(
-                    fontWeight = FontWeight.Bold,
-                    fontStyle = FontStyle.Normal,
-                    fontSize = 16.sp,
-                    color = GlanceTheme.colors.onPrimary
-                )
-            )
-
-            Text(
-                modifier = GlanceModifier.padding(
-                    vertical = 2.dp
-                ),
-                text = "Progress : $formatedMonthlyPercentage",
-                style = TextStyle(
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = GlanceTheme.colors.onPrimary
-                )
-            )
-            Text(
-                modifier = GlanceModifier.padding(
-                    vertical = 0.dp
-                ),
-                text = "Day $currentDay • $remainingDays left",
-                style = TextStyle(
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 10.sp,
-                    color = GlanceTheme.colors.onPrimary
-                )
-            )
-
+            }
 
 
         }
