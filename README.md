@@ -30,7 +30,7 @@
 
 
 ## 📷 Screenshots
-<img src="./screenshots/home1.png" alt="">
+<img src="./screenshots/home1.png" alt="fffffffffffff">
 
 
 ---
