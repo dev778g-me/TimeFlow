@@ -18,6 +18,7 @@ Home Screen Widgets: Keep your progress at a glance without ever opening the app
 
 <p align="center">
 <img src="./screenshots/home1.png" width="350" alt="Material 3 Progress Bars">
+<img src="./screenshots/home1.png" width="350" alt="Material 3 Progress Bars">
 </p>
 pp
 #### 📅 Event & Task Management
