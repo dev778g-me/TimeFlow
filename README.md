@@ -12,25 +12,37 @@
 
 #### 📊 Progress Tracking
 
-    Visual Life Bars: Track the passage of your day, week, month, and year with elegant Material 3 progress bars. 
+Visual Life Bars: Track the passage of your day, week, month, and year with elegant Material 3 progress bars. 
 
-    Home Screen Widgets: Keep your progress at a glance without ever opening the app.
+Home Screen Widgets: Keep your progress at a glance without ever opening the app.
+
+<p align="center">
+<img src="./screenshots/home1.png" width="350" alt="Material 3 Progress Bars">
+</p>
 
 #### 📅 Event & Task Management
 
-    Calendar View: Seamlessly add and manage tasks or life events in an intuitive calendar interface.
+Calendar View: Seamlessly add and manage tasks or life events in an intuitive calendar interface.
 
-    Smart Scheduling: Organize your timeline to ensure you’re meeting your long-term goals.
+Smart Scheduling: Organize your timeline to ensure you’re meeting your long-term goals.
 
 #### 🔔 Smart Notifications
 
-    Custom Timers: Set specific notification timers for your tasks so you never miss a deadline.
+Custom Timers: Set specific notification timers for your tasks so you never miss a deadline.
 
-    Timely Reminders: Get nudged exactly when you need to focus or transition to your next event.
+Timely Reminders: Get nudged exactly when you need to focus or transition to your next event.
 
 
 ## 📷 Screenshots
-<img src="./screenshots/home1.png" alt="">
+<img src="./screenshots/home1.png" alt="homescreen">
+<img src="./screenshots/home2.png" alt="">
+<img src="screenshots/calview.png" alt="">
+<img src="screenshots/calView2.png" alt="">
+<img src="screenshots/addTask.png" alt="">
+<img src="screenshots/addEvent.png" alt="">
+<img src="screenshots/name.png" alt="">
+<img src="screenshots/events.png" alt="">
+<img src="screenshots/event2.png" alt="">
 
 
 ---
