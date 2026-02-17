@@ -491,7 +491,6 @@ fun CalenderScreen(
                 showTime = it
             },
             timerState = timePickerState,
-            context = localContext,
             onPermissionState = {
                 showPermissionDialog = it
             },

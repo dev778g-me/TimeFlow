@@ -63,6 +63,7 @@ import com.composables.icons.lucide.Signature
 import com.dev.timeflow.Data.Model.ImportanceChipModel
 import com.dev.timeflow.Data.Model.SavingModel
 import com.dev.timeflow.View.utils.toLocalDate
+import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -101,7 +102,6 @@ fun SheetToAddEventAndTask(
     taskDescription : String,
     selectedImportantChip : Int,
 
-    context : Context
 ) {
     val localContext = LocalContext.current
     val primary = MaterialTheme.colorScheme.primary
@@ -180,7 +180,7 @@ fun SheetToAddEventAndTask(
                             // for a13 and a13 + devices
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                                 val hasPermission = ContextCompat.checkSelfPermission(
-                                    context,
+                                    localContext,
                                     Manifest.permission.POST_NOTIFICATIONS
                                 ) == PackageManager.PERMISSION_GRANTED
                                 // if permission is denied <umm i can show a dialog to navigate to the app info page
@@ -188,7 +188,7 @@ fun SheetToAddEventAndTask(
                                     onSwitchState.invoke(false)
                                     onTimeState.invoke(false)
                                     Toast.makeText(
-                                        context,
+                                        localContext,
                                         "Please grant notification permission to enable reminders",
                                         Toast.LENGTH_LONG
                                     ).show()
@@ -494,13 +494,6 @@ fun SheetToAddEventAndTask(
                     ),
                 shape = RoundedCornerShape(12.dp),
                 onClick = {
-                    if (switchState) {
-                        if (timerState.hour <= LocalTime.now().hour &&
-                            timerState.minute <= LocalTime.now().minute
-                        ) {
-                            Toast.makeText(localContext, "the timeless", Toast.LENGTH_LONG).show()
-                        }
-                    }
                     if (selectedSavingType == 0) {
                         onEventSave.invoke()
                     } else {
