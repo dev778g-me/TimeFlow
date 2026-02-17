@@ -19,7 +19,7 @@ Home Screen Widgets: Keep your progress at a glance without ever opening the app
 <p align="center">
 <img src="./screenshots/home1.png" width="350" alt="Material 3 Progress Bars">
 </p>
-
+pp
 #### 📅 Event & Task Management
 
 Calendar View: Seamlessly add and manage tasks or life events in an intuitive calendar interface.
