@@ -16,7 +16,7 @@ android {
         applicationId = "com.dev.timeflow"
         minSdk = 27
         targetSdk = 36
-        versionCode = 5
+        versionCode = 7
         versionName = "1.2.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -35,6 +35,22 @@ android {
             )
             signingConfig = signingConfigs.getByName("debug")
         }
+        debug {
+            manifestPlaceholders["appName"] = "Timeflow(Debug)"
+            applicationIdSuffix = ".debug"
+            buildConfigField(
+                type = "String",
+                name = "VERSION_CODE",
+                value = "\"7\""
+            )
+
+            buildConfigField(
+                type = "String",
+                name = "VERSION_NAME",
+                value = "\"1.2.1\""
+            )
+
+        }
     }
 
     compileOptions {
@@ -46,6 +62,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
