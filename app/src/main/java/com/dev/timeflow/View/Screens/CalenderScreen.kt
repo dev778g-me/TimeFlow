@@ -845,7 +845,7 @@ fun CalenderScreen(
             TimePickerDialog(
                 title = {
                     Text(
-                        text = "Select from time "
+                        text = "Select start time"
                     )
                 },
                 onDismissRequest = {
@@ -888,7 +888,7 @@ fun CalenderScreen(
             TimePickerDialog(
                 title = {
                     Text(
-                        text = "Select To time "
+                        text = "Select end time"
                     )
                 },
                 onDismissRequest = {
@@ -931,7 +931,12 @@ fun CalenderScreen(
                     showDate = false
                 },
                 confirmButton = {
+
                     Button(
+                        modifier = Modifier.padding(
+                            bottom = 12.dp,
+                            end = 12.dp
+                        ),
                         onClick = {
                             showDate = false
                         }
@@ -943,6 +948,10 @@ fun CalenderScreen(
                 },
                 dismissButton = {
                     OutlinedButton(
+                        modifier = Modifier.padding(
+                            bottom = 12.dp,
+                            end = 8.dp
+                        ),
                         onClick = {
                             showDate = false
                         }
@@ -954,7 +963,13 @@ fun CalenderScreen(
                 }
             ) {
                 DatePicker(
-                    state = fromDatePickerState
+                    state = fromDatePickerState,
+                    headline = {
+                        Text(
+                            text = "Select start date",
+                            modifier = Modifier.padding(horizontal = 24.dp)
+                        )
+                    }
                 )
             }
 
@@ -966,6 +981,10 @@ fun CalenderScreen(
                 },
                 confirmButton = {
                     Button(
+                        modifier = Modifier.padding(
+                            bottom = 12.dp,
+                            end = 12.dp
+                        ),
                         onClick = {
                            showToDate = false
                         }
@@ -988,7 +1007,13 @@ fun CalenderScreen(
                 }
             ) {
                 DatePicker(
-                    state = toDatePickerState
+                    state = toDatePickerState,
+                    headline = {
+                        Text(
+                            text = "Select end date",
+                            modifier = Modifier.padding(horizontal = 24.dp)
+                        )
+                    }
                 )
             }
 
