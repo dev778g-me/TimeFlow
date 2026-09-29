@@ -98,6 +98,7 @@ import com.dev.timeflow.View.utils.componets.SheetToEditEvent
 import com.dev.timeflow.View.utils.componets.SheetToEditTask
 import com.dev.timeflow.View.utils.toHour
 import com.dev.timeflow.View.utils.toLocalDate
+import com.dev.timeflow.View.utils.toUtcDate
 import com.dev.timeflow.View.utils.toMinute
 import com.dev.timeflow.View.utils.toUtcMillis
 import com.kizitonwose.calendar.compose.WeekCalendar
@@ -216,11 +217,7 @@ fun CalenderScreen(
         initialDisplayedMonth = currentMonth,
         selectableDates =  object : SelectableDates {
             override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-                val date = Instant.ofEpochMilli(utcTimeMillis)
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDate()
-
-                return !date.isBefore(currentSelectedDate)
+                return !utcTimeMillis.toUtcDate().isBefore(currentSelectedDate)
             }
         },
         yearRange = currentDate.year .. currentDate.plusYears(20).year,
@@ -232,11 +229,7 @@ fun CalenderScreen(
         initialDisplayedMonth = currentSelectedDate.plusDays(1).yearMonth,
         selectableDates =  object : SelectableDates {
             override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-                val date = Instant.ofEpochMilli(utcTimeMillis)
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDate()
-
-                return !date.isBefore(currentSelectedDate.plusDays(1))
+                return !utcTimeMillis.toUtcDate().isBefore(currentSelectedDate.plusDays(1))
             }
         },
         yearRange = currentDate.year .. currentDate.plusYears(20).year,
@@ -444,14 +437,14 @@ fun CalenderScreen(
                             0
                         },
                         createdAt = currentSelectedDate.toMillis(localTime = localTime),
-                        eventStartTime = fromDatePickerState.selectedDateMillis?.toLocalDate()
+                        eventStartTime = fromDatePickerState.selectedDateMillis?.toUtcDate()
                             ?.toMillis(
                                 localTime = LocalTime.of(
                                     fromTimePickerState.hour,
                                     fromTimePickerState.minute
                                 )
                             )!!,
-                        eventEndTime = toDatePickerState.selectedDateMillis?.toLocalDate()
+                        eventEndTime = toDatePickerState.selectedDateMillis?.toUtcDate()
                             ?.toMillis(
                                 localTime = LocalTime.of(
                                     toTimeTimePickerState.hour,
@@ -754,13 +747,13 @@ fun CalenderScreen(
                         latestEvent.copy(
                             name = editedName,
                             description = editedDescription,
-                            eventStartTime = editFromDatePicker.selectedDateMillis!!.toLocalDate()
+                            eventStartTime = editFromDatePicker.selectedDateMillis!!.toUtcDate()
                                 .toMillis(
                                     localTime = LocalTime.of(
                                         editFromTimePickerState.hour, editFromTimePickerState.minute
                                     ),
                                 ),
-                            eventEndTime = editToDatePicker.selectedDateMillis!!.toLocalDate()
+                            eventEndTime = editToDatePicker.selectedDateMillis!!.toUtcDate()
                                 .toMillis(
                                     localTime = LocalTime.of(
                                         editToTimePickerState.hour, editToTimePickerState.minute

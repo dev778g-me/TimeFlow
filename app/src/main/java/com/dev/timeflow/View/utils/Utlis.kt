@@ -31,6 +31,20 @@ fun Long.toLocalDate(): LocalDate {
         .toLocalDate()
 }
 
+/**
+ * Converts a value from Material 3's [androidx.compose.material3.DatePickerState.selectedDateMillis]
+ * into a [LocalDate].
+ *
+ * Material 3 always encodes a picked day as midnight in UTC, so reading it with the system zone
+ * (as [toLocalDate] does) shifts the day backwards on any device west of UTC. This is the exact
+ * inverse of [toUtcMillis].
+ */
+fun Long.toUtcDate(): LocalDate {
+    return Instant.ofEpochMilli(this)
+        .atZone(ZoneOffset.UTC)
+        .toLocalDate()
+}
+
 
 fun LocalDate.toMyFormat () : String {
     return  format(
@@ -46,6 +60,7 @@ fun LocalDate.toMillis (localTime: LocalTime) : Long {
         set(Calendar.HOUR_OF_DAY, localTime.hour)
         set(Calendar.MINUTE, localTime.minute)
         set(Calendar.SECOND, localTime.second)
+        set(Calendar.MILLISECOND, 0)
     }
 
     return  calendar.timeInMillis
