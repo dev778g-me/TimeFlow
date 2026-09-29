@@ -602,6 +602,10 @@ fun CalenderScreen(
                 },
                 confirmButton = {
                     Button(
+                        modifier = Modifier.padding(
+                            bottom = 12.dp,
+                            end = 12.dp
+                        ),
                         onClick = {
                             showEditToDatePicker = false
                         }
@@ -611,9 +615,9 @@ fun CalenderScreen(
                 },
 
             ) {
-
                 DatePicker(
-                    state = editToDatePicker
+                    state = editToDatePicker,
+                    headline = { Text("Select end date") }
                 )
             }
         }
@@ -626,6 +630,10 @@ fun CalenderScreen(
 
                confirmButton = {
                    Button(
+                       modifier = Modifier.padding(
+                           bottom = 12.dp,
+                           end = 12.dp
+                       ),
                        onClick = {
                            showEditFromDatePicker = false
 
@@ -638,7 +646,8 @@ fun CalenderScreen(
                }
            ) {
                DatePicker(
-                   state = editFromDatePicker
+                   state = editFromDatePicker,
+                   headline = { Text("Select start date") }
                )
            }
         }

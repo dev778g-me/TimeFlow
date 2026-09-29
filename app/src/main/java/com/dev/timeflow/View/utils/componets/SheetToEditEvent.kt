@@ -15,7 +15,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePickerState
@@ -26,8 +25,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TimePickerState
@@ -47,19 +46,16 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.composables.icons.lucide.Bell
-import com.composables.icons.lucide.Calendar
-import com.composables.icons.lucide.Clock
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.PenLine
 import com.composables.icons.lucide.Pin
 import com.composables.icons.lucide.Trash
 import com.dev.timeflow.Data.Model.Events
 import com.dev.timeflow.View.utils.toFormattedTime
-import com.dev.timeflow.View.utils.toLocalDate
+import com.dev.timeflow.View.utils.toUtcDate
 import kotlinx.coroutines.delay
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,7 +66,6 @@ fun SheetToEditEvent(
     fromTimePickerState: TimePickerState,
     toTimePickerState: TimePickerState,
     onDismiss: () -> Unit,
-    onPin: () -> Unit,
     onValueChange: (String) -> Unit,
     onNameValueChange: (String) -> Unit,
     onStartDateChipClick: () -> Unit,
@@ -98,14 +93,14 @@ fun SheetToEditEvent(
     }
 
     LaunchedEffect(description) {
-        delay(500.milliseconds)
+        delay(500)
         if (description != event.description) {
             onValueChange(description)
         }
     }
 
     LaunchedEffect(name) {
-        delay(500.milliseconds)
+        delay(500)
         if (name != event.name) {
             onNameValueChange.invoke(name)
         }
@@ -116,16 +111,14 @@ fun SheetToEditEvent(
         sheetState = rememberModalBottomSheetState(
             skipPartiallyExpanded = true
         ),
-        onDismissRequest = {
-            onDismiss.invoke()
-        }
+        onDismissRequest = { onDismiss() }
     ) {
         Column(
             modifier = modifier.padding(
-                start = 20.dp, end = 20.dp, bottom = 28.dp
+                start = 16.dp, end = 16.dp, bottom = 28.dp
             )
         ) {
-            // ── Header: Title + Delete ──────────────────────────
+            // Title + Delete
             Row(
                 modifier = modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -146,19 +139,14 @@ fun SheetToEditEvent(
                         fontSize = fontSize.sp,
                         fontWeight = FontWeight.SemiBold
                     ),
-                    onValueChange = {
-                        name = it
-                    },
+                    onValueChange = { name = it },
                     placeholder = {
                         Text(
                             text = "Event name",
-                            style = MaterialTheme.typography.headlineSmall.copy(
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            style = MaterialTheme.typography.headlineSmall
                         )
                     }
                 )
-                Spacer(modifier = modifier.width(8.dp))
                 IconButton(
                     colors = IconButtonDefaults.iconButtonColors(
                         containerColor = MaterialTheme.colorScheme.errorContainer,
@@ -166,283 +154,185 @@ fun SheetToEditEvent(
                     ),
                     onClick = {
                         onDeleteEvent()
-                        onDismiss.invoke()
+                        onDismiss()
                     }
                 ) {
                     Icon(
                         modifier = modifier.size(ButtonDefaults.IconSize),
                         imageVector = Lucide.Trash,
-                        contentDescription = "Delete event"
+                        contentDescription = "Delete"
                     )
                 }
             }
 
-            Spacer(modifier = modifier.height(20.dp))
+            // Description
+            TextField(
+                colors = TextFieldDefaults.colors(
+                    disabledContainerColor = Color.Transparent,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                ),
+                modifier = modifier.fillMaxWidth(),
+                value = description,
+                onValueChange = { description = it },
+                placeholder = { Text(text = "Add a description") },
+                label = { Text("Description") },
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(
+                    onDone = { onValueChange(description) }
+                ),
+                leadingIcon = {
+                    Icon(
+                        modifier = modifier.size(ButtonDefaults.IconSize),
+                        imageVector = Lucide.PenLine,
+                        contentDescription = null
+                    )
+                }
+            )
 
-            // ── Section: Details ────────────────────────────────
-            SectionLabel(text = "Details")
-            Spacer(modifier = modifier.height(8.dp))
+            HorizontalDivider(
+                modifier = modifier.padding(vertical = 12.dp),
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+            )
 
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                tonalElevation = 1.dp
+            // From
+            Row(
+                modifier = modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                TextField(
-                    colors = TextFieldDefaults.colors(
-                        disabledContainerColor = Color.Transparent,
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                    ),
-                    modifier = modifier.fillMaxWidth(),
-                    value = description,
-                    onValueChange = {
-                        description = it
-                    },
-                    placeholder = {
-                        Text(text = "Add a description")
-                    },
-                    label = {
-                        Text("Description")
-                    },
-                    keyboardOptions = KeyboardOptions(
-                        imeAction = ImeAction.Done
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onDone = {
-                            onValueChange.invoke(description)
+                Text(
+                    text = "From",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    AssistChip(
+                        onClick = { onStartDateChipClick() },
+                        label = {
+                            Text(
+                                text = fromDatePickerState.selectedDateMillis
+                                    ?.toUtcDate()
+                                    ?.format(DateTimeFormatter.ofPattern("MMM d, yyyy"))
+                                    ?: "Select date",
+                                color = MaterialTheme.colorScheme.primary
+                            )
                         }
-                    ),
-                    leadingIcon = {
-                        Icon(
-                            modifier = modifier.size(ButtonDefaults.IconSize),
-                            imageVector = Lucide.PenLine,
-                            contentDescription = null
+                    )
+                    TextButton(onClick = { onStartTimeChipClick() }) {
+                        Text(
+                            text = LocalTime.of(
+                                fromTimePickerState.hour,
+                                fromTimePickerState.minute
+                            ).format(formatter),
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
+                }
+            }
+
+            Spacer(modifier = modifier.height(4.dp))
+
+            // To
+            Row(
+                modifier = modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "To",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    AssistChip(
+                        onClick = { onEndDateChipClick() },
+                        label = {
+                            Text(
+                                text = toDatePickerState.selectedDateMillis
+                                    ?.toUtcDate()
+                                    ?.format(DateTimeFormatter.ofPattern("MMM d, yyyy"))
+                                    ?: "Select date",
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    )
+                    TextButton(onClick = { onEndTimeChipClick() }) {
+                        Text(
+                            text = LocalTime.of(
+                                toTimePickerState.hour,
+                                toTimePickerState.minute
+                            ).format(formatter),
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            }
+
+            HorizontalDivider(
+                modifier = modifier.padding(vertical = 12.dp),
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+            )
+
+            // Notification
+            Row(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    modifier = modifier.size(20.dp),
+                    imageVector = Lucide.Bell,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = modifier.width(12.dp))
+                Text(
+                    text = "Reminder",
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = modifier.weight(1f)
+                )
+                Text(
+                    text = if (event.notification) {
+                        event.eventNotificationTime.toFormattedTime()
+                    } else {
+                        "Not set"
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (event.notification)
+                        MaterialTheme.colorScheme.primary
+                    else
+                        MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
-            Spacer(modifier = modifier.height(20.dp))
 
-            // ── Section: Schedule ───────────────────────────────
-            SectionLabel(text = "Schedule")
-            Spacer(modifier = modifier.height(8.dp))
 
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                tonalElevation = 1.dp
-            ) {
-                Column(modifier = modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
-                    // From row
-                    ScheduleRow(
-                        label = "From",
-                        dateText = fromDatePickerState.selectedDateMillis!!.toLocalDate()
-                            .format(DateTimeFormatter.ofPattern("MMM d, yyyy")),
-                        timeText = LocalTime.of(
-                            fromTimePickerState.hour,
-                            fromTimePickerState.minute
-                        ).format(formatter),
-                        onDateClick = onStartDateChipClick,
-                        onTimeClick = onStartTimeChipClick
-                    )
+            Spacer(modifier = modifier.height(16.dp))
 
-                    HorizontalDivider(
-                        modifier = modifier.padding(vertical = 8.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                    )
+            // Update
+            val isFormValid = name.isNotBlank()
+                    && fromDatePickerState.selectedDateMillis != null
+                    && toDatePickerState.selectedDateMillis != null
 
-                    // To row
-                    ScheduleRow(
-                        label = "To",
-                        dateText = toDatePickerState.selectedDateMillis!!.toLocalDate()
-                            .format(DateTimeFormatter.ofPattern("MMM d, yyyy")),
-                        timeText = LocalTime.of(
-                            toTimePickerState.hour,
-                            toTimePickerState.minute
-                        ).format(formatter),
-                        onDateClick = onEndDateChipClick,
-                        onTimeClick = onEndTimeChipClick
-                    )
-                }
-            }
-
-            Spacer(modifier = modifier.height(20.dp))
-
-            // ── Section: Notification ───────────────────────────
-            SectionLabel(text = "Notification")
-            Spacer(modifier = modifier.height(8.dp))
-
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                tonalElevation = 1.dp
-            ) {
-                Column {
-                    // Reminder row
-                    Row(
-                        modifier = modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 14.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            modifier = modifier.size(20.dp),
-                            imageVector = Lucide.Bell,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = modifier.width(14.dp))
-                        Text(
-                            text = "Reminder",
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = modifier.weight(1f)
-                        )
-                        Text(
-                            text = if (event.notification) {
-                                event.eventNotificationTime.toFormattedTime()
-                            } else {
-                                "Not set"
-                            },
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = if (event.notification) {
-                                MaterialTheme.colorScheme.primary
-                            } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                            }
-                        )
-                    }
-
-                    HorizontalDivider(
-                        modifier = modifier.padding(horizontal = 16.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                    )
-
-                    // Pin notification row
-                    Row(
-                        modifier = modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp))
-                            .clickable { onPin() }
-                            .padding(horizontal = 16.dp, vertical = 14.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            modifier = modifier.size(20.dp),
-                            imageVector = Lucide.Pin,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = modifier.width(14.dp))
-                        Text(
-                            text = "Pin Notification",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = modifier.height(24.dp))
-
-            // ── Update Button ───────────────────────────────────
             Button(
-                shape = RoundedCornerShape(16.dp),
+                enabled = isFormValid,
+                shape = RoundedCornerShape(12.dp),
                 modifier = modifier.fillMaxWidth(),
                 onClick = {
-                    onUpdateEvent.invoke()
-                    onDismiss.invoke()
+                    onUpdateEvent()
+                    onDismiss()
                 }
             ) {
                 Text(
                     modifier = modifier.padding(vertical = 8.dp),
-                    text = "Update Event",
-                    style = MaterialTheme.typography.titleMedium
+                    text = "Update Event"
                 )
             }
-        }
-    }
-}
-
-/**
- * Section label for grouping related content.
- */
-@Composable
-private fun SectionLabel(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.labelLarge.copy(
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.primary
-        )
-    )
-}
-
-/**
- * A reusable row for displaying a date chip and time chip side by side.
- */
-@Composable
-private fun ScheduleRow(
-    modifier: Modifier = Modifier,
-    label: String,
-    dateText: String,
-    timeText: String,
-    onDateClick: () -> Unit,
-    onTimeClick: () -> Unit
-) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.width(48.dp)
-        )
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            AssistChip(
-                onClick = onDateClick,
-                label = {
-                    Text(
-                        text = dateText,
-                        color = MaterialTheme.colorScheme.primary,
-                        style = MaterialTheme.typography.labelLarge
-                    )
-                },
-                leadingIcon = {
-                    Icon(
-                        modifier = Modifier.size(AssistChipDefaults.IconSize),
-                        imageVector = Lucide.Calendar,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-            )
-            AssistChip(
-                onClick = onTimeClick,
-                label = {
-                    Text(
-                        text = timeText,
-                        color = MaterialTheme.colorScheme.primary,
-                        style = MaterialTheme.typography.labelLarge
-                    )
-                },
-                leadingIcon = {
-                    Icon(
-                        modifier = Modifier.size(AssistChipDefaults.IconSize),
-                        imageVector = Lucide.Clock,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-            )
         }
     }
 }
