@@ -7,38 +7,40 @@ import android.util.Log
 
 class NotificationAlarmManagerReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        Log.d("NOTIFICATION BROADCAST RECEIVER", "broadcast receiver started received : $intent")
-        Log.d("NOTIFICATION BROADCAST RECEIVER", "All extras: ${intent.extras?.keySet()?.joinToString()}")
-        val message = intent.getStringExtra("task_event_name")
-        val notificationId = intent.getIntExtra("task_event_id", 0)
-        val startTime = intent.getLongExtra("event_start_time",0)
-        val endTime = intent.getLongExtra("event_end_time",0)
-        val type = intent.getIntExtra("task_event_type",0)
+        val message = intent.getStringExtra(AlarmKeys.EXTRA_TITLE)
+        val startTime = intent.getLongExtra(AlarmKeys.EXTRA_START_TIME, 0L)
+        val endTime = intent.getLongExtra(AlarmKeys.EXTRA_END_TIME, 0L)
+        val type = intent.getIntExtra(AlarmKeys.EXTRA_TYPE, AlarmKeys.TYPE_EVENT)
+        val id = intent.getLongExtra(AlarmKeys.EXTRA_ID, 0L)
 
-        val currentTime = System.currentTimeMillis()
-        Log.d("NOTIFICATION BROADCAST RECEIVER", "broadcast receiver started received : $type")
-        val elapsed = currentTime -startTime
-        val total = endTime - startTime
+        if (message.isNullOrBlank()) {
+            Log.w("NOTIFICATION BROADCAST RECEIVER", "dropping alarm with no title")
+            return
+        }
 
+        val notificationId = intent.getIntExtra(
+            AlarmKeys.EXTRA_NOTIFICATION_ID,
+            AlarmKeys.reminderNotificationId(type, id)
+        )
 
-        val percent = ((elapsed.toFloat() / total.toFloat()) * 100f).coerceIn(0f, 100f)
-
-        if (type == 0) {
+        if (type == AlarmKeys.TYPE_EVENT) {
             TimeFlowNotificationManager(context).showEventNotification(
-                context,
-                message = message!!,
+                context = context,
+                message = message,
                 notificationId = notificationId,
-                progress = percent.toInt()
+                progress = progressPercent(startTime, endTime)
             )
         } else {
             TimeFlowNotificationManager(context).showNotification(
-                context, message = message!!, notificationId = notificationId
+                context, message = message, notificationId = notificationId
             )
-            Log.d("NOTIFICATION BROADCAST RECEIVER", "notification function has ran")
         }
+    }
 
-
-
-
+    private fun progressPercent(startTime: Long, endTime: Long): Int {
+        val total = endTime - startTime
+        if (total <= 0L) return 0
+        val elapsed = System.currentTimeMillis() - startTime
+        return ((elapsed.toDouble() / total.toDouble()) * 100).toInt().coerceIn(0, 100)
     }
 }

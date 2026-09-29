@@ -7,161 +7,69 @@ import android.content.Intent
 import android.os.Build
 import android.util.Log
 import com.dev.timeflow.Data.Model.NotificationAlarmManagerModel
+import com.dev.timeflow.View.utils.toMillis
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.util.Calendar
+import java.time.LocalTime
 import javax.inject.Inject
 
+private const val TAG = "TIMEFLOW ALARM MANAGER"
 
 class TimeFlowAlarmManagerService @Inject constructor(
     @ApplicationContext private val context: Context,
-){
-    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+) {
+    private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
+    /**
+     * Schedules (or re-schedules) the single reminder alarm owned by this entity.
+     *
+     * Cancels first so this is idempotent: re-inserting, editing the reminder time or
+     * re-running after boot all converge on exactly one pending alarm per entity. A
+     * past-due reminder cancels without rescheduling, so a stale alarm can never
+     * survive into a later boot.
+     */
+    fun schedule(model: NotificationAlarmManagerModel) {
+        AlarmKeys.cancel(context, model.type, model.id)
 
-    fun scheduleNotification (notificationAlarmManagerModel: List<NotificationAlarmManagerModel>) {
-        Log.d(
-            "TIMEFLOW ALARM MANAGER",
-            "the alarm manager schedule notification function has started {}"
+        val triggerAt = model.localDate.toMillis(LocalTime.of(model.hour, model.minute, 0))
+
+        if (triggerAt <= System.currentTimeMillis()) {
+            Log.d(TAG, "Skipping past alarm for ${model.title}")
+            return
+        }
+
+        val intent = Intent(context, NotificationAlarmManagerReceiver::class.java).apply {
+            putExtra(AlarmKeys.EXTRA_ID, model.id)
+            putExtra(AlarmKeys.EXTRA_TYPE, model.type)
+            putExtra(AlarmKeys.EXTRA_TITLE, model.title)
+            putExtra(AlarmKeys.EXTRA_START_TIME, model.startTime ?: 0L)
+            putExtra(AlarmKeys.EXTRA_END_TIME, model.endTime ?: 0L)
+            putExtra(AlarmKeys.EXTRA_HOUR, model.hour)
+            putExtra(AlarmKeys.EXTRA_MINUTE, model.minute)
+            putExtra(AlarmKeys.EXTRA_NOTIFICATION_ID, AlarmKeys.reminderNotificationId(model.type, model.id))
+        }
+
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            AlarmKeys.requestCode(model.type, model.id),
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        notificationAlarmManagerModel.forEach { notificationAlarmManagerModel ->
-            Log.d(
-                "TIMEFLOW ALARM MANAGER",
-                "the current task_event_name is ${notificationAlarmManagerModel.title}"
-            )
-            Log.d("NOTIFICATION BROADCAST RECEIVER ", "type is - ${notificationAlarmManagerModel.type}")
-            val intent = Intent(context, NotificationAlarmManagerReceiver::class.java).apply {
-                val type = notificationAlarmManagerModel.type
-                putExtra("task_event_type", type)
-                Log.d("NOTIFICATION BROADCAST RECEIVER ", "type is - ${notificationAlarmManagerModel.type}")
-                putExtra("event_start_time", notificationAlarmManagerModel.startTime)
-                putExtra("event_end_time", notificationAlarmManagerModel.endTime)
-                putExtra("task_event_name", notificationAlarmManagerModel.title)
-                putExtra(
-                    "task_event_id",
-                    notificationAlarmManagerModel.id.toInt() * 5 + notificationAlarmManagerModel.hour
-                )
-                putExtra("task_event_hour", notificationAlarmManagerModel.hour)
-                putExtra("task_event_min", notificationAlarmManagerModel.minute)
-
-            }
-
-            val requestCode =
-                notificationAlarmManagerModel.id.toInt() * 10000 +
-                        notificationAlarmManagerModel.hour * 100 +
-                        notificationAlarmManagerModel.minute
-
-
-            val pendingIntent = PendingIntent.getBroadcast(
-                context,
-                requestCode,
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-
-
-            val calendar = Calendar.getInstance().apply {
-                set(Calendar.DAY_OF_MONTH, notificationAlarmManagerModel.localDate.dayOfMonth)
-                set(Calendar.MONTH, notificationAlarmManagerModel.localDate.month.value - 1)
-                set(Calendar.YEAR, notificationAlarmManagerModel.localDate.year)
-                set(Calendar.HOUR_OF_DAY, notificationAlarmManagerModel.hour)
-                set(Calendar.MINUTE, notificationAlarmManagerModel.minute)
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-            }
-            Log.d(
-                "TIMEFLOW ALARM MANAGER",
-                "the month is ${notificationAlarmManagerModel.localDate.month.value - 1}"
-            )
-
-            if (calendar.timeInMillis < System.currentTimeMillis()) {
-                Log.d("TIMEFLOW", "Skipping past alarm for ${notificationAlarmManagerModel.title}")
-                return@forEach
-            }
-
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                alarmManager.setExactAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP,
-                    calendar.timeInMillis,
-                    pendingIntent
-                )
-
-            } else {
-                alarmManager.setExact(
-                    AlarmManager.RTC_WAKEUP,
-                    calendar.timeInMillis,
-                    pendingIntent
-                )
-            }
-        }
-    }
-
-        fun scheduleSingleAlarm(notificationAlarmManagerModel: NotificationAlarmManagerModel) {
-            val intent = Intent(context, NotificationAlarmManagerReceiver::class.java).apply {
-                putExtra("task_event_name", notificationAlarmManagerModel.title)
-                putExtra("task_event_type", notificationAlarmManagerModel.type)
-                Log.d("NOTIFICATION BROADCAST RECEIVER ", "type is - ${notificationAlarmManagerModel.type}")
-                putExtra("event_start_time", notificationAlarmManagerModel.startTime)
-                putExtra("event_end_time", notificationAlarmManagerModel.endTime)
-                putExtra(
-                    "task_event_id",
-                    notificationAlarmManagerModel.id.toInt() * 5 + notificationAlarmManagerModel.hour
-                )
-                putExtra("task_event_hour", notificationAlarmManagerModel.hour)
-                putExtra("task_event_min", notificationAlarmManagerModel.minute)
-
-            }
-
-
-            val requestCode =
-                (notificationAlarmManagerModel.id + notificationAlarmManagerModel.hour * 100 + notificationAlarmManagerModel.minute).hashCode()
-
-
-            val pendingIntent = PendingIntent.getBroadcast(
-                context ,
-                requestCode ,
-                intent ,
-                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-            )
-
-
-            val calendar = Calendar.getInstance().apply {
-                set(Calendar.DAY_OF_MONTH, notificationAlarmManagerModel.localDate.dayOfMonth)
-                set(Calendar.MONTH, notificationAlarmManagerModel.localDate.month.value - 1)
-                set(Calendar.YEAR, notificationAlarmManagerModel.localDate.year)
-                set(Calendar.HOUR_OF_DAY, notificationAlarmManagerModel.hour)
-                set(Calendar.MINUTE, notificationAlarmManagerModel.minute)
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-            }
-
-            val timeInMillis = calendar.timeInMillis
-
-            if (calendar.timeInMillis < System.currentTimeMillis()) {
-                Log.d("TIMEFLOW", "Skipping past alarm for ${notificationAlarmManagerModel.title}")
-                return
-            }
-
-
-
-            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.S){
-                alarmManager.setExactAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP,
-                    timeInMillis,
-                    pendingIntent
-                )
-            }
-            else alarmManager.setExact(
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            alarmManager.setExactAndAllowWhileIdle(
                 AlarmManager.RTC_WAKEUP,
-                timeInMillis,
+                triggerAt,
                 pendingIntent
             )
-
-            Log.d("TIMEFLOW ALARM MANAGER", "the alarm manager schedule notification function has ended")
+        } else {
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerAt, pendingIntent)
         }
-
-
-
-
     }
+
+    fun scheduleAll(models: List<NotificationAlarmManagerModel>) {
+        models.forEach { schedule(it) }
+    }
+
+    /** Drops the pending reminder for an entity that no longer has one. */
+    fun cancel(type: Int, id: Long) = AlarmKeys.cancel(context, type, id)
+}

@@ -301,7 +301,7 @@ class TaskAndEventViewModel @Inject constructor(
 
     fun scheduleNotification (notificationAlarmManagerModel: NotificationAlarmManagerModel){
         viewModelScope.launch {
-            TimeFlowAlarmManagerService(context = context).scheduleSingleAlarm(notificationAlarmManagerModel = notificationAlarmManagerModel)
+            TimeFlowAlarmManagerService(context = context).schedule(model = notificationAlarmManagerModel)
         }
     }
 

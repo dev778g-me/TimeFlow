@@ -73,8 +73,8 @@ class BootCompleteReceiver (
 
                     val notificationAlarmManagerModel = task + event
 
-                    TimeFlowAlarmManagerService(context = context).scheduleNotification(
-                        notificationAlarmManagerModel = notificationAlarmManagerModel
+                    TimeFlowAlarmManagerService(context = context).scheduleAll(
+                        models = notificationAlarmManagerModel
                     )
                 } catch (e: Exception) {
                     println(e.localizedMessage)

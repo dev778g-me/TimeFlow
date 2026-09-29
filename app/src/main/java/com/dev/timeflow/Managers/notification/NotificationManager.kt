@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
-import android.os.Message
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -18,10 +17,10 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 
 class TimeFlowNotificationManager (
     @ApplicationContext context: Context
-){
-    fun showNotification(context: Context, message: String, notificationId : Int){
+) {
+    fun showNotification(context: Context, message: String, notificationId: Int) {
         val intent = Intent(context, MainActivity::class.java)
-        Log.d("TESTING NOTIFICATION","the notification received for the task_event")
+        Log.d("TESTING NOTIFICATION", "the notification received for the task_event")
 
         val notification = NotificationCompat.Builder(context, Application.TIMEFLOW_NOTIFICATION_ID)
             .setSmallIcon(R.drawable.timeflow_mono_logo)
@@ -29,38 +28,53 @@ class TimeFlowNotificationManager (
             .setPriority(NotificationManager.IMPORTANCE_HIGH)
             .build()
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
-            if (ContextCompat.checkSelfPermission(context,POST_NOTIFICATIONS)== PackageManager.PERMISSION_GRANTED){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    context,
+                    POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
                 NotificationManagerCompat.from(context)
-                    .notify(notificationId,notification)
-            }else {
-                Log.d("TESTING NOTIFICATION","some error occ")
+                    .notify(notificationId, notification)
+            } else {
+                Log.d("TESTING NOTIFICATION", "some error occ")
             }
-        }else{
+        } else {
             NotificationManagerCompat.from(context).notify(notificationId, notification)
         }
     }
 
 
-    fun showEventNotification(context: Context , message: String, progress : Int, notificationId: Int){
+    fun showEventNotification(
+        context: Context,
+        message: String,
+        progress: Int,
+        notificationId: Int
+    ) {
         val notification = NotificationCompat.Builder(context, Application.TIMEFLOW_NOTIFICATION_ID)
             .setSmallIcon(R.drawable.timeflow_mono_logo)
             .setContentTitle(message)
             .setContentText(progress.toString())
-            .setProgress(100,progress,false)
+            .setProgress(100, progress, false)
             .setPriority(NotificationManager.IMPORTANCE_HIGH)
             .build()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
-            if (ContextCompat.checkSelfPermission(context,POST_NOTIFICATIONS)== PackageManager.PERMISSION_GRANTED){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    context,
+                    POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
                 NotificationManagerCompat.from(context)
-                    .notify(notificationId,notification)
-            }else {
-                Log.d("TESTING NOTIFICATION","some error occ")
+                    .notify(notificationId, notification)
+            } else {
+                Log.d("TESTING NOTIFICATION", "some error occ")
             }
-        } else{
+        } else {
             NotificationManagerCompat.from(context).notify(notificationId, notification)
         }
 
     }
 
+
 }
+
