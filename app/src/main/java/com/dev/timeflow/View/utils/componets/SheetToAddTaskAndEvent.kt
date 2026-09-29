@@ -51,6 +51,8 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.SuggestionChip
+import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -606,46 +608,54 @@ private fun ScheduleRow(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            OutlinedButton (
+            AssistChip (
                 onClick = onDateClick,
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Icon(
-                    modifier = Modifier.size(18.dp),
-                    imageVector = Lucide.Calendar,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = dateText,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
+                label = {
+                    Text(
+                        text = dateText,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        modifier = Modifier.size(18.dp),
+                        imageVector = Lucide.Calendar,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+               // shape = RoundedCornerShape(12.dp)
+            )
 
             Spacer(modifier = Modifier.width(8.dp))
 
-            Button(
+            SuggestionChip(
                 onClick = onTimeClick,
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Icon(
-                    modifier = Modifier.size(16.dp),
-                    imageVector = Lucide.Clock,
-                    contentDescription = null
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
+                label = { Text(
                     text = timeText,
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.SemiBold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
-                )
-            }
+                )},
+                colors = SuggestionChipDefaults.suggestionChipColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    labelColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    iconContentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                ),
+                icon = {
+                    Icon(
+                        modifier = Modifier.size(16.dp),
+                        imageVector = Lucide.Clock,
+                        contentDescription = null
+                    )
+                },
+               // border = BorderStroke(0.dp, color = Color.Transparent)
+            )
+
         }
     }
 }
