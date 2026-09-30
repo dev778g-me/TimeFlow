@@ -1,16 +1,15 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp")
     id("kotlin-parcelize")
     id("com.google.dagger.hilt.android")
-    kotlin("plugin.serialization") version "2.2.0"
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
     namespace = "com.dev.timeflow"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.dev.timeflow"
@@ -57,27 +56,31 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    kotlinOptions {
-        jvmTarget = "11"
-    }
     buildFeatures {
         compose = true
         buildConfig = true
     }
 }
 
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11
+    }
+}
+
 dependencies {
-    implementation("androidx.work:work-runtime-ktx:2.11.0")
-    implementation("androidx.core:core-splashscreen:1.0.0")
-    implementation("com.google.accompanist:accompanist-permissions:0.37.3")
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.core.splashscreen)
+    implementation(libs.accompanist.permissions)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
-    implementation("androidx.compose.material3:material3-android:1.4.0-alpha14")
+    implementation(libs.androidx.material3)
+    implementation(libs.material.kolor)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -86,20 +89,20 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.androidx.material.icons.extended)
-    implementation("com.kizitonwose.calendar:compose:2.7.0")
+    implementation(libs.compose)
     implementation(libs.androidx.glance)
     implementation(libs.androidx.glance.appwidget)
-    implementation("com.composables:icons-lucide:1.0.0")
-    implementation("androidx.navigation:navigation-compose:2.9.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
-    implementation("androidx.room:room-runtime:2.7.2")
+    implementation(libs.icons.lucide)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.androidx.room.runtime)
     ksp(libs.androidx.room.compiler)
-    ksp("com.google.dagger:hilt-android-compiler:2.56.2")
-    implementation("com.google.dagger:hilt-android:2.56.2")
-    implementation("androidx.compose.ui:ui-text-google-fonts:1.8.1")
-    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
-    implementation("androidx.room:room-ktx:2.7.2")
-    implementation("androidx.core:core-splashscreen:1.0.0")
-    implementation("io.coil-kt.coil3:coil-compose:3.2.0")
+    ksp(libs.hilt.android.compiler)
+    implementation(libs.hilt.android)
+    implementation(libs.androidx.compose.ui.text.google.fonts)
+    implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.core.splashscreen.v100)
+    implementation(libs.coil.compose)
 
 }
