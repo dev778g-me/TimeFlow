@@ -3,6 +3,7 @@ package com.dev.timeflow.Viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dev.timeflow.Data.Model.BodyFont
+import com.dev.timeflow.Data.Model.ColorSpecVersion
 import com.dev.timeflow.Data.Model.ContrastLevel
 import com.dev.timeflow.Data.Model.ThemePreferences
 import com.dev.timeflow.Data.Model.ThemeType
@@ -47,6 +48,10 @@ class ThemeViewModel @Inject constructor(
 
     fun setPaletteStyle(value: String) {
         viewModelScope.launch { dataStoreRepo.savePaletteStyle(value) }
+    }
+
+    fun setColorSpecVersion(value: ColorSpecVersion) {
+        viewModelScope.launch { dataStoreRepo.saveColorSpecVersion(value) }
     }
 
     fun setContrastLevel(value: ContrastLevel) {

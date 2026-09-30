@@ -1,6 +1,11 @@
 package com.dev.timeflow.View.Screens
 
 import android.content.Intent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -23,7 +28,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
@@ -44,7 +48,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -60,12 +63,15 @@ import com.composables.icons.lucide.Github
 import com.composables.icons.lucide.Info
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Palette
+import com.composables.icons.lucide.Paintbrush
+import com.composables.icons.lucide.SlidersHorizontal
 import com.composables.icons.lucide.Star
 import com.composables.icons.lucide.Sun
 import com.composables.icons.lucide.Twitter
 import com.composables.icons.lucide.Type
 import com.dev.timeflow.BuildConfig
 import com.dev.timeflow.Data.Model.BodyFont
+import com.dev.timeflow.Data.Model.ColorSpecVersion
 import com.dev.timeflow.Data.Model.ContrastLevel
 import com.dev.timeflow.Data.Model.ThemePreferences
 import com.dev.timeflow.Data.Model.ThemeType
@@ -79,7 +85,6 @@ private const val DEVELOPER_TWITTER = "https://x.com/Dev778g"
 private const val PLAY_STORE =
     "https://play.google.com/store/apps/details?id=com.dev.timeflow"
 
-/** A null [argb] means "no seed": fall back to the app or wallpaper colors. */
 private data class SeedSwatch(val label: String, val argb: Long?)
 
 private val seedSwatches = listOf(
@@ -98,13 +103,7 @@ private val seedSwatches = listOf(
     SeedSwatch("Slate", 0xFF546E7A),
 )
 
-private val dimmed = 0.38f
-
-@OptIn(
-    ExperimentalMaterial3Api::class,
-    ExperimentalMaterial3ExpressiveApi::class,
-    ExperimentalLayoutApi::class
-)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
@@ -142,11 +141,16 @@ fun SettingsScreen(
                     end = 16.dp,
                     top = innerPadding.calculateTopPadding()
                 )
-                .padding(bottom = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+                .padding(bottom = 24.dp)
         ) {
             AppearanceSection(preferences, themeViewModel)
-            ColorsSection(preferences, themeViewModel)
+            AnimatedVisibility(
+                visible = !preferences.isDynamicTheme,
+                enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),
+                exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut()
+            ) {
+                ColorsSection(preferences, themeViewModel)
+            }
             FontSection(preferences, themeViewModel)
             AboutSection(::openUrl)
         }
@@ -206,24 +210,9 @@ private fun ColorsSection(
     preferences: ThemePreferences,
     themeViewModel: ThemeViewModel,
 ) {
-    val colorsEnabled = !preferences.isDynamicTheme
-
     SettingsSection(title = "Colors", icon = { Icon(Lucide.Palette, null) }) {
         SettingsGroup {
-            if (!colorsEnabled) {
-                Text(
-                    text = "Dynamic colors are on, so the options below are ignored. " +
-                        "Turn them off to pick your own.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-                )
-            }
-
-            SectionLabel(
-                text = "Seed color",
-                enabled = colorsEnabled
-            )
+            SectionLabel("Seed color")
             FlowRow(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -235,7 +224,6 @@ private fun ColorsSection(
                     Swatch(
                         swatch = swatch,
                         selected = swatch.argb == preferences.seedColor,
-                        enabled = colorsEnabled,
                         onClick = { themeViewModel.setSeedColor(swatch.argb) }
                     )
                 }
@@ -243,15 +231,26 @@ private fun ColorsSection(
 
             ChipRow(
                 title = "Palette style",
-                enabled = colorsEnabled,
+                icon = { Icon(Lucide.Paintbrush, contentDescription = null) },
                 options = PaletteStyle.entries.map { it.name to it.name },
                 selected = preferences.paletteStyle,
                 onSelect = { themeViewModel.setPaletteStyle(it) }
             )
 
             ChipRow(
+                title = "Color spec",
+                icon = { Icon(Lucide.SlidersHorizontal, contentDescription = null) },
+                options = ColorSpecVersion.entries.map { it.name to it.code.toString() },
+                selected = preferences.colorSpecVersion.name,
+                onSelect = { name ->
+                    themeViewModel.setColorSpecVersion(
+                        ColorSpecVersion.entries.first { it.name == name }
+                    )
+                }
+            )
+
+            ChipRow(
                 title = "Contrast",
-                enabled = colorsEnabled,
                 icon = { Icon(Lucide.Contrast, contentDescription = null) },
                 options = ContrastLevel.entries.map { it.name to it.name },
                 selected = preferences.contrastLevel.name,
@@ -265,6 +264,7 @@ private fun ColorsSection(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun FontSection(
     preferences: ThemePreferences,
@@ -272,31 +272,25 @@ private fun FontSection(
 ) {
     SettingsSection(title = "Font", icon = { Icon(Lucide.Type, null) }) {
         SettingsGroup {
-            BodyFont.entries.forEachIndexed { index, font ->
-                val selected = font == preferences.bodyFont
-                ListItem(
-                    modifier = Modifier.clickable { themeViewModel.setBodyFont(font) },
-                    headlineContent = { Text(font.label) },
-                    supportingContent = {
-                        Text(
-                            text = "Ag",
-                            fontFamily = font.fontFamily,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    },
-                    trailingContent = {
-                        if (selected) {
-                            Icon(
-                                imageVector = Lucide.CircleCheck,
-                                contentDescription = "Selected",
-                                tint = MaterialTheme.colorScheme.primary
+            FlowRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                BodyFont.entries.forEach { font ->
+                    FilterChip(
+                        selected = font == preferences.bodyFont,
+                        onClick = { themeViewModel.setBodyFont(font) },
+                        label = {
+                            Text(
+                                text = font.label,
+                                fontFamily = font.fontFamily,
+                                style = MaterialTheme.typography.bodyMedium
                             )
                         }
-                    },
-                    colors = transparentListItemColors()
-                )
-                if (index != BodyFont.entries.lastIndex) {
-                    SectionDivider()
+                    )
                 }
             }
         }
@@ -389,7 +383,12 @@ private fun SettingsSection(
     icon: @Composable () -> Unit,
     content: @Composable () -> Unit,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(
+        // Section spacing lives here rather than on the parent so it collapses
+        // along with the Colors section when it animates out.
+        modifier = Modifier.padding(top = 20.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -418,14 +417,12 @@ private fun SettingsGroup(content: @Composable ColumnScope.() -> Unit) {
 }
 
 @Composable
-private fun SectionLabel(text: String, enabled: Boolean) {
+private fun SectionLabel(text: String) {
     Text(
         text = text,
         style = MaterialTheme.typography.titleSmall,
         color = MaterialTheme.colorScheme.onSurface,
-        modifier = Modifier
-            .padding(start = 16.dp, top = 16.dp)
-            .alpha(if (enabled) 1f else dimmed)
+        modifier = Modifier.padding(start = 16.dp, top = 16.dp)
     )
 }
 
@@ -433,21 +430,18 @@ private fun SectionLabel(text: String, enabled: Boolean) {
 @Composable
 private fun ChipRow(
     title: String,
-    enabled: Boolean,
+    icon: @Composable () -> Unit,
     options: List<Pair<String, String>>,
     selected: String,
     onSelect: (String) -> Unit,
-    icon: (@Composable () -> Unit)? = null,
 ) {
     Column(modifier = Modifier.padding(top = 4.dp)) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier
-                .padding(start = 16.dp, bottom = 4.dp)
-                .alpha(if (enabled) 1f else dimmed)
+            modifier = Modifier.padding(start = 16.dp, bottom = 4.dp)
         ) {
-            icon?.invoke()
+            icon()
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleSmall,
@@ -464,7 +458,6 @@ private fun ChipRow(
             options.forEach { (value, label) ->
                 FilterChip(
                     selected = value == selected,
-                    enabled = enabled,
                     onClick = { onSelect(value) },
                     label = { Text(label) }
                 )
@@ -477,7 +470,6 @@ private fun ChipRow(
 private fun Swatch(
     swatch: SeedSwatch,
     selected: Boolean,
-    enabled: Boolean,
     onClick: () -> Unit,
 ) {
     val argb = swatch.argb
@@ -492,8 +484,7 @@ private fun Swatch(
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         modifier = Modifier
             .clip(RoundedCornerShape(50))
-            .alpha(if (enabled) 1f else dimmed)
-            .clickable(enabled = enabled, onClick = onClick)
+            .clickable(onClick = onClick)
             .border(
                 width = if (selected) 2.dp else 1.dp,
                 color = if (selected) {
