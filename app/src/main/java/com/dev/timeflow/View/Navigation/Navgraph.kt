@@ -57,7 +57,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -68,13 +68,13 @@ import com.composables.icons.lucide.CalendarRange
 import com.composables.icons.lucide.CalendarX2
 import com.composables.icons.lucide.Dock
 import com.composables.icons.lucide.EllipsisVertical
-import com.composables.icons.lucide.Info
 import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Settings
 import com.composables.icons.lucide.Star
 import com.composables.icons.lucide.User
 import com.dev.timeflow.Data.Model.DropdownModel
-import com.dev.timeflow.View.Screens.AboutScreen
 import com.dev.timeflow.View.Screens.CalenderScreen
+import com.dev.timeflow.View.Screens.SettingsScreen
 import com.dev.timeflow.View.Screens.TodayScreen
 import com.dev.timeflow.View.Screens.onBoarding.FeatureScreen
 import com.dev.timeflow.View.Screens.onBoarding.NotificationScreen
@@ -91,7 +91,7 @@ fun NavGraph(modifier: Modifier = Modifier, startDest : String) {
     var showDropDown by rememberSaveable { mutableStateOf(false) }
     var showTimerScreenDropDown by rememberSaveable { mutableStateOf(false) }
 
-    val isCompleted = startDest == Routes.TimerScreen.route && currentRoute?.destination?.route != Routes.AboutScreen.route
+    val isCompleted = startDest == Routes.TimerScreen.route && currentRoute?.destination?.route != Routes.SettingsScreen.route
 
     var userName by rememberSaveable {mutableStateOf("") }
     val taskAndEventViewModel : TaskAndEventViewModel = hiltViewModel()
@@ -373,17 +373,17 @@ if (showNameChange){
                                       DropdownMenuItem(
                                           leadingIcon = {
                                               Icon(
-                                                  imageVector = Lucide.Info,
+                                                  imageVector = Lucide.Settings,
                                                   contentDescription = null
                                               )
                                           },
                                           onClick = {
-                                              navController.navigate(Routes.AboutScreen.route)
+                                              navController.navigate(Routes.SettingsScreen.route)
                                               showTimerScreenDropDown = false
 
                                           },
                                           text = {
-                                              Text("About")
+                                              Text("Settings")
                                           }
                                       )
                                   }
@@ -457,11 +457,13 @@ if (showNameChange){
                        )
                    }
 
-                   composable(
-                       route = Routes.AboutScreen.route
-                   ){
-                       AboutScreen()
-                   }
+                    composable(
+                        route = Routes.SettingsScreen.route
+                    ){
+                        SettingsScreen(
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
 
 
                }

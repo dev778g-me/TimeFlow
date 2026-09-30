@@ -33,7 +33,7 @@ sealed interface Routes {
     }
 
     @Serializable
-    data object AboutScreen : Routes{
-        override val route = "about_screen"
+    data object SettingsScreen : Routes{
+        override val route = "settings_screen"
     }
 }

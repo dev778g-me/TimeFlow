@@ -10,14 +10,14 @@ import com.example.ui.theme.montserrat
 import com.example.ui.theme.spaceGrotesk
 
 enum class BodyFont(
+    val label: String,
     val fontFamily: FontFamily
 ) {
-    Default(defaultFontFamily),
-    GoogleSansRounded(googleSansFlexRounded),
-    Inter(inter),
-    InstrumentSerif(instumentSerif),
-    JetbrainsMono(jetBrainsMono),
-    Montserrat(montserrat),
-    SpaceGrotesk(spaceGrotesk),
-
+    Default("System default", defaultFontFamily),
+    GoogleSansRounded("Google Sans Rounded", googleSansFlexRounded),
+    Inter("Inter", inter),
+    InstrumentSerif("Instrument Serif", instumentSerif),
+    JetbrainsMono("JetBrains Mono", jetBrainsMono),
+    Montserrat("Montserrat", montserrat),
+    SpaceGrotesk("Space Grotesk", spaceGrotesk),
 }
