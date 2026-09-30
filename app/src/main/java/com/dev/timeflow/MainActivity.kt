@@ -5,15 +5,18 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.dev.timeflow.Data.Repo.DataStoreRepo
 import com.dev.timeflow.Managers.WidgetAlarmService
 import com.dev.timeflow.View.Navigation.NavGraph
 import com.dev.timeflow.View.Navigation.Routes
+import com.dev.timeflow.Viewmodel.ThemeViewModel
 
 
 import com.example.compose.TimeFlowTheme
@@ -34,7 +37,10 @@ class MainActivity : ComponentActivity() {
         WidgetAlarmService(this).scheduleAlarmForUpdatingWidgets()
         enableEdgeToEdge()
         setContent {
-            TimeFlowTheme {
+            val themeViewModel: ThemeViewModel = hiltViewModel()
+            val themePreferences by themeViewModel.themePreferences.collectAsState()
+
+            TimeFlowTheme(preferences = themePreferences) {
                var startDest by remember { mutableStateOf<String?>(null) }
 
                 LaunchedEffect(Unit) {
@@ -62,4 +68,5 @@ class MainActivity : ComponentActivity() {
 
 
 }
+
 

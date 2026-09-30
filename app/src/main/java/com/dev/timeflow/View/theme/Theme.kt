@@ -1,19 +1,31 @@
 package com.example.compose
+import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import com.dev.timeflow.Data.Model.BodyFont
-import com.example.ui.theme.AppTypography
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
+import com.dev.timeflow.Data.Model.ColorSpecVersion
+import com.dev.timeflow.Data.Model.ContrastLevel
+import com.dev.timeflow.Data.Model.ThemePreferences
+import com.dev.timeflow.Data.Model.ThemeType
 import com.example.ui.theme.provideAppTypography
-import com.example.ui.theme.provider
+import com.materialkolor.Contrast
+import com.materialkolor.PaletteStyle
+import com.materialkolor.dynamiccolor.ColorSpec
+import com.materialkolor.rememberDynamicColorScheme
 
 private val lightScheme = lightColorScheme(
     primary = primaryLight,
@@ -257,25 +269,88 @@ val unspecified_scheme = ColorFamily(
 
 @Composable
 fun TimeFlowTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
-    content: @Composable() () -> Unit
+    preferences: ThemePreferences,
+    content: @Composable () -> Unit
 ) {
-  val colorScheme = when {
-      dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-          val context = LocalContext.current
-          if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-      }
-      
-      darkTheme -> darkScheme
-      else -> lightScheme
-  }
+    val darkTheme = preferences.themeType.resolveDark(isSystemInDarkTheme())
+    val typography = remember(preferences.bodyFont) {
+        provideAppTypography(bodyFont = preferences.bodyFont)
+    }
 
-  MaterialTheme(
-    colorScheme = colorScheme,
-    typography = provideAppTypography(bodyFont = BodyFont.SpaceGrotesk),
-    content = content
-  )
+    ApplySystemBarIcons(darkTheme)
+
+    MaterialExpressiveTheme(
+        colorScheme = colorSchemeOf(preferences, darkTheme),
+        typography = typography,
+        content = content
+    )
+}
+
+private fun ThemeType.resolveDark(systemDark: Boolean): Boolean = when (this) {
+    ThemeType.System -> systemDark
+    ThemeType.Light -> false
+    ThemeType.Dark -> true
+}
+
+private fun ContrastLevel.toContrast(): Double = when (this) {
+    ContrastLevel.Standard -> Contrast.Default.value
+    ContrastLevel.Medium -> Contrast.Medium.value
+    ContrastLevel.High -> Contrast.High.value
+}
+
+private fun ColorSpecVersion.toSpecVersion(): ColorSpec.SpecVersion = when (this) {
+    ColorSpecVersion.Spec2021 -> ColorSpec.SpecVersion.SPEC_2021
+    ColorSpecVersion.Spec2025 -> ColorSpec.SpecVersion.SPEC_2025
+}
+
+private fun paletteStyleOf(name: String): PaletteStyle =
+    PaletteStyle.entries.firstOrNull { it.name == name } ?: PaletteStyle.TonalSpot
+
+/**
+ * Seed -> dynamic (wallpaper) -> the bundled static schemes, in that order.
+ *
+ * A seed always wins so the colour picker can never be silently overridden by the
+ * Material You toggle. The bundled schemes cover the standard / medium / high
+ * contrast variants the app already ships.
+ */
+@Composable
+private fun colorSchemeOf(preferences: ThemePreferences, darkTheme: Boolean): ColorScheme {
+    val context = LocalContext.current
+    val seed = preferences.seedColor
+
+    return when {
+        seed != null -> rememberDynamicColorScheme(
+            seedColor = Color(seed.toInt()),
+            isDark = darkTheme,
+            style = paletteStyleOf(preferences.paletteStyle),
+            contrastLevel = preferences.contrastLevel.toContrast(),
+            specVersion = preferences.colorSpecVersion.toSpecVersion(),
+        )
+
+        preferences.isDynamicTheme && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ->
+            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+
+        preferences.contrastLevel == ContrastLevel.Medium ->
+            if (darkTheme) mediumContrastDarkColorScheme else mediumContrastLightColorScheme
+
+        preferences.contrastLevel == ContrastLevel.High ->
+            if (darkTheme) highContrastDarkColorScheme else highContrastLightColorScheme
+
+        else -> if (darkTheme) darkScheme else lightScheme
+    }
+}
+
+/** Keeps the status and navigation bar icons legible against the resolved theme. */
+@Composable
+private fun ApplySystemBarIcons(darkTheme: Boolean) {
+    val view = LocalView.current
+    if (view.isInEditMode) return
+
+    SideEffect {
+        val window = (view.context as? Activity)?.window ?: return@SideEffect
+        val controller = WindowCompat.getInsetsController(window, view)
+        controller.isAppearanceLightStatusBars = !darkTheme
+        controller.isAppearanceLightNavigationBars = !darkTheme
+    }
 }
 
