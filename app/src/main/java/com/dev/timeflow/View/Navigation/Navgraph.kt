@@ -1,11 +1,20 @@
 package com.dev.timeflow.View.Navigation
 
-import android.content.Intent
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.BoundsTransform
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateBounds
+import androidx.compose.animation.core.FiniteAnimationSpec
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
@@ -20,26 +29,37 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.TaskAlt
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.TaskAlt
-import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FabPosition
+import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.FloatingToolbarDefaults
+import androidx.compose.material3.HorizontalFloatingToolbar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.MaterialTheme.motionScheme
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.ToggleButton
+import androidx.compose.material3.ToggleButtonDefaults
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,17 +68,26 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.layout.LookaheadScope
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.paneTitle
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -66,12 +95,9 @@ import androidx.navigation.compose.rememberNavController
 import com.composables.icons.lucide.CalendarDays
 import com.composables.icons.lucide.CalendarRange
 import com.composables.icons.lucide.CalendarX2
-import com.composables.icons.lucide.Dock
-import com.composables.icons.lucide.EllipsisVertical
+import com.composables.icons.lucide.ListTodo
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Settings
-import com.composables.icons.lucide.Star
-import com.composables.icons.lucide.User
 import com.dev.timeflow.Data.Model.DropdownModel
 import com.dev.timeflow.View.Screens.CalenderScreen
 import com.dev.timeflow.View.Screens.SettingsScreen
@@ -82,77 +108,53 @@ import com.dev.timeflow.View.Screens.onBoarding.WelcomeScreen
 import com.dev.timeflow.Viewmodel.TaskAndEventViewModel
 import kotlinx.coroutines.launch
 
+private val appBarEnter = fadeIn(animationSpec = tween(120)) + scaleIn(
+    animationSpec = spring(
+        dampingRatio = Spring.DampingRatioMediumBouncy,
+        stiffness = Spring.StiffnessMediumLow
+    ),
+    initialScale = 0.7f,
+    transformOrigin = TransformOrigin(
+        pivotFractionX = 0.5f,
+        pivotFractionY = 1f
+    )
+)
+
+private val appBarExit = fadeOut(animationSpec = tween(100)) + scaleOut(
+    animationSpec = tween(100),
+    targetScale = 0.7f,
+    transformOrigin = TransformOrigin(
+        pivotFractionX = 0.5f,
+        pivotFractionY = 1f
+    )
+)
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun NavGraph(modifier: Modifier = Modifier, startDest : String) {
     val navController = rememberNavController()
     val currentRoute by navController.currentBackStackEntryAsState()
-    var showNameChange by rememberSaveable {mutableStateOf(false) }
+    val destination = currentRoute?.destination?.route
     var showDropDown by rememberSaveable { mutableStateOf(false) }
-    var showTimerScreenDropDown by rememberSaveable { mutableStateOf(false) }
 
-    val isCompleted = startDest == Routes.TimerScreen.route && currentRoute?.destination?.route != Routes.SettingsScreen.route
+    val showTopBarAndNavigationBar =
+        destination == Routes.TimerScreen.route || destination == Routes.CalendarScreen.route
 
-    var userName by rememberSaveable {mutableStateOf("") }
     val taskAndEventViewModel : TaskAndEventViewModel = hiltViewModel()
-    val selectedCalendarType by taskAndEventViewModel.readCalendarType().collectAsStateWithLifecycle(0)
+    val selectedCalendarType by taskAndEventViewModel.readCalendarType()
+        .collectAsStateWithLifecycle(0)
     val scope = rememberCoroutineScope()
     val name by taskAndEventViewModel.readName().collectAsStateWithLifecycle("")
-    val context = LocalContext.current
-if (showNameChange){
-    ModalBottomSheet(
-        onDismissRequest = {
-            userName = ""
-            showNameChange = false
-        }
-    ) {
-        Column(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(
-                    horizontal = 16.dp
-                )
-        ) {
-            OutlinedTextField(
-                singleLine = true,
-                shape = RoundedCornerShape(12.dp),
-                modifier = modifier.fillMaxWidth(),
-                value = userName,
-                onValueChange = {
-                    userName = it
-                },
-                placeholder = { Text("What should we call you?") },
-                label = { Text("Your name") }
 
-            )
-            Spacer(
-                modifier = modifier.height(16.dp)
-            )
-            Button(
-                enabled = userName.isNotEmpty(),
-                shape = RoundedCornerShape(12.dp),
-                modifier = modifier.fillMaxWidth(),
-                onClick = {
-                    showNameChange = false
-                    if (userName.isNotEmpty()){
-                        taskAndEventViewModel.saveName(
-                            name = userName
-                        )
-                        userName = ""
-                    }
-
-                }
-            ) {
-
-                Text(
-                    modifier = modifier.padding(
-                        vertical = 8.dp
-                    ),
-                    text = "Save")
-            }
-        }
+    val selectedIndex = when (destination) {
+        Routes.TimerScreen.route -> 0
+        Routes.CalendarScreen.route -> 1
+        else -> -1
     }
-}
+
+
+    val boundAnimationSpec: FiniteAnimationSpec<androidx.compose.ui.geometry.Rect> =
+        motionScheme.slowEffectsSpec ()
     val dropdownItem = listOf<DropdownModel>(
         DropdownModel(
             title = "Week",
@@ -187,7 +189,11 @@ if (showNameChange){
 
        Scaffold(
            topBar = {
-              if (isCompleted) {
+              AnimatedVisibility(
+                  visible = showTopBarAndNavigationBar,
+                  enter = appBarEnter,
+                  exit = appBarExit
+              ) {
                   TopAppBar(
                       title = {
                           Text(
@@ -219,7 +225,7 @@ if (showNameChange){
                       },
                       actions = {
                           AnimatedContent(
-                              targetState = currentRoute?.destination?.route== Routes.CalendarScreen.route,
+                              targetState = destination == Routes.CalendarScreen.route,
                               transitionSpec = {
                                   scaleIn(
                                       animationSpec = spring(
@@ -296,98 +302,18 @@ if (showNameChange){
                                   }
 
 
-                              }else{
-                                  IconButton(
-                                      onClick = {
-                                          showTimerScreenDropDown = true
-                                      }
-                                  ) {
-                                      Icon(
-                                          imageVector = Lucide.EllipsisVertical,
-                                          contentDescription = null
-                                      )
-                                  }
-
-                                  DropdownMenu(
-                                      expanded = showTimerScreenDropDown,
-                                      onDismissRequest = {
-                                          showTimerScreenDropDown = false
-                                      }
-                                  ) {
-                                      DropdownMenuItem(
-                                          leadingIcon = {
-                                              Icon(
-                                                  imageVector = Lucide.User,
-                                                  contentDescription = null
-                                              )
-                                          },
-                                          onClick = {
-                                              showTimerScreenDropDown = false
-                                              showNameChange = true
-                                          },
-                                          text = {
-                                              Text("Change name")
-                                          }
-                                      )
-                                      DropdownMenuItem(
-                                          leadingIcon = {
-                                              Icon(
-                                                  imageVector = Lucide.Dock,
-                                                  contentDescription = null
-                                              )
-                                          },
-                                          onClick = {
-                                              showTimerScreenDropDown = false
-                                              val url = "https://timeflow.framer.website/privacypolicy"
-                                              val intent =
-                                                  Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url))
-                                              context.startActivity(intent)
-                                          },
-                                          text = {
-                                              Text("Privacy Policy")
-                                          }
-                                      )
-                                      DropdownMenuItem(
-                                          leadingIcon = {
-                                              Icon(
-                                                  imageVector = Lucide.Star,
-                                                  contentDescription = null
-                                              )
-                                          },
-                                          onClick = {
-
-                                              showTimerScreenDropDown = false
-
-                                              val url =
-                                                  "https://play.google.com/store/apps/details?id=com.dev.timeflow"
-                                              val intent =
-                                                  Intent(Intent.ACTION_VIEW, url.toUri())
-                                              context.startActivity(intent)
-
-
-                                          },
-                                          text = {
-                                              Text("Rate Timeflow")
-                                          }
-                                      )
-                                      DropdownMenuItem(
-                                          leadingIcon = {
-                                              Icon(
-                                                  imageVector = Lucide.Settings,
-                                                  contentDescription = null
-                                              )
-                                          },
-                                          onClick = {
-                                              navController.navigate(Routes.SettingsScreen.route)
-                                              showTimerScreenDropDown = false
-
-                                          },
-                                          text = {
-                                              Text("Settings")
-                                          }
-                                      )
-                                  }
-                              }
+                               }else{
+                                   FilledTonalIconButton(
+                                       onClick = {
+                                           navController.navigate(Routes.SettingsScreen.route)
+                                       }
+                                   ) {
+                                       Icon(
+                                           imageVector = Lucide.Settings,
+                                           contentDescription = "Settings"
+                                       )
+                                   }
+                               }
                           }
                       }
                   )
@@ -398,10 +324,167 @@ if (showNameChange){
 
            },
            bottomBar = {
-               if (isCompleted) {
-                   FloatingBottomNav(
-                       navController = navController
-                   )
+               AnimatedVisibility(
+                   visible = showTopBarAndNavigationBar,
+                   enter = appBarEnter,
+                   exit = appBarExit
+               ) {
+                   LookaheadScope {
+                       Box(
+                           modifier = Modifier
+                               .fillMaxWidth()
+                               .padding(bottom = 42.dp),
+                           contentAlignment = Alignment.BottomCenter
+                       ) {
+                           HorizontalFloatingToolbar(
+                               expanded = true,
+                               //   scrollBehavior = toolbarScrollBehavior,
+                               colors = FloatingToolbarDefaults.vibrantFloatingToolbarColors(
+                                   toolbarContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                   toolbarContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                               ),
+                               modifier = Modifier
+                                   .zIndex(1f)
+                               ,
+//                               floatingActionButton = {
+//                                  AnimatedVisibility(
+//                                      visible = selectedIndex == 1
+//                                  ) {
+//                                      Row(
+//                                          verticalAlignment = Alignment.CenterVertically
+//                                      ) {
+//                                          TooltipBox(
+//                                              positionProvider =
+//                                                  TooltipDefaults.rememberTooltipPositionProvider(
+//                                                      TooltipAnchorPosition.Above
+//                                                  ),
+//                                              tooltip = {
+//                                                  PlainTooltip(
+//                                                      modifier =
+//                                                          Modifier.semantics {
+//                                                              liveRegion = LiveRegionMode.Assertive
+//                                                              paneTitle = ""
+//                                                          }
+//                                                  ) {
+//                                                      Text("Add Event & Tasks")
+//                                                  }
+//                                              },
+//                                              state = rememberTooltipState(),
+//                                          ) {
+//                                              FloatingToolbarDefaults.VibrantFloatingActionButton(
+//                                                  modifier = Modifier
+//                                                      .animateBounds(
+//                                                          animateMotionFrameOfReference = true,
+//                                                          lookaheadScope = this@LookaheadScope,
+//                                                          boundsTransform = BoundsTransform { i, o ->
+//                                                              boundAnimationSpec
+//                                                          }
+//                                                      ),
+//                                                  onClick = { }
+//                                              ) {
+//                                                  Icon(Icons.Filled.Add, "")
+//                                              }
+//                                          }
+//
+//                                          Text(modifier = Modifier
+//                                              .padding(start = 4.dp)
+//                                              .alpha(0f), text = "je")
+//                                      }
+//                                  }
+//                               }
+                           ) {
+                                bottomNavItems.forEachIndexed { index, item ->
+                                    val selected = selectedIndex == index
+
+                                   TooltipBox(
+                                       positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                                           TooltipAnchorPosition.Above
+                                       ),
+                                       tooltip = {
+                                           PlainTooltip {
+                                               Text(item.title)
+                                           }
+                                       },
+                                       state = rememberTooltipState()
+                                   ) {
+                                       ToggleButton(
+                                           checked = selected,
+                                           onCheckedChange = {
+                                                navController.navigate(item.route.route) {
+                                                    popUpTo(navController.graph.findStartDestination().id) {
+                                                       saveState = true
+                                                   }
+                                                   launchSingleTop = true
+                                                   restoreState = true
+                                               }
+                                           },
+                                           colors = ToggleButtonDefaults.toggleButtonColors(
+                                               containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                               contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                               checkedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                               checkedContentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                                           ),
+                                           shapes = ToggleButtonDefaults.shapes(
+                                               CircleShape,
+                                               CircleShape,
+                                               CircleShape
+                                           ),
+                                           modifier = Modifier
+                                               .height(56.dp)
+                                               .animateBounds(
+                                                   lookaheadScope = this@LookaheadScope,
+                                                   boundsTransform = BoundsTransform { i, o ->
+                                                       boundAnimationSpec
+                                                   }
+                                               )
+                                       ) {
+                                           Row(
+                                               verticalAlignment = Alignment.CenterVertically
+                                           ) {
+                                               Crossfade(
+                                                   targetState = selected,
+                                                   label = "navigationIcon"
+                                               ) { isSelected ->
+                                                   Icon(
+                                                       imageVector =
+                                                           if (isSelected) {
+                                                               item.selectedIcon
+                                                           } else {
+                                                               item.unselectedIcon
+                                                           },
+
+                                                       contentDescription = ""
+                                                   )
+                                               }
+
+                                               AnimatedVisibility(
+                                                   visible = selected,
+                                                   enter = expandHorizontally(
+                                                       animationSpec = motionScheme.defaultSpatialSpec()
+                                                   ) + fadeIn(),
+                                                   exit = shrinkHorizontally(
+                                                       animationSpec = motionScheme.defaultSpatialSpec()
+                                                   ) + fadeOut()
+                                               ) {
+                                                   Text(
+                                                       text = item.title,
+                                                       fontSize = 16.sp,
+                                                       lineHeight = 24.sp,
+                                                       fontWeight = FontWeight.ExtraBold,
+                                                       maxLines = 1,
+                                                       softWrap = false,
+                                                       overflow = TextOverflow.Clip,
+                                                       modifier = Modifier.padding(
+                                                           start = ButtonDefaults.IconSpacing
+                                                       )
+                                                   )
+                                               }
+                                           }
+                                       }
+                                   }
+                               }
+                           }
+                       }}
                }
            },
 
@@ -484,15 +567,15 @@ data class BottomNavAttribute(
 
 val bottomNavItems = listOf(
     BottomNavAttribute(
-        title = "Home",
-        unselectedIcon = Icons.Outlined.Home,
-        selectedIcon = Icons.Filled.Home,
+        title = "Today",
+        unselectedIcon = Lucide.ListTodo,
+        selectedIcon = Lucide.ListTodo,
         route = Routes.TimerScreen
     ),
     BottomNavAttribute(
-        title = "Tasks",
-        unselectedIcon = Icons.Outlined.TaskAlt,
-        selectedIcon = Icons.Filled.TaskAlt,
+        title = "Calendar",
+        unselectedIcon = Lucide.CalendarDays,
+        selectedIcon = Lucide.CalendarDays,
         route = Routes.CalendarScreen
     ),
 )

@@ -17,8 +17,12 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -27,6 +31,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FilterChip
@@ -37,15 +42,23 @@ import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.ToggleButton
+import androidx.compose.material3.ToggleButtonColors
+import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -56,19 +69,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.composables.icons.lucide.ChevronRight
 import com.composables.icons.lucide.CircleCheck
 import com.composables.icons.lucide.Code
 import com.composables.icons.lucide.Contrast
+import com.composables.icons.lucide.Dock
 import com.composables.icons.lucide.Github
 import com.composables.icons.lucide.Info
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Palette
 import com.composables.icons.lucide.Paintbrush
+import com.composables.icons.lucide.Settings
 import com.composables.icons.lucide.SlidersHorizontal
 import com.composables.icons.lucide.Star
 import com.composables.icons.lucide.Sun
 import com.composables.icons.lucide.Twitter
 import com.composables.icons.lucide.Type
+import com.composables.icons.lucide.User
 import com.dev.timeflow.BuildConfig
 import com.dev.timeflow.Data.Model.BodyFont
 import com.dev.timeflow.Data.Model.ColorSpecVersion
@@ -76,9 +94,11 @@ import com.dev.timeflow.Data.Model.ContrastLevel
 import com.dev.timeflow.Data.Model.ThemePreferences
 import com.dev.timeflow.Data.Model.ThemeType
 import com.dev.timeflow.R
+import com.dev.timeflow.Viewmodel.TaskAndEventViewModel
 import com.dev.timeflow.Viewmodel.ThemeViewModel
 import com.materialkolor.PaletteStyle
 
+private const val PRIVACY_POLICY = "https://timeflow.framer.website/privacypolicy"
 private const val GITHUB_REPO = "https://github.com/dev778g-me/TimeFlow"
 private const val DEVELOPER_PROFILE = "https://github.com/dev778g-me/"
 private const val DEVELOPER_TWITTER = "https://x.com/Dev778g"
@@ -111,10 +131,31 @@ fun SettingsScreen(
 ) {
     val themeViewModel: ThemeViewModel = hiltViewModel()
     val preferences by themeViewModel.themePreferences.collectAsState()
+    val taskAndEventViewModel: TaskAndEventViewModel = hiltViewModel()
+    val name by taskAndEventViewModel.readName().collectAsStateWithLifecycle("")
+    var showNameChange by rememberSaveable { mutableStateOf(false) }
+    var userName by rememberSaveable { mutableStateOf("") }
     val context = LocalContext.current
 
     fun openUrl(url: String) {
         context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
+    }
+
+    if (showNameChange) {
+        NameChangeSheet(
+            savedName = name,
+            userName = userName,
+            onUserNameChange = { userName = it },
+            onDismiss = {
+                userName = ""
+                showNameChange = false
+            },
+            onSave = { newName ->
+                taskAndEventViewModel.saveName(name = newName)
+                userName = ""
+                showNameChange = false
+            }
+        )
     }
 
     Scaffold(
@@ -143,6 +184,10 @@ fun SettingsScreen(
                 )
                 .padding(bottom = 24.dp)
         ) {
+            GeneralSection(
+                name = name,
+                onChangeName = { showNameChange = true }
+            )
             AppearanceSection(preferences, themeViewModel)
             AnimatedVisibility(
                 visible = !preferences.isDynamicTheme,
@@ -153,6 +198,83 @@ fun SettingsScreen(
             }
             FontSection(preferences, themeViewModel)
             AboutSection(::openUrl)
+        }
+    }
+}
+
+@Composable
+private fun GeneralSection(
+    name: String,
+    onChangeName: () -> Unit,
+) {
+    SettingsSection(title = "General", icon = { Icon(Lucide.Settings, null) }) {
+        SettingsGroup {
+            ListItem(
+                modifier = Modifier.clickable(onClick = onChangeName),
+                leadingContent = {
+                    Icon(
+                        imageVector = Lucide.User,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .size(50.dp)
+                            .padding(8.dp)
+                    )
+                },
+                headlineContent = { Text("Change name") },
+                supportingContent = {
+                    Text(if (name.isEmpty()) "Not set yet" else name)
+                },
+                trailingContent = {
+                    Icon(
+                        imageVector = Lucide.ChevronRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                colors = transparentListItemColors()
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun NameChangeSheet(
+    savedName: String,
+    userName: String,
+    onUserNameChange: (String) -> Unit,
+    onDismiss: () -> Unit,
+    onSave: (String) -> Unit,
+) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+
+                .padding(horizontal = 16.dp)
+        ) {
+            OutlinedTextField(
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth(),
+                value = userName,
+                onValueChange = onUserNameChange,
+                placeholder = { Text("What should we call you?") },
+                label = { Text("Your name") }
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                enabled = userName.isNotEmpty(),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                onClick = { onSave(userName) }
+            ) {
+                Text(
+                    modifier = Modifier.padding(vertical = 8.dp),
+                    text = if (savedName.isEmpty()) "Save" else "Update"
+                )
+            }
         }
     }
 }
@@ -276,14 +398,17 @@ private fun FontSection(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 BodyFont.entries.forEach { font ->
-                    FilterChip(
-                        selected = font == preferences.bodyFont,
-                        onClick = { themeViewModel.setBodyFont(font) },
-                        label = {
+                    ToggleButton (
+                        colors = ToggleButtonDefaults.toggleButtonColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        ),
+                        checked = font == preferences.bodyFont,
+                        onCheckedChange = { themeViewModel.setBodyFont(font) },
+                        content = {
                             Text(
                                 text = font.label,
                                 fontFamily = font.fontFamily,
@@ -371,6 +496,30 @@ private fun AboutSection(onOpenUrl: (String) -> Unit) {
                 },
                 headlineContent = { Text("Rate on Google Play") },
                 supportingContent = { Text("Liked the app? Write a review") },
+                colors = transparentListItemColors()
+            )
+            SectionDivider()
+            ListItem(
+                modifier = Modifier.clickable { onOpenUrl(PRIVACY_POLICY) },
+                leadingContent = {
+                    Icon(
+                        imageVector = Lucide.Dock,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .size(50.dp)
+                            .padding(8.dp)
+                    )
+                },
+                headlineContent = { Text("Privacy Policy") },
+                supportingContent = { Text("Read how Timeflow handles your data") },
+                trailingContent = {
+                    Icon(
+                        imageVector = Lucide.ChevronRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
                 colors = transparentListItemColors()
             )
         }

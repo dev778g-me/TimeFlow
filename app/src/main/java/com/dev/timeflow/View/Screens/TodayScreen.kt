@@ -72,6 +72,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.Calendar
+import kotlin.time.Duration.Companion.milliseconds
 
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -153,7 +154,7 @@ fun TodayScreen(modifier: Modifier = Modifier) {
                 .toEpochMilli(),
             end = System.currentTimeMillis()
         )
-        delay(200)
+        delay(200.milliseconds)
         animate = true
     }
 

@@ -14,10 +14,12 @@ enum class BodyFont(
     val fontFamily: FontFamily
 ) {
     Default("System default", defaultFontFamily),
-    GoogleSansRounded("Google Sans Rounded", googleSansFlexRounded),
     Inter("Inter", inter),
+    Montserrat("Montserrat", montserrat),
+    GoogleSansRounded("Google Sans Rounded", googleSansFlexRounded),
+
     InstrumentSerif("Instrument Serif", instumentSerif),
     JetbrainsMono("JetBrains Mono", jetBrainsMono),
-    Montserrat("Montserrat", montserrat),
+
     SpaceGrotesk("Space Grotesk", spaceGrotesk),
 }
