@@ -10,7 +10,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import com.dev.timeflow.Data.Model.BodyFont
 import com.example.ui.theme.AppTypography
+import com.example.ui.theme.provideAppTypography
+import com.example.ui.theme.provider
 
 private val lightScheme = lightColorScheme(
     primary = primaryLight,
@@ -271,7 +274,7 @@ fun TimeFlowTheme(
 
   MaterialTheme(
     colorScheme = colorScheme,
-    typography = AppTypography,
+    typography = provideAppTypography(bodyFont = BodyFont.SpaceGrotesk),
     content = content
   )
 }
