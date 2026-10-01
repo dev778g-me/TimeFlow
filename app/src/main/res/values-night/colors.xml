@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Widget preview (static pre-31 night palette, mirrors androidx.glance defaults) -->
+    <color name="widget_preview_background">#FF20333D</color>
+    <color name="widget_preview_primary">#FFD0BCFF</color>
+    <color name="widget_preview_primary_container">#FF4F378B</color>
+    <color name="widget_preview_secondary">#FFCCC2DC</color>
+</resources>

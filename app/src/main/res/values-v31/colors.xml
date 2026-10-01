@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Mirror of androidx.glance values-v31 defaults (dynamic Material You) -->
+    <color name="widget_preview_background">@android:color/system_accent2_50</color>
+    <color name="widget_preview_primary">@android:color/system_accent1_600</color>
+    <color name="widget_preview_primary_container">@android:color/system_accent1_100</color>
+    <color name="widget_preview_secondary">@android:color/system_accent2_600</color>
+</resources>

@@ -7,4 +7,10 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Widget preview (static pre-31 palette, mirrors androidx.glance defaults) -->
+    <color name="widget_preview_background">#FFE0F3FF</color>
+    <color name="widget_preview_primary">#FF6750A4</color>
+    <color name="widget_preview_primary_container">#FFEADDFF</color>
+    <color name="widget_preview_secondary">#FF625B71</color>
 </resources>
