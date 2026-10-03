@@ -1,12 +1,15 @@
 package com.dev.timeflow.Data.Repo
 
+import com.dev.timeflow.Data.Dao.CountdownDao
 import com.dev.timeflow.Data.Dao.EventDao
+import com.dev.timeflow.Data.Model.CountDown
 import com.dev.timeflow.Data.Model.Events
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class EventRepo @Inject constructor(
-   private val eventDao: EventDao
+   private val eventDao: EventDao,
+   private val countdownDao: CountdownDao,
 ){
   suspend  fun getAllEvents() : Flow<List<Events>>{
         return eventDao.getAllEvents()
@@ -42,5 +45,20 @@ class EventRepo @Inject constructor(
             events = events
         )
     }
+
+    suspend fun addCountDown(countDown: CountDown): Long{
+       return countdownDao.insert(countDown)
+    }
+
+
+    suspend fun deleteCountDown(countDown: CountDown){
+        countdownDao.delete(countDown)
+    }
+
+    suspend fun getCountDown(id : Long): CountDown?{
+       return countdownDao.getById(id)
+    }
+
+
 
 }

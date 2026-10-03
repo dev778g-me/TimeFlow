@@ -7,9 +7,11 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.datastore.preferences.preferencesDataStoreFile
 import androidx.room.Room
+import com.dev.timeflow.Data.Dao.CountdownDao
 import com.dev.timeflow.Data.Dao.EventDao
 import com.dev.timeflow.Data.Dao.TaskDao
 import com.dev.timeflow.Data.EventDatabase
+import com.dev.timeflow.Data.MIGRATION_1_2
 import com.dev.timeflow.Data.Repo.DataStoreRepo
 import com.dev.timeflow.Data.Repo.EventRepo
 import com.dev.timeflow.Data.TaskDatabase
@@ -45,7 +47,7 @@ class TimeFlowModule (
             context,
             EventDatabase::class.java,
             "event_db"
-        ).build()
+        ).addMigrations(MIGRATION_1_2).build()
     }
 
     // provide the task database
@@ -79,14 +81,24 @@ class TimeFlowModule (
         return eventDatabase.eventDao()
     }
 
+    @Singleton
+    @Provides
+    fun provideCountDownDao(
+        eventDatabase: EventDatabase
+    ): CountdownDao{
+        return eventDatabase.countDownDao()
+    }
+
     // provides the event repository
     @Singleton
     @Provides
     fun provideEventRepository(
-        eventDao: EventDao
+        eventDao: EventDao,
+        countdownDao: CountdownDao
     ): EventRepo{
         return EventRepo(
-            eventDao = eventDao
+            eventDao = eventDao,
+            countdownDao = countdownDao
         )
     }
 

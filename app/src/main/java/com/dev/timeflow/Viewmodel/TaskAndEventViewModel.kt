@@ -7,6 +7,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.dev.timeflow.Data.Model.CountDown
 import com.dev.timeflow.Data.Model.Events
 import com.dev.timeflow.Data.Model.NotificationAlarmManagerModel
 import com.dev.timeflow.Data.Model.Tasks
@@ -298,6 +299,22 @@ class TaskAndEventViewModel @Inject constructor(
     }
 
 
+    /**
+     * section of countdown
+     */
+
+
+  suspend  fun insertCountDown(countDown: CountDown): Long{
+
+          return  eventRepo.addCountDown(countDown)
+
+    }
+
+    fun getCountDown(id : Long){
+        viewModelScope.launch {
+            eventRepo.getCountDown(id)
+        }
+    }
 
     fun scheduleNotification (notificationAlarmManagerModel: NotificationAlarmManagerModel){
         viewModelScope.launch {
