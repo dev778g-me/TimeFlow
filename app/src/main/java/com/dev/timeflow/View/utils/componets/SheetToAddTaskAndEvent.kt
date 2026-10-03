@@ -584,7 +584,7 @@ private fun SheetHeader(
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun ScheduleRow(
+fun ScheduleRow(
     label: String,
     dateText: String,
     timeText: String,
