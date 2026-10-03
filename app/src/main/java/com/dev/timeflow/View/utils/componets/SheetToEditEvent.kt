@@ -52,6 +52,9 @@ import com.composables.icons.lucide.Pin
 import com.composables.icons.lucide.Trash
 import com.dev.timeflow.Data.Model.Events
 import com.dev.timeflow.View.utils.toFormattedTime
+import com.dev.timeflow.View.utils.toHour
+import com.dev.timeflow.View.utils.toLocalDate
+import com.dev.timeflow.View.utils.toMinute
 import com.dev.timeflow.View.utils.toUtcDate
 import kotlinx.coroutines.delay
 import java.time.LocalTime
@@ -314,13 +317,19 @@ fun SheetToEditEvent(
 
             Spacer(modifier = modifier.height(16.dp))
 
-            // Update
             val isFormValid = name.isNotBlank()
                     && fromDatePickerState.selectedDateMillis != null
                     && toDatePickerState.selectedDateMillis != null
 
+            val hasUnsavedChanges = name != event.name
+                    || description != event.description
+                    || fromDatePickerState.selectedDateMillis?.toUtcDate() != event.eventStartTime.toLocalDate()
+                    || toDatePickerState.selectedDateMillis?.toUtcDate() != event.eventEndTime.toLocalDate()
+                    || LocalTime.of(fromTimePickerState.hour, fromTimePickerState.minute) != LocalTime.of(event.eventStartTime.toHour(), event.eventStartTime.toMinute())
+                    || LocalTime.of(toTimePickerState.hour, toTimePickerState.minute) != LocalTime.of(event.eventEndTime.toHour(), event.eventEndTime.toMinute())
+
             Button(
-                enabled = isFormValid,
+                enabled = isFormValid && hasUnsavedChanges,
                 shape = RoundedCornerShape(12.dp),
                 modifier = modifier.fillMaxWidth(),
                 onClick = {
