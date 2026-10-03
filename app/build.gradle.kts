@@ -102,7 +102,6 @@ dependencies {
     implementation(libs.androidx.compose.ui.text.google.fonts)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.room.ktx)
-    implementation(libs.androidx.core.splashscreen.v100)
     implementation(libs.coil.compose)
 
 }

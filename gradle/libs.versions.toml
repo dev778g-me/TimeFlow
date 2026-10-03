@@ -4,7 +4,6 @@ agp = "9.1.1"
 coilCompose = "3.6.3"
 compose = "2.10.1"
 coreSplashscreen = "1.2.0"
-coreSplashscreenVersion = "1.0.0"
 glance = "1.2.0"
 hiltAndroid = "2.60.1"
 hiltAndroidCompiler = "2.60.1"
@@ -34,7 +33,6 @@ accompanist-permissions = { module = "com.google.accompanist:accompanist-permiss
 androidx-compose-ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version.ref = "uiTextGoogleFonts" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
-androidx-core-splashscreen-v100 = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreenVersion" }
 androidx-glance = { module = "androidx.glance:glance", version.ref = "glance" }
 androidx-glance-appwidget = { module = "androidx.glance:glance-appwidget", version.ref = "glance" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
