@@ -78,6 +78,7 @@ import com.composables.icons.lucide.CalendarRange
 import com.composables.icons.lucide.ListTodo
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Plus
+import com.dev.timeflow.Data.Model.CountDown
 import com.dev.timeflow.Data.Model.Events
 import com.dev.timeflow.Data.Model.ImportanceChipModel
 import com.dev.timeflow.Data.Model.SavingModel
@@ -86,6 +87,7 @@ import com.dev.timeflow.Data.Model.Tasks
 import com.dev.timeflow.View.utils.componets.EventTile
 import com.dev.timeflow.View.utils.componets.TaskTile
 import com.dev.timeflow.View.utils.endOfDayMillis
+import com.dev.timeflow.View.utils.createCountDownWidget
 import com.dev.timeflow.View.utils.toDateTimeInMillis
 import com.dev.timeflow.View.utils.toMillis
 import com.dev.timeflow.Viewmodel.TaskAndEventViewModel
@@ -93,6 +95,7 @@ import com.dev.timeflow.R
 import com.dev.timeflow.View.Screens.calenderScreen.MonthCalender
 import com.dev.timeflow.View.Screens.calenderScreen.MonthHeader
 import com.dev.timeflow.View.Screens.calenderScreen.WeekCalender
+import com.dev.timeflow.View.utils.componets.CountDownBottomSheet
 import com.dev.timeflow.View.utils.componets.SheetToAddEventAndTask
 import com.dev.timeflow.View.utils.componets.SheetToEditEvent
 import com.dev.timeflow.View.utils.componets.SheetToEditTask
@@ -148,6 +151,8 @@ fun CalenderScreen(
     //variable to hold state of the currently selected date
     var currentSelectedDate by rememberSaveable { mutableStateOf(LocalDate.now()) }
 
+    var currentSelectedDateForCountdown by rememberSaveable( ) { mutableStateOf(LocalDate.now())}
+
     // var to hold the switch state of the bottom sheet
     var switchState by rememberSaveable { mutableStateOf(false) }
 
@@ -187,6 +192,20 @@ fun CalenderScreen(
 
 
     var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
+
+    var  showCountDownBottomSheet by rememberSaveable {mutableStateOf(false) }
+
+    // var to hold the name typed in the countdown sheet
+    var countdownName by rememberSaveable { mutableStateOf("") }
+
+    // vars to hold the countdown date/time picker dialog visibility
+    var showCountDownFromDate by rememberSaveable { mutableStateOf(false) }
+
+    var showCountDownToDate by rememberSaveable { mutableStateOf(false) }
+
+    var showCountDownFromTime by rememberSaveable { mutableStateOf(false) }
+
+    var showCountDownToTime by rememberSaveable { mutableStateOf(false) }
 
     val localTime = LocalTime.now()
 
@@ -236,6 +255,36 @@ fun CalenderScreen(
         initialDisplayMode = DisplayMode.Picker
     )
 
+    // date picker for the countdown "from" date
+    val countDownFromDateState = rememberDatePickerState(
+        initialSelectedDate = currentSelectedDate,
+        initialDisplayedMonth = currentSelectedDate.yearMonth,
+        yearRange = currentDate.year .. currentDate.plusYears(20).year,
+        initialDisplayMode = DisplayMode.Picker
+    )
+
+    // date picker for the countdown "to" date
+    val countDownToDateState = rememberDatePickerState(
+        initialSelectedDate = currentSelectedDateForCountdown,
+        initialDisplayedMonth = currentSelectedDateForCountdown.yearMonth,
+        yearRange = currentDate.year .. currentDate.plusYears(20).year,
+        initialDisplayMode = DisplayMode.Picker
+    )
+
+    // time picker for the countdown "from" time
+    val countDownFromTimeState = rememberTimePickerState(
+        is24Hour = false,
+        initialHour = localTime.hour,
+        initialMinute = localTime.minute
+    )
+
+    // time picker for the countdown "to" time
+    val countDownToTimeState = rememberTimePickerState(
+        is24Hour = false,
+        initialHour = fromToTime.hour,
+        initialMinute = fromToTime.minute
+    )
+
     val pageState = rememberPagerState(initialPage = 0, pageCount = { 2 })
 
     val scope = rememberCoroutineScope()
@@ -271,6 +320,18 @@ fun CalenderScreen(
         fromDatePickerState.displayedMonthMillis = currentSelectedDateUtc
         toDatePickerState.displayedMonthMillis = tomorrowSelectedDateUtc
 
+    }
+
+    // keepin the countdown pickers in sync with the dates the sheet was opened with
+    LaunchedEffect(showCountDownBottomSheet) {
+        if (showCountDownBottomSheet) {
+            val fromUtc = currentSelectedDate.toUtcMillis()
+            val toUtc = currentSelectedDateForCountdown.toUtcMillis()
+            countDownFromDateState.selectedDateMillis = fromUtc
+            countDownToDateState.selectedDateMillis = toUtc
+            countDownFromDateState.displayedMonthMillis = fromUtc
+            countDownToDateState.displayedMonthMillis = toUtc
+        }
     }
 
     val tasksForDate by taskViewModel.taskForDate.collectAsState(emptyList())
@@ -385,6 +446,70 @@ fun CalenderScreen(
         )
     }
 
+    if (showCountDownBottomSheet){
+        CountDownBottomSheet(
+            onDismiss = {
+                showCountDownBottomSheet = false
+                countdownName = ""
+            },
+            dateforCountdown = currentSelectedDateForCountdown,
+            currentDate = currentSelectedDate,
+            countdownName = countdownName,
+            onNameChange = { countdownName = it },
+            fromDatePickerState = countDownFromDateState,
+            toDatePickerState = countDownToDateState,
+            fromTimePickerState = countDownFromTimeState,
+            toTimePickerState = countDownToTimeState,
+            onFromDateClick = { showCountDownFromDate = true },
+            onToDateClick = { showCountDownToDate = true },
+            onFromTimeClick = { showCountDownFromTime = true },
+            onToTimeClick = { showCountDownToTime = true },
+            onPin = {
+                val startMillis = countDownFromDateState.selectedDateMillis
+                    ?.toUtcDate()
+                    ?.toMillis(
+                        localTime = LocalTime.of(
+                            countDownFromTimeState.hour,
+                            countDownFromTimeState.minute
+                        )
+                    )
+                val endMillis = countDownToDateState.selectedDateMillis
+                    ?.toUtcDate()
+                    ?.toMillis(
+                        localTime = LocalTime.of(
+                            countDownToTimeState.hour,
+                            countDownToTimeState.minute
+                        )
+                    )
+
+                if (startMillis == null || endMillis == null) {
+                    Toast.makeText(
+                        localContext,
+                        "Please select both dates",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } else if (endMillis <= startMillis) {
+                    Toast.makeText(
+                        localContext,
+                        "End must be after start",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } else {
+                   scope.launch {
+                       val id =  taskViewModel.insertCountDown(countDown = CountDown(
+                           id = 0,
+                           name = countdownName.trim(),
+                           startTime = startMillis,
+                           endTime = endMillis
+                       ))
+                       createCountDownWidget(localContext, countdownId = id)
+                       showCountDownBottomSheet = false
+                       countdownName = ""
+                   }
+                }
+            }
+        )
+    }
     if (showBottomSheet) {
         SheetToAddEventAndTask(
             onDismiss = {
@@ -1018,6 +1143,183 @@ fun CalenderScreen(
             }
 
         }
+
+        if (showCountDownFromDate){
+            DatePickerDialog(
+                onDismissRequest = {
+                    showCountDownFromDate = false
+                },
+                confirmButton = {
+                    Button(
+                        modifier = Modifier.padding(
+                            bottom = 12.dp,
+                            end = 12.dp
+                        ),
+                        onClick = {
+                            showCountDownFromDate = false
+                        }
+                    ) {
+                        Text(
+                            text = "Confirm"
+                        )
+                    }
+                },
+                dismissButton = {
+                    OutlinedButton(
+                        modifier = Modifier.padding(
+                            bottom = 12.dp,
+                            end = 8.dp
+                        ),
+                        onClick = {
+                            showCountDownFromDate = false
+                        }
+                    ) {
+                        Text(
+                            text = "Cancel"
+                        )
+                    }
+                }
+            ) {
+                DatePicker(
+                    state = countDownFromDateState,
+                    headline = {
+                        Text(
+                            text = "Select start date",
+                            modifier = Modifier.padding(horizontal = 24.dp)
+                        )
+                    }
+                )
+            }
+        }
+
+        if (showCountDownToDate){
+            DatePickerDialog(
+                onDismissRequest = {
+                    showCountDownToDate = false
+                },
+                confirmButton = {
+                    Button(
+                        modifier = Modifier.padding(
+                            bottom = 12.dp,
+                            end = 12.dp
+                        ),
+                        onClick = {
+                            showCountDownToDate = false
+                        }
+                    ) {
+                        Text(
+                            text = "Confirm"
+                        )
+                    }
+                },
+                dismissButton = {
+                    OutlinedButton(
+                        onClick = {
+                            showCountDownToDate = false
+                        }
+                    ) {
+                        Text(
+                            text = "Cancel"
+                        )
+                    }
+                }
+            ) {
+                DatePicker(
+                    state = countDownToDateState,
+                    headline = {
+                        Text(
+                            text = "Select end date",
+                            modifier = Modifier.padding(horizontal = 24.dp)
+                        )
+                    }
+                )
+            }
+        }
+
+        if (showCountDownFromTime){
+            TimePickerDialog(
+                title = {
+                    Text(
+                        text = "Select start time"
+                    )
+                },
+                onDismissRequest = {
+                    showCountDownFromTime = false
+                },
+                dismissButton = {
+                    OutlinedButton(
+                        onClick = {
+                            showCountDownFromTime = false
+                        }
+                    ) {
+                        Text(
+                            text = "Cancel"
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        modifier = Modifier.padding(
+                            start = 8.dp
+                        ),
+                        onClick = {
+                            showCountDownFromTime = false
+                        }
+                    ) {
+                        Text(
+                            text = "Confirm"
+                        )
+                    }
+                }
+            ) {
+                TimePicker(
+                    state = countDownFromTimeState
+                )
+            }
+        }
+
+        if (showCountDownToTime){
+            TimePickerDialog(
+                title = {
+                    Text(
+                        text = "Select end time"
+                    )
+                },
+                onDismissRequest = {
+                    showCountDownToTime = false
+                },
+                dismissButton = {
+                    OutlinedButton(
+                        onClick = {
+                            showCountDownToTime = false
+                        }
+                    ) {
+                        Text(
+                            text = "Cancel"
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        modifier = Modifier.padding(
+                            start = 8.dp
+                        ),
+                        onClick = {
+                            showCountDownToTime = false
+                        }
+                    ) {
+                        Text(
+                            text = "Confirm"
+                        )
+                    }
+                }
+            ) {
+                TimePicker(
+                    state = countDownToTimeState
+                )
+            }
+        }
+
         Column(
             modifier = modifier
                 .fillMaxSize()
@@ -1055,8 +1357,7 @@ fun CalenderScreen(
                          horizontal = 16.dp
                      ),
                      state = weekState,
-                     dayContent = {
-                             weekDate ->
+                     dayContent = { weekDate ->
                          WeekCalender(
                              weekDate = weekDate,
                              selectedDate = currentSelectedDate,
@@ -1081,12 +1382,15 @@ fun CalenderScreen(
                              selectedDate = currentSelectedDate,
                              onClick = { date ->
                                  currentSelectedDate = date
+                             },
+                             onLongClick = {
+                                 showCountDownBottomSheet = true
+                                 currentSelectedDateForCountdown = it
                              }
                          )
                      },
                      monthHeader = {
                          MonthHeader(
-
                              monthName = it.yearMonth.month.toString(),
                              weekName = it.weekDays.first().map {
                                  it.date.dayOfWeek.toString().take(3).lowercase()

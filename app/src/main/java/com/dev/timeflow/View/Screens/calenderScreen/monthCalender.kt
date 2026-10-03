@@ -1,16 +1,11 @@
 package com.dev.timeflow.View.Screens.calenderScreen
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.EaseInElastic
-import androidx.compose.animation.core.EaseInOutCirc
-import androidx.compose.animation.core.EaseInOutSine
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -45,10 +41,10 @@ fun MonthCalender(
     modifier: Modifier = Modifier,
     hapticFeedback: HapticFeedback,
     selectedDate : LocalDate,
+    onLongClick : (LocalDate)  -> Unit,
     onClick : (LocalDate) -> Unit
 ) {
     val date = LocalDate.now()
-    val todayDayOfMonth = date.dayOfMonth
     val dayPosition = day.position == DayPosition.MonthDate
     val isSelected = selectedDate == day.date
     val isToday = date == day.date
@@ -81,7 +77,10 @@ fun MonthCalender(
                 .background(
                     boxSelectedColor
                 )
-                .clickable(
+                .combinedClickable(
+                    onLongClick = {
+                        onLongClick(day.date)
+                    },
                     onClick = {
                         onClick(
                             day.date
@@ -115,46 +114,53 @@ fun MonthHeader(
     modifier: Modifier = Modifier,
     weekName : List<String>,
     onClick: () -> Unit,
-    monthName : String
+    monthName : String,
     ) {
-    Column(
+    Row(
         modifier = modifier.fillMaxWidth()
     ) {
-        Text(
-            modifier = modifier.padding(
-                bottom = 8.dp,
-                start = 12.dp
-
-            ).clickable(
-                onClick = {
-                    onClick.invoke()
-                },
-                indication = null,
-                interactionSource = remember{MutableInteractionSource()}
-            ),
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.primary,
-            text = monthName.lowercase().replaceFirstChar {
-                it.uppercase()
-            },
-            fontWeight = FontWeight.Bold
-        )
-        Row(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(
-                    bottom = 8.dp
-                )
-            //horizontalArrangement = Arrangement.SpaceAround
+        Column(
+            modifier = Modifier.fillMaxWidth()
         ) {
-            weekName.forEach {
-                Text(
-                    modifier = modifier.weight(1f),
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                    fontSize = 15.sp,
-                    text = it
-                )
+            Text(
+                modifier = Modifier
+                    .padding(
+                        bottom = 8.dp,
+                        start = 12.dp
+
+                    )
+                    .clickable(
+                        onClick = {
+                            onClick.invoke()
+                        },
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
+                    ),
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.primary,
+                text = monthName.lowercase().replaceFirstChar {
+                    it.uppercase()
+                },
+                fontWeight = FontWeight.Bold
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        bottom = 8.dp
+                    )
+                //horizontalArrangement = Arrangement.SpaceAround
+            ) {
+                weekName.forEach {
+                    Text(
+                        modifier = modifier.weight(1f),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        fontSize = 15.sp,
+                        text = it
+                    )
+                }
             }
         }
+
     }
 }
