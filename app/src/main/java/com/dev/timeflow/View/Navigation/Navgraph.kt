@@ -106,6 +106,7 @@ import com.dev.timeflow.View.Screens.TodayScreen
 import com.dev.timeflow.View.Screens.onBoarding.FeatureScreen
 import com.dev.timeflow.View.Screens.onBoarding.NotificationScreen
 import com.dev.timeflow.View.Screens.onBoarding.WelcomeScreen
+import com.dev.timeflow.View.utils.JoinedBlockShape
 import com.dev.timeflow.Viewmodel.TaskAndEventViewModel
 import kotlinx.coroutines.launch
 
@@ -249,52 +250,67 @@ fun NavGraph(modifier: Modifier = Modifier, startDest : String) {
                                   }
 
                                   DropdownMenu(
+                                      shape = RoundedCornerShape(16.dp),
                                       expanded = showDropDown,
                                       onDismissRequest = { showDropDown = false }
                                   ) {
-                                      dropdownItem.forEachIndexed { index, model ->
 
-                                          val isSelected = selectedCalendarType == index
+                                          Column(
+                                              modifier = Modifier.padding(horizontal = 4.dp)
+                                          ) {
+                                              dropdownItem.forEachIndexed { index, model ->
 
-                                          DropdownMenuItem(
-                                              modifier = Modifier
-                                                  .fillMaxWidth()
-                                                  .padding(
-                                                      horizontal = 4.dp, vertical = 2.dp
+                                                  val isSelected = selectedCalendarType == index
+
+                                                  DropdownMenuItem(
+                                                      modifier = Modifier
+                                                          .fillMaxWidth()
+                                                          .padding(
+                                                              horizontal = 4.dp, vertical = 2.dp
+                                                          )
+                                                          .clip(
+                                                              JoinedBlockShape(
+                                                                  largeRadius = 12.dp,
+                                                                  isFirst = dropdownItem.indexOf(
+                                                                      model
+                                                                  ) == 0,
+                                                                  isLast = index == dropdownItem.lastIndex
+                                                              )
+                                                          )
+
+                                                          .background(
+                                                              if (isSelected) MaterialTheme.colorScheme.secondaryContainer
+                                                              else MaterialTheme.colorScheme.surface
+                                                          ),
+                                                      text = {
+                                                          Row(
+                                                              verticalAlignment = Alignment.CenterVertically,
+                                                              modifier = Modifier.fillMaxWidth()
+                                                          ) {
+                                                              Icon(
+                                                                  imageVector = model.icon,
+                                                                  contentDescription = null,
+                                                                  tint = if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer
+                                                                  else MaterialTheme.colorScheme.onSurface
+                                                              )
+
+                                                              Spacer(Modifier.width(8.dp))
+
+                                                              Text(
+                                                                  text = model.title,
+                                                                  color = if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer
+                                                                  else MaterialTheme.colorScheme.onSurface
+                                                              )
+                                                          }
+                                                      },
+                                                      onClick = {
+                                                          model.onClick()
+                                                          showDropDown = false
+                                                      }
                                                   )
-                                                  .clip(RoundedCornerShape(8.dp))
-
-                                                  .background(
-                                                      if (isSelected) MaterialTheme.colorScheme.primaryContainer
-                                                      else MaterialTheme.colorScheme.surface
-                                                  ),
-                                              text = {
-                                                  Row(
-                                                      verticalAlignment = Alignment.CenterVertically,
-                                                      modifier = Modifier.fillMaxWidth()
-                                                  ) {
-                                                      Icon(
-                                                          imageVector = model.icon,
-                                                          contentDescription = null,
-                                                          tint = if (isSelected) MaterialTheme.colorScheme.primary
-                                                          else MaterialTheme.colorScheme.onSurface
-                                                      )
-
-                                                      Spacer(Modifier.width(8.dp))
-
-                                                      Text(
-                                                          text = model.title,
-                                                          color = if (isSelected) MaterialTheme.colorScheme.primary
-                                                          else MaterialTheme.colorScheme.onSurface
-                                                      )
-                                                  }
-                                              },
-                                              onClick = {
-                                                  model.onClick()
-                                                  showDropDown = false
                                               }
-                                          )
-                                      }
+                                          }
+
                                   }
 
 

@@ -6,6 +6,9 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.widget.Toast
+import androidx.compose.foundation.shape.AbsoluteRoundedCornerShape
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.dev.timeflow.Managers.service.WidgetPin
 import com.dev.timeflow.View.Widget.countDown.CountDownGlanceReceiver
 import com.dev.timeflow.View.Widget.countDown.CountDownWidgetState
@@ -155,4 +158,17 @@ fun createCountDownWidget(context: Context, countdownId: Long) {
         ).show()
     }
 }
+
+internal fun JoinedBlockShape(
+    isFirst: Boolean,
+    isLast: Boolean,
+    largeRadius: Dp = 16.dp,
+    smallRadius: Dp = 4.dp
+): AbsoluteRoundedCornerShape =
+    AbsoluteRoundedCornerShape(
+        topLeft = if (isFirst) largeRadius else smallRadius,
+        topRight = if (isFirst) largeRadius else smallRadius,
+        bottomLeft = if (isLast) largeRadius else smallRadius,
+        bottomRight = if (isLast) largeRadius else smallRadius
+    )
 
