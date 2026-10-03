@@ -1,5 +1,14 @@
 package com.dev.timeflow.View.utils
 
+import android.app.PendingIntent
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.widget.Toast
+import com.dev.timeflow.Managers.service.WidgetPin
+import com.dev.timeflow.View.Widget.countDown.CountDownGlanceReceiver
+import com.dev.timeflow.View.Widget.countDown.CountDownWidgetState
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDate
@@ -114,7 +123,38 @@ fun Long.toFormattedTime(): String {
 }
 
 
+fun createCountDownWidget(context: Context, countdownId: Long) {
+    val appWidgetManager = AppWidgetManager.getInstance(context)
 
+    val id = AppWidgetManager.EXTRA_APPWIDGET_ID
+
+    if (appWidgetManager.isRequestPinAppWidgetSupported) {
+        val widgetProvider = ComponentName(context, CountDownGlanceReceiver::class.java)
+
+        // requestCode is only a PendingIntent request code, unique per countdown so each pin
+        // keeps its own extras. It is never used as a widget id or a Room id.
+        val pinnedCallback = PendingIntent.getBroadcast(
+            context,
+            countdownId.hashCode(),
+            Intent(context, WidgetPin::class.java).apply {
+                putExtra(CountDownWidgetState.EXTRA_COUNTDOWN_ID, countdownId)
+            },
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        appWidgetManager.requestPinAppWidget(
+            widgetProvider,
+            null,
+            pinnedCallback
+        )
+    } else {
+        Toast.makeText(
+            context,
+            "Widget pinning is not supported on this device",
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+}
 //fun cheakNotificationPermission(){
 //    if ( == PackageManager.PERMISSION_GRANTED)
 //}

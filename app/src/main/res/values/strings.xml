@@ -4,4 +4,5 @@
     <string name="monthly_progress">Monthly Progress</string>
     <string name="event_progress">Event Progress</string>
     <string name="weekly_progress">Weekly Progress</string>
+    <string name="countdown_progress">Countdown</string>
 </resources>

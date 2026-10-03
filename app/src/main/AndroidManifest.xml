@@ -57,6 +57,15 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/weekly_progress"/>
         </receiver>
+        <receiver android:name=".View.Widget.countDown.CountDownGlanceReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/countdown_widget"/>
+        </receiver>
         <receiver android:name=".Managers.WidgetAlarmReceivers"
             android:exported="true">
             <intent-filter>
@@ -77,6 +86,9 @@
                 </action>
             </intent-filter>
         </receiver>
+        <receiver
+            android:name=".Managers.service.WidgetPin"
+            android:exported="false" />
     </application>
 
 </manifest>

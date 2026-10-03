@@ -92,6 +92,8 @@ dependencies {
     implementation(libs.compose)
     implementation(libs.androidx.glance)
     implementation(libs.androidx.glance.appwidget)
+    debugImplementation("androidx.glance:glance-preview:1.1.1")
+    debugImplementation("androidx.glance:glance-appwidget-preview:1.1.1")
     implementation(libs.icons.lucide)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
