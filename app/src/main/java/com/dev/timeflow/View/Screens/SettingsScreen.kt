@@ -322,6 +322,20 @@ private fun AppearanceSection(
                 },
                 colors = transparentListItemColors()
             )
+            ListItem(
+                headlineContent = { Text("AMOLED Mode") },
+                supportingContent = {
+                    Text("Use pure black backgrounds for a darker, battery-friendly experience.")
+                },
+
+                trailingContent = {
+                    Switch(
+                        checked = preferences.isAmoled,
+                        onCheckedChange = { themeViewModel.setAmoledMode(it) }
+                    )
+                },
+                colors = transparentListItemColors()
+            )
         }
     }
 }

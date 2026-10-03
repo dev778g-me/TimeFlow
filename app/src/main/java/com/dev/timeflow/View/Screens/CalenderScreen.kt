@@ -1404,7 +1404,7 @@ fun CalenderScreen(
                              },
                              onClick = {
                                  scope.launch {
-                                     state
+
                                      state.animateScrollToMonth(currentMonth)
 
                                  }

@@ -1,10 +1,6 @@
 package com.dev.timeflow.Data.Model
 
-/**
- * The Material colour spec used to derive schemes. Mirrors
- * `com.materialkolor.dynamiccolor.ColorSpec.SpecVersion`; stored as its year so a
- * future spec bump can be detected on read and the seed re-derived.
- */
+
 enum class ColorSpecVersion(val code: Int) {
     Spec2021(2021),
     Spec2025(2025),
@@ -35,6 +31,7 @@ enum class ContrastLevel {
 data class ThemePreferences(
     val themeType: ThemeType = ThemeType.System,
     val isDynamicTheme: Boolean = true,
+    val isAmoled : Boolean = false,
     val seedColor: Long? = null,
     val paletteStyle: String = DEFAULT_PALETTE_STYLE,
     val colorSpecVersion: ColorSpecVersion = ColorSpecVersion.Default,

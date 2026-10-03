@@ -35,6 +35,8 @@ class DataStoreRepo @Inject constructor(
 
         val themeType = stringPreferencesKey("theme_type")
         val isDynamicTheme = booleanPreferencesKey("is_dynamic_theme")
+
+       val isAmoled = booleanPreferencesKey("is_amoled_mode")
         val seedColor = longPreferencesKey("seed_color")
         val paletteStyle = stringPreferencesKey("palette_style")
         val colorSpecVersion = intPreferencesKey("color_spec_version")
@@ -102,6 +104,7 @@ class DataStoreRepo @Inject constructor(
                 ThemePreferences(
                     themeType = enumOrDefault(pref[PrefKey.themeType], ThemeType.System),
                     isDynamicTheme = pref[PrefKey.isDynamicTheme] ?: true,
+                    isAmoled = pref[PrefKey.isAmoled] ?:false,
                     seedColor = pref[PrefKey.seedColor],
                     paletteStyle = pref[PrefKey.paletteStyle] ?: DEFAULT_PALETTE_STYLE,
                     colorSpecVersion = ColorSpecVersion.fromCode(
@@ -121,6 +124,9 @@ class DataStoreRepo @Inject constructor(
         dataStore.edit { it[PrefKey.isDynamicTheme] = value }
     }
 
+    suspend fun saveAmoled(value: Boolean) {
+        dataStore.edit { it[PrefKey.isAmoled] = value }
+    }
     suspend fun saveSeedColor(value: Long?) {
         dataStore.edit {
             if (value == null) it.remove(PrefKey.seedColor)

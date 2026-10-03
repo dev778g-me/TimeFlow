@@ -1,6 +1,7 @@
 package com.example.compose
 import android.app.Activity
 import android.os.Build
+import android.util.Log
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -306,37 +307,69 @@ private fun ColorSpecVersion.toSpecVersion(): ColorSpec.SpecVersion = when (this
 private fun paletteStyleOf(name: String): PaletteStyle =
     PaletteStyle.entries.firstOrNull { it.name == name } ?: PaletteStyle.TonalSpot
 
-/**
- * Seed -> dynamic (wallpaper) -> the bundled static schemes, in that order.
- *
- * A seed always wins so the colour picker can never be silently overridden by the
- * Material You toggle. The bundled schemes cover the standard / medium / high
- * contrast variants the app already ships.
- */
+
 @Composable
-private fun colorSchemeOf(preferences: ThemePreferences, darkTheme: Boolean): ColorScheme {
+private fun colorSchemeOf(
+    preferences: ThemePreferences,
+    darkTheme: Boolean,
+): ColorScheme {
     val context = LocalContext.current
-    val seed = preferences.seedColor
 
-    return when {
-        seed != null -> rememberDynamicColorScheme(
-            seedColor = Color(seed.toInt()),
-            isDark = darkTheme,
-            style = paletteStyleOf(preferences.paletteStyle),
-            contrastLevel = preferences.contrastLevel.toContrast(),
-            specVersion = preferences.colorSpecVersion.toSpecVersion(),
+    val colorScheme = when {
+        preferences.seedColor != null -> {
+            rememberDynamicColorScheme(
+                seedColor = Color(preferences.seedColor.toInt()),
+                isDark = darkTheme,
+                isAmoled = false,
+                style = paletteStyleOf(preferences.paletteStyle),
+                contrastLevel = preferences.contrastLevel.toContrast(),
+                specVersion = preferences.colorSpecVersion.toSpecVersion(),
+            )
+        }
+
+        preferences.isDynamicTheme &&
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+            if (darkTheme) {
+                dynamicDarkColorScheme(context)
+            } else {
+                dynamicLightColorScheme(context)
+            }
+        }
+
+        preferences.contrastLevel == ContrastLevel.Medium -> {
+            if (darkTheme) {
+                mediumContrastDarkColorScheme
+            } else {
+                mediumContrastLightColorScheme
+            }
+        }
+
+        preferences.contrastLevel == ContrastLevel.High -> {
+            if (darkTheme) {
+                highContrastDarkColorScheme
+            } else {
+                highContrastLightColorScheme
+            }
+        }
+
+        else -> {
+            if (darkTheme) darkScheme else lightScheme
+        }
+    }
+
+    return if (darkTheme && preferences.isAmoled) {
+        colorScheme.copy(
+            background = Color.Black,
+            surface = Color.Black,
+            surfaceVariant = Color.Black,
+            surfaceContainer = Color.Black,
+            surfaceContainerHigh = Color.Black,
+            surfaceContainerHighest = Color.Black,
+            surfaceContainerLow = Color.Black,
+            surfaceContainerLowest = Color.Black,
         )
-
-        preferences.isDynamicTheme && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ->
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-
-        preferences.contrastLevel == ContrastLevel.Medium ->
-            if (darkTheme) mediumContrastDarkColorScheme else mediumContrastLightColorScheme
-
-        preferences.contrastLevel == ContrastLevel.High ->
-            if (darkTheme) highContrastDarkColorScheme else highContrastLightColorScheme
-
-        else -> if (darkTheme) darkScheme else lightScheme
+    } else {
+        colorScheme
     }
 }
 

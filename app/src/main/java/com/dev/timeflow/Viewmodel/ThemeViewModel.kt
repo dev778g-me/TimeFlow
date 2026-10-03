@@ -31,14 +31,17 @@ class ThemeViewModel @Inject constructor(
         viewModelScope.launch { dataStoreRepo.saveThemeType(value) }
     }
 
-    /**
-     * A seed always outranks Material You in [com.example.compose.TimeFlowTheme], so turning the
-     * dynamic toggle back on has to drop the seed or the toggle would appear to do nothing.
-     */
+
     fun setDynamicTheme(enabled: Boolean) {
         viewModelScope.launch {
             dataStoreRepo.saveDynamicTheme(enabled)
             if (enabled) dataStoreRepo.saveSeedColor(null)
+        }
+    }
+
+    fun setAmoledMode(value: Boolean){
+        viewModelScope.launch {
+            dataStoreRepo.saveAmoled(value)
         }
     }
 
