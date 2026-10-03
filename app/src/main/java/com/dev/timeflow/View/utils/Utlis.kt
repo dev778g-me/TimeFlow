@@ -126,20 +126,20 @@ fun Long.toFormattedTime(): String {
 fun createCountDownWidget(context: Context, countdownId: Long) {
     val appWidgetManager = AppWidgetManager.getInstance(context)
 
-    val id = AppWidgetManager.EXTRA_APPWIDGET_ID
-
     if (appWidgetManager.isRequestPinAppWidgetSupported) {
         val widgetProvider = ComponentName(context, CountDownGlanceReceiver::class.java)
 
         // requestCode is only a PendingIntent request code, unique per countdown so each pin
         // keeps its own extras. It is never used as a widget id or a Room id.
+        // FLAG_MUTABLE: the launcher fills in EXTRA_APPWIDGET_ID on send, which is ignored
+        // for immutable PendingIntents.
         val pinnedCallback = PendingIntent.getBroadcast(
             context,
             countdownId.hashCode(),
             Intent(context, WidgetPin::class.java).apply {
                 putExtra(CountDownWidgetState.EXTRA_COUNTDOWN_ID, countdownId)
             },
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
         )
 
         appWidgetManager.requestPinAppWidget(
@@ -155,8 +155,4 @@ fun createCountDownWidget(context: Context, countdownId: Long) {
         ).show()
     }
 }
-//fun cheakNotificationPermission(){
-//    if ( == PackageManager.PERMISSION_GRANTED)
-//}
-
 
