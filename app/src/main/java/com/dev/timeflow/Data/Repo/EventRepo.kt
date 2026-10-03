@@ -5,6 +5,7 @@ import com.dev.timeflow.Data.Dao.EventDao
 import com.dev.timeflow.Data.Model.CountDown
 import com.dev.timeflow.Data.Model.Events
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 class EventRepo @Inject constructor(
@@ -44,6 +45,10 @@ class EventRepo @Inject constructor(
         eventDao.deleteEvent(
             events = events
         )
+    }
+
+    suspend fun getEvent(id: Long): Events? {
+        return eventDao.getEventById(id).first()
     }
 
     suspend fun addCountDown(countDown: CountDown): Long{

@@ -25,6 +25,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -77,6 +78,7 @@ fun SheetToEditEvent(
     onEndTimeChipClick: () -> Unit,
     onUpdateEvent: () -> Unit,
     onDeleteEvent: () -> Unit,
+    onCreateWidget: () -> Unit,
     event: Events
 ) {
     val formatter = DateTimeFormatter.ofPattern("h:mm a")
@@ -341,6 +343,25 @@ fun SheetToEditEvent(
                     modifier = modifier.padding(vertical = 8.dp),
                     text = "Update Event"
                 )
+            }
+
+            Spacer(modifier = modifier.height(8.dp))
+
+            OutlinedButton(
+                shape = RoundedCornerShape(12.dp),
+                modifier = modifier.fillMaxWidth(),
+                onClick = {
+                    onCreateWidget()
+                    onDismiss()
+                }
+            ) {
+                Icon(
+                    modifier = modifier.size(ButtonDefaults.IconSize),
+                    imageVector = Lucide.Pin,
+                    contentDescription = null
+                )
+                Spacer(modifier = modifier.width(8.dp))
+                Text(text = "Add to Home Screen")
             }
         }
     }

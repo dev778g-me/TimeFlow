@@ -9,6 +9,9 @@ import android.util.Log
 import android.widget.Toast
 import androidx.glance.GlanceId
 import androidx.glance.appwidget.GlanceAppWidgetManager
+import com.dev.timeflow.View.Widget.EventProgress.EventProgress
+import com.dev.timeflow.View.Widget.EventProgress.EventProgressGlanceReceiver
+import com.dev.timeflow.View.Widget.EventProgress.EventWidgetState
 import com.dev.timeflow.View.Widget.countDown.CountDownGlanceReceiver
 import com.dev.timeflow.View.Widget.countDown.CountDownWidget
 import com.dev.timeflow.View.Widget.countDown.CountDownWidgetState
@@ -26,28 +29,49 @@ class WidgetPin : BroadcastReceiver() {
         if (intent == null) return
 
         val countdownId = intent.getLongExtra(CountDownWidgetState.EXTRA_COUNTDOWN_ID, -1L)
+        val eventId = intent.getLongExtra(EventWidgetState.EXTRA_EVENT_ID, -1L)
+        val isEvent = eventId > 0L
+        val domainId = if (isEvent) eventId else countdownId
+        val kind = if (isEvent) "event" else "countdown"
+
         Log.d(
             TAG,
-            "Pin callback: extras=${intent.extras} " +
-                "appWidgetId=${intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)} " +
-                "countdownId=$countdownId"
+            "Pin callback: extras=${intent.extras} countdownId=$countdownId eventId=$eventId"
         )
 
-        if (countdownId <= 0L) {
-            Log.w(TAG, "Pin callback missing countdownId: $countdownId")
+        if (domainId <= 0L) {
+            Log.w(TAG, "Pin callback missing ids: countdownId=$countdownId eventId=$eventId")
             return
         }
 
         val pendingResult = goAsync()
         CoroutineScope(Dispatchers.Default).launch {
             try {
-                val appWidgetId = resolveAppWidgetId(context, intent, countdownId)
+                val appWidgetId = resolveAppWidgetId(context, intent, domainId, isEvent)
                 val glanceId = awaitGlanceId(context, appWidgetId)
-                CountDownWidgetState.setCountdownId(context, glanceId, countdownId)
-                CountDownWidget().update(context, glanceId)
-
+                if (isEvent) {
+                    EventWidgetState.setEventId(context, glanceId, eventId)
+                    EventProgress().update(context, glanceId)
+                } else {
+                    CountDownWidgetState.setCountdownId(context, glanceId, countdownId)
+                    CountDownWidget().update(context, glanceId)
+                }
+                Log.i(TAG, "Bound $kind $domainId to widget $appWidgetId")
+                // The widget's first Glance session may have rendered with empty state
+                // before the write above and can apply its stale views afterwards.
+                // Render once more after that session settles to win the race.
+                delay(RE_RENDER_DELAY_MS.milliseconds)
+                if (isEvent) {
+                    EventProgress().update(context, glanceId)
+                } else {
+                    CountDownWidget().update(context, glanceId)
+                }
+                Log.i(TAG, "Re-rendered $kind widget $appWidgetId after bind")
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "Widget added", Toast.LENGTH_SHORT).show()
+                }
             } catch (t: Throwable) {
-                Log.e(TAG, "Failed to bind countdown $countdownId", t)
+                Log.e(TAG, "Failed to bind $kind $domainId", t)
             } finally {
                 pendingResult.finish()
             }
@@ -57,7 +81,8 @@ class WidgetPin : BroadcastReceiver() {
     private suspend fun resolveAppWidgetId(
         context: Context,
         intent: Intent,
-        countdownId: Long
+        domainId: Long,
+        isEvent: Boolean
     ): Int {
         val fromExtra = intent.getIntExtra(
             AppWidgetManager.EXTRA_APPWIDGET_ID,
@@ -67,7 +92,11 @@ class WidgetPin : BroadcastReceiver() {
 
         val appWidgetManager = AppWidgetManager.getInstance(context)
         val glanceManager = GlanceAppWidgetManager(context)
-        val component = ComponentName(context, CountDownGlanceReceiver::class.java)
+        val component = ComponentName(
+            context,
+            if (isEvent) EventProgressGlanceReceiver::class.java
+            else CountDownGlanceReceiver::class.java
+        )
         var knownIds: List<Int> = emptyList()
 
         repeat(MAX_ATTEMPTS) {
@@ -79,16 +108,21 @@ class WidgetPin : BroadcastReceiver() {
                 } catch (e: IllegalArgumentException) {
                     continue
                 }
-                when (CountDownWidgetState.getCountdownId(context, glanceId)) {
+                val bound = if (isEvent) {
+                    EventWidgetState.getEventId(context, glanceId)
+                } else {
+                    CountDownWidgetState.getCountdownId(context, glanceId)
+                }
+                when (bound) {
                     null -> return id
-                    countdownId -> if (alreadyBound == null) alreadyBound = id
+                    domainId -> if (alreadyBound == null) alreadyBound = id
                 }
             }
             if (alreadyBound != null) return alreadyBound
             delay(RETRY_DELAY_MS.milliseconds)
         }
         throw IllegalStateException(
-            "No widget available for countdown $countdownId, known ids=$knownIds"
+            "No widget available for ${if (isEvent) "event" else "countdown"} $domainId, known ids=$knownIds"
         )
     }
 
@@ -109,5 +143,6 @@ class WidgetPin : BroadcastReceiver() {
         const val TAG = "WidgetPin"
         const val MAX_ATTEMPTS = 10
         const val RETRY_DELAY_MS = 200L
+        const val RE_RENDER_DELAY_MS = 3000L
     }
 }

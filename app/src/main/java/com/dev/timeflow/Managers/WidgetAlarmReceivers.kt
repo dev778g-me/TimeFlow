@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.glance.appwidget.GlanceAppWidgetManager
+import com.dev.timeflow.View.Widget.EventProgress.EventProgress
 import com.dev.timeflow.View.Widget.MonthProgress.MonthProgress
 import com.dev.timeflow.View.Widget.WeekProgress.WeekProgress
 import com.dev.timeflow.View.Widget.YearProgress.YearProgress
@@ -26,6 +27,7 @@ class WidgetAlarmReceivers : BroadcastReceiver(){
                 val weekGlanceId = glanceAppWidgetManager.getGlanceIds(WeekProgress::class.java)
                 val yearGlanceId = glanceAppWidgetManager.getGlanceIds(YearProgress::class.java)
                 val countDownGlanceId = glanceAppWidgetManager.getGlanceIds(CountDownWidget::class.java)
+                val eventGlanceId = glanceAppWidgetManager.getGlanceIds(EventProgress::class.java)
                 Log.d("Receiver","The Month Glance id :  ${monthGlanceId.size}")
 
                 weekGlanceId.forEach {
@@ -43,6 +45,10 @@ class WidgetAlarmReceivers : BroadcastReceiver(){
                 countDownGlanceId.forEach {
                     Log.d("Receiver","CountDown Glance Block Started")
                     CountDownWidget().update(context,it)
+                }
+                eventGlanceId.forEach {
+                    Log.d("Receiver","Event Glance Block Started")
+                    EventProgress().update(context,it)
                 }
 
                 // schedule for next midnight

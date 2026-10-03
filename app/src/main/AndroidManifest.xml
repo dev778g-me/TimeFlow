@@ -66,6 +66,15 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/countdown_widget"/>
         </receiver>
+        <receiver android:name=".View.Widget.EventProgress.EventProgressGlanceReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/event_progress"/>
+        </receiver>
         <receiver android:name=".Managers.WidgetAlarmReceivers"
             android:exported="true">
             <intent-filter>

@@ -2,6 +2,7 @@ package com.dev.timeflow.Data.Repo
 
 import android.content.Context
 import com.dev.timeflow.Data.Model.CountDown
+import com.dev.timeflow.Data.Model.Events
 import dagger.hilt.EntryPoint
 import dagger.hilt.EntryPoints
 import dagger.hilt.InstallIn
@@ -32,6 +33,10 @@ class WidgetRepo @Inject constructor(
 
     suspend fun getCountDown(id: Long) : CountDown?{
         return eventRepo.getCountDown(id = id)
+    }
+
+    suspend fun getEvent(id: Long): Events? {
+        return eventRepo.getEvent(id = id)
     }
 
     suspend fun deleteCountDown(countDown: CountDown){

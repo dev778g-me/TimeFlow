@@ -88,6 +88,7 @@ import com.dev.timeflow.View.utils.componets.EventTile
 import com.dev.timeflow.View.utils.componets.TaskTile
 import com.dev.timeflow.View.utils.endOfDayMillis
 import com.dev.timeflow.View.utils.createCountDownWidget
+import com.dev.timeflow.View.utils.createEventWidget
 import com.dev.timeflow.View.utils.toDateTimeInMillis
 import com.dev.timeflow.View.utils.toMillis
 import com.dev.timeflow.Viewmodel.TaskAndEventViewModel
@@ -902,6 +903,9 @@ fun CalenderScreen(
                 taskViewModel.deleteEvent(
                     latestEvent
                 )
+            },
+            onCreateWidget = {
+                createEventWidget(localContext, eventId = latestEvent.id)
             }
         )
     }

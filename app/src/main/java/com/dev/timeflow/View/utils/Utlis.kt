@@ -10,6 +10,8 @@ import androidx.compose.foundation.shape.AbsoluteRoundedCornerShape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.dev.timeflow.Managers.service.WidgetPin
+import com.dev.timeflow.View.Widget.EventProgress.EventProgressGlanceReceiver
+import com.dev.timeflow.View.Widget.EventProgress.EventWidgetState
 import com.dev.timeflow.View.Widget.countDown.CountDownGlanceReceiver
 import com.dev.timeflow.View.Widget.countDown.CountDownWidgetState
 import java.text.SimpleDateFormat
@@ -158,6 +160,38 @@ fun createCountDownWidget(context: Context, countdownId: Long) {
         ).show()
     }
 }
+
+fun createEventWidget(context: Context, eventId: Long) {
+    val appWidgetManager = AppWidgetManager.getInstance(context)
+
+    if (appWidgetManager.isRequestPinAppWidgetSupported) {
+        val widgetProvider = ComponentName(context, EventProgressGlanceReceiver::class.java)
+
+        // offset request codes so an event pin never collides with a countdown pin
+        val pinnedCallback = PendingIntent.getBroadcast(
+            context,
+            EVENT_PIN_REQUEST_BASE + eventId.toInt(),
+            Intent(context, WidgetPin::class.java).apply {
+                putExtra(EventWidgetState.EXTRA_EVENT_ID, eventId)
+            },
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+        )
+
+        appWidgetManager.requestPinAppWidget(
+            widgetProvider,
+            null,
+            pinnedCallback
+        )
+    } else {
+        Toast.makeText(
+            context,
+            "Widget pinning is not supported on this device",
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+}
+
+private const val EVENT_PIN_REQUEST_BASE = 1_000_000_000
 
 internal fun JoinedBlockShape(
     isFirst: Boolean,
