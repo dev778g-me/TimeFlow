@@ -16,6 +16,7 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
@@ -108,16 +109,11 @@ import com.dev.timeflow.View.Screens.onBoarding.WelcomeScreen
 import com.dev.timeflow.Viewmodel.TaskAndEventViewModel
 import kotlinx.coroutines.launch
 
-private val appBarEnter = fadeIn(animationSpec = tween(120)) + scaleIn(
+private val appBarEnter = fadeIn(animationSpec = tween(120)) + slideInVertically(
     animationSpec = spring(
-        dampingRatio = Spring.DampingRatioMediumBouncy,
-        stiffness = Spring.StiffnessMediumLow
+        dampingRatio = Spring.DampingRatioLowBouncy,
+        stiffness = Spring.StiffnessLow
     ),
-    initialScale = 0.7f,
-    transformOrigin = TransformOrigin(
-        pivotFractionX = 0.5f,
-        pivotFractionY = 1f
-    )
 )
 
 private val appBarExit = fadeOut(animationSpec = tween(100)) + scaleOut(
@@ -303,7 +299,7 @@ fun NavGraph(modifier: Modifier = Modifier, startDest : String) {
 
 
                                }else{
-                                   FilledTonalIconButton(
+                                   IconButton(
                                        onClick = {
                                            navController.navigate(Routes.SettingsScreen.route)
                                        }
@@ -346,52 +342,6 @@ fun NavGraph(modifier: Modifier = Modifier, startDest : String) {
                                modifier = Modifier
                                    .zIndex(1f)
                                ,
-//                               floatingActionButton = {
-//                                  AnimatedVisibility(
-//                                      visible = selectedIndex == 1
-//                                  ) {
-//                                      Row(
-//                                          verticalAlignment = Alignment.CenterVertically
-//                                      ) {
-//                                          TooltipBox(
-//                                              positionProvider =
-//                                                  TooltipDefaults.rememberTooltipPositionProvider(
-//                                                      TooltipAnchorPosition.Above
-//                                                  ),
-//                                              tooltip = {
-//                                                  PlainTooltip(
-//                                                      modifier =
-//                                                          Modifier.semantics {
-//                                                              liveRegion = LiveRegionMode.Assertive
-//                                                              paneTitle = ""
-//                                                          }
-//                                                  ) {
-//                                                      Text("Add Event & Tasks")
-//                                                  }
-//                                              },
-//                                              state = rememberTooltipState(),
-//                                          ) {
-//                                              FloatingToolbarDefaults.VibrantFloatingActionButton(
-//                                                  modifier = Modifier
-//                                                      .animateBounds(
-//                                                          animateMotionFrameOfReference = true,
-//                                                          lookaheadScope = this@LookaheadScope,
-//                                                          boundsTransform = BoundsTransform { i, o ->
-//                                                              boundAnimationSpec
-//                                                          }
-//                                                      ),
-//                                                  onClick = { }
-//                                              ) {
-//                                                  Icon(Icons.Filled.Add, "")
-//                                              }
-//                                          }
-//
-//                                          Text(modifier = Modifier
-//                                              .padding(start = 4.dp)
-//                                              .alpha(0f), text = "je")
-//                                      }
-//                                  }
-//                               }
                            ) {
                                 bottomNavItems.forEachIndexed { index, item ->
                                     val selected = selectedIndex == index
