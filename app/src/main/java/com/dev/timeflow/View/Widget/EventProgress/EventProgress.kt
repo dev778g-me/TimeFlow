@@ -22,7 +22,6 @@ import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
-import androidx.glance.preview.ExperimentalGlancePreviewApi
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextAlign
@@ -64,8 +63,6 @@ class EventProgress : GlanceAppWidget() {
     }
 }
 
-@OptIn(ExperimentalGlancePreviewApi::class)
-@androidx.glance.preview.Preview(widthDp = 300, heightDp = 200)
 @Composable
 fun EventProgressWidget(
     modifier: GlanceModifier = GlanceModifier,
@@ -165,8 +162,7 @@ fun EventProgressWidget(
     }
 }
 
-@OptIn(ExperimentalGlancePreviewApi::class)
-@androidx.glance.preview.Preview(widthDp = 300, heightDp = 200)
+
 @Composable
 fun EventProgressPlaceholder(
     modifier: GlanceModifier = GlanceModifier,

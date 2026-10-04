@@ -26,7 +26,6 @@ import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
-import androidx.glance.preview.ExperimentalGlancePreviewApi
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextAlign
@@ -76,8 +75,7 @@ class CountDownWidget : GlanceAppWidget() {
     }
 }
 
-@OptIn(ExperimentalGlancePreviewApi::class)
-@androidx.glance.preview.Preview(widthDp = 300, heightDp = 200)
+
 @Composable
 fun CountDownContent(
     modifier: GlanceModifier = GlanceModifier,
@@ -173,8 +171,6 @@ fun CountDownContent(
     }
 }
 
-@OptIn(ExperimentalGlancePreviewApi::class)
-@androidx.glance.preview.Preview(widthDp = 300, heightDp = 200)
 @Composable
 fun CountDownPlaceholder(
     modifier: GlanceModifier = GlanceModifier,
