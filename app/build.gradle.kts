@@ -3,10 +3,15 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp")
     id("kotlin-parcelize")
+    id("androidx.room3")
+
     id("com.google.dagger.hilt.android")
     alias(libs.plugins.kotlin.serialization)
 }
 
+room3 {
+    schemaDirectory("$projectDir/schemas")
+}
 android {
     namespace = "com.dev.timeflow"
     compileSdk = 37
@@ -92,8 +97,8 @@ dependencies {
     implementation(libs.compose)
     implementation(libs.androidx.glance)
     implementation(libs.androidx.glance.appwidget)
-    debugImplementation("androidx.glance:glance-preview:1.1.1")
-    debugImplementation("androidx.glance:glance-appwidget-preview:1.1.1")
+    debugImplementation(libs.androidx.glance.preview)
+    debugImplementation(libs.androidx.glance.appwidget.preview)
     implementation(libs.icons.lucide)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.json)

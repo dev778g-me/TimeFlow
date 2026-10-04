@@ -1,10 +1,16 @@
 package com.dev.timeflow.View.Screens
 
 import android.content.Intent
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -16,6 +22,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,16 +32,21 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Circle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -70,11 +82,14 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.composables.icons.lucide.Check
 import com.composables.icons.lucide.ChevronRight
+import com.composables.icons.lucide.Circle
 import com.composables.icons.lucide.CircleCheck
 import com.composables.icons.lucide.Code
 import com.composables.icons.lucide.Contrast
 import com.composables.icons.lucide.Dock
+import com.composables.icons.lucide.Dot
 import com.composables.icons.lucide.Github
 import com.composables.icons.lucide.Info
 import com.composables.icons.lucide.Lucide
@@ -94,6 +109,7 @@ import com.dev.timeflow.Data.Model.ContrastLevel
 import com.dev.timeflow.Data.Model.ThemePreferences
 import com.dev.timeflow.Data.Model.ThemeType
 import com.dev.timeflow.R
+import com.dev.timeflow.View.utils.JoinedBlockShape
 import com.dev.timeflow.Viewmodel.TaskAndEventViewModel
 import com.dev.timeflow.Viewmodel.ThemeViewModel
 import com.materialkolor.PaletteStyle
@@ -209,31 +225,40 @@ private fun GeneralSection(
 ) {
     SettingsSection(title = "General", icon = { Icon(Lucide.Settings, null) }) {
         SettingsGroup {
-            ListItem(
-                modifier = Modifier.clickable(onClick = onChangeName),
-                leadingContent = {
-                    Icon(
-                        imageVector = Lucide.User,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier
-                            .size(50.dp)
-                            .padding(8.dp)
-                    )
-                },
-                headlineContent = { Text("Change name") },
-                supportingContent = {
-                    Text(if (name.isEmpty()) "Not set yet" else name)
-                },
-                trailingContent = {
-                    Icon(
-                        imageVector = Lucide.ChevronRight,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                },
-                colors = transparentListItemColors()
-            )
+            Column(
+                modifier = Modifier
+                    .padding(bottom = 1.dp)
+                    .clip(JoinedBlockShape(isFirst = true, isLast = true))
+                    .background(MaterialTheme.colorScheme.surfaceContainer)
+            ) {
+                ListItem(
+                    modifier = Modifier.clickable(onClick = onChangeName),
+                    leadingContent = {
+                        Icon(
+                            imageVector = Lucide.User,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier
+                                .size(50.dp)
+                                .padding(8.dp)
+                        )
+                    },
+                    headlineContent = {
+                        Text(if (name.isEmpty()) "Set your name" else "Your name")
+                    },
+                    supportingContent = {
+                        Text(name.ifEmpty { "Add a name to personalize your profile" })
+                    },
+                    trailingContent = {
+                        Icon(
+                            imageVector = Lucide.ChevronRight,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    },
+                    colors = transparentListItemColors()
+                )
+            }
         }
     }
 }
@@ -267,7 +292,9 @@ private fun NameChangeSheet(
             Button(
                 enabled = userName.isNotEmpty(),
                 shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
                 onClick = { onSave(userName) }
             ) {
                 Text(
@@ -286,56 +313,76 @@ private fun AppearanceSection(
 ) {
     SettingsSection(title = "Appearance", icon = { Icon(Lucide.Sun, null) }) {
         SettingsGroup {
-            Text(
-                text = "Theme",
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(start = 16.dp, top = 16.dp)
-            )
-            SingleChoiceSegmentedButtonRow(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .padding(bottom = 1.dp)
+                    .clip(JoinedBlockShape(isFirst = true, isLast = false))
+                    .background(MaterialTheme.colorScheme.surfaceContainer)
             ) {
-                ThemeType.entries.forEachIndexed { index, type ->
-                    SegmentedButton(
-                        shape = SegmentedButtonDefaults.itemShape(
-                            index = index,
-                            count = ThemeType.entries.size
-                        ),
-                        selected = preferences.themeType == type,
-                        onClick = { themeViewModel.setThemeType(type) },
-                        label = { Text(type.name) }
-                    )
+                Text(
+                    text = "Theme",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(start = 16.dp, top = 16.dp)
+                )
+                SingleChoiceSegmentedButtonRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                ) {
+                    ThemeType.entries.forEachIndexed { index, type ->
+                        SegmentedButton(
+                            shape = SegmentedButtonDefaults.itemShape(
+                                index = index,
+                                count = ThemeType.entries.size
+                            ),
+                            selected = preferences.themeType == type,
+                            onClick = { themeViewModel.setThemeType(type) },
+                            label = { Text(type.name) }
+                        )
+                    }
                 }
             }
-            ListItem(
-                headlineContent = { Text("Dynamic colors") },
-                supportingContent = {
-                    Text("Take colors from your wallpaper. Turn off to customize below.")
-                },
-                trailingContent = {
-                    Switch(
-                        checked = preferences.isDynamicTheme,
-                        onCheckedChange = { themeViewModel.setDynamicTheme(it) }
-                    )
-                },
-                colors = transparentListItemColors()
-            )
-            ListItem(
-                headlineContent = { Text("AMOLED Mode") },
-                supportingContent = {
-                    Text("Use pure black backgrounds for a darker, battery-friendly experience.")
-                },
-
-                trailingContent = {
-                    Switch(
-                        checked = preferences.isAmoled,
-                        onCheckedChange = { themeViewModel.setAmoledMode(it) }
-                    )
-                },
-                colors = transparentListItemColors()
-            )
+            Column(
+                modifier = Modifier
+                    .padding(vertical = 1.dp)
+                    .clip(JoinedBlockShape(isFirst = false, isLast = false))
+                    .background(MaterialTheme.colorScheme.surfaceContainer)
+            ) {
+                ListItem(
+                    headlineContent = { Text("Dynamic colors") },
+                    supportingContent = {
+                        Text("Take colors from your wallpaper. Turn off to customize below.")
+                    },
+                    trailingContent = {
+                        Switch(
+                            checked = preferences.isDynamicTheme,
+                            onCheckedChange = { themeViewModel.setDynamicTheme(it) }
+                        )
+                    },
+                    colors = transparentListItemColors()
+                )
+            }
+            Column(
+                modifier = Modifier
+                    .padding(vertical = 1.dp)
+                    .clip(JoinedBlockShape(isFirst = false, isLast = true))
+                    .background(MaterialTheme.colorScheme.surfaceContainer)
+            ) {
+                ListItem(
+                    headlineContent = { Text("AMOLED Mode") },
+                    supportingContent = {
+                        Text("Use pure black backgrounds for a darker, battery-friendly experience.")
+                    },
+                    trailingContent = {
+                        Switch(
+                            checked = preferences.isAmoled,
+                            onCheckedChange = { themeViewModel.setAmoledMode(it) }
+                        )
+                    },
+                    colors = transparentListItemColors()
+                )
+            }
         }
     }
 }
@@ -348,28 +395,35 @@ private fun ColorsSection(
 ) {
     SettingsSection(title = "Colors", icon = { Icon(Lucide.Palette, null) }) {
         SettingsGroup {
-            SectionLabel("Seed color")
-            FlowRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                seedSwatches.forEach { swatch ->
-                    Swatch(
-                        swatch = swatch,
-                        selected = swatch.argb == preferences.seedColor,
-                        onClick = { themeViewModel.setSeedColor(swatch.argb) }
-                    )
-                }
-            }
+           Column(
+              modifier = Modifier
+                  .padding(bottom = 1.dp)
+                  .clip(JoinedBlockShape(isFirst = true, isLast =false)).background(color = MaterialTheme.colorScheme.surfaceContainer)
+           ){
+               SectionLabel("Seed color")
+               FlowRow(
+                   modifier = Modifier
+                       .fillMaxWidth()
+                       .padding(horizontal = 16.dp, vertical = 12.dp),
+                   horizontalArrangement = Arrangement.spacedBy(8.dp),
+                   verticalArrangement = Arrangement.spacedBy(2.dp)
+               ) {
+                   seedSwatches.forEach { swatch ->
+                       Swatch(
+                           swatch = swatch,
+                           selected = swatch.argb == preferences.seedColor,
+                           onClick = { themeViewModel.setSeedColor(swatch.argb) }
+                       )
+                   }
+               }
+           }
 
             ChipRow(
                 title = "Palette style",
                 icon = { Icon(Lucide.Paintbrush, contentDescription = null) },
                 options = PaletteStyle.entries.map { it.name to it.name },
                 selected = preferences.paletteStyle,
+                shape = JoinedBlockShape(isFirst = false, isLast = false),
                 onSelect = { themeViewModel.setPaletteStyle(it) }
             )
 
@@ -378,6 +432,7 @@ private fun ColorsSection(
                 icon = { Icon(Lucide.SlidersHorizontal, contentDescription = null) },
                 options = ColorSpecVersion.entries.map { it.name to it.code.toString() },
                 selected = preferences.colorSpecVersion.name,
+                shape = JoinedBlockShape(isFirst = false, isLast = false),
                 onSelect = { name ->
                     themeViewModel.setColorSpecVersion(
                         ColorSpecVersion.entries.first { it.name == name }
@@ -390,6 +445,7 @@ private fun ColorsSection(
                 icon = { Icon(Lucide.Contrast, contentDescription = null) },
                 options = ContrastLevel.entries.map { it.name to it.name },
                 selected = preferences.contrastLevel.name,
+                shape = JoinedBlockShape(isFirst = false, isLast = true),
                 onSelect = { name ->
                     themeViewModel.setContrastLevel(
                         ContrastLevel.entries.first { it.name == name }
@@ -408,28 +464,35 @@ private fun FontSection(
 ) {
     SettingsSection(title = "Font", icon = { Icon(Lucide.Type, null) }) {
         SettingsGroup {
-            FlowRow(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                    .padding(bottom = 1.dp)
+                    .clip(JoinedBlockShape(isFirst = true, isLast = true))
+                    .background(MaterialTheme.colorScheme.surfaceContainer)
             ) {
-                BodyFont.entries.forEach { font ->
-                    ToggleButton (
-                        colors = ToggleButtonDefaults.toggleButtonColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
-                        ),
-                        checked = font == preferences.bodyFont,
-                        onCheckedChange = { themeViewModel.setBodyFont(font) },
-                        content = {
-                            Text(
-                                text = font.label,
-                                fontFamily = font.fontFamily,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
-                    )
+                FlowRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    BodyFont.entries.forEach { font ->
+                        ToggleButton(
+                            colors = ToggleButtonDefaults.toggleButtonColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant
+                            ),
+                            checked = font == preferences.bodyFont,
+                            onCheckedChange = { themeViewModel.setBodyFont(font) },
+                            content = {
+                                Text(
+                                    text = font.label,
+                                    fontFamily = font.fontFamily,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -440,102 +503,109 @@ private fun FontSection(
 private fun AboutSection(onOpenUrl: (String) -> Unit) {
     SettingsSection(title = "About", icon = { Icon(Lucide.Info, null) }) {
         SettingsGroup {
-            ListItem(
-                leadingContent = {
-                    Image(
-                        modifier = Modifier.size(50.dp),
-                        painter = painterResource(id = R.drawable.timeflow_mono_logo),
-                        contentDescription = null
-                    )
-                },
-                headlineContent = { Text("Timeflow") },
-                supportingContent = { Text("Version ${BuildConfig.VERSION_NAME}") },
-                trailingContent = {
-                    FilledTonalIconButton(onClick = { onOpenUrl(GITHUB_REPO) }) {
-                        Icon(
-                            imageVector = Lucide.Github,
-                            contentDescription = "Source code",
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+            Column(
+                modifier = Modifier
+                    .padding(bottom = 1.dp)
+                    .clip(JoinedBlockShape(isFirst = true, isLast = true))
+                    .background(MaterialTheme.colorScheme.surfaceContainer)
+            ) {
+                ListItem(
+                    leadingContent = {
+                        Image(
+                            modifier = Modifier.size(50.dp),
+                            painter = painterResource(id = R.drawable.timeflow_mono_logo),
+                            contentDescription = null
                         )
-                    }
-                },
-                colors = transparentListItemColors()
-            )
-            SectionDivider()
-            ListItem(
-                leadingContent = {
-                    Icon(
-                        imageVector = Lucide.Code,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier
-                            .size(50.dp)
-                            .padding(8.dp)
-                    )
-                },
-                headlineContent = { Text("Debansh Sahu") },
-                supportingContent = { Text("Developer") },
-                trailingContent = {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        FilledTonalIconButton(onClick = { onOpenUrl(DEVELOPER_TWITTER) }) {
-                            Icon(
-                                imageVector = Lucide.Twitter,
-                                contentDescription = "Twitter",
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                        }
-                        FilledTonalIconButton(onClick = { onOpenUrl(DEVELOPER_PROFILE) }) {
+                    },
+                    headlineContent = { Text("Timeflow") },
+                    supportingContent = { Text("Version ${BuildConfig.VERSION_NAME}") },
+                    trailingContent = {
+                        FilledTonalIconButton(onClick = { onOpenUrl(GITHUB_REPO) }) {
                             Icon(
                                 imageVector = Lucide.Github,
-                                contentDescription = "GitHub",
+                                contentDescription = "Source code",
                                 tint = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                         }
-                    }
-                },
-                colors = transparentListItemColors()
-            )
-            SectionDivider()
-            ListItem(
-                modifier = Modifier.clickable { onOpenUrl(PLAY_STORE) },
-                leadingContent = {
-                    Icon(
-                        imageVector = Lucide.Star,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier
-                            .size(50.dp)
-                            .padding(8.dp)
-                    )
-                },
-                headlineContent = { Text("Rate on Google Play") },
-                supportingContent = { Text("Liked the app? Write a review") },
-                colors = transparentListItemColors()
-            )
-            SectionDivider()
-            ListItem(
-                modifier = Modifier.clickable { onOpenUrl(PRIVACY_POLICY) },
-                leadingContent = {
-                    Icon(
-                        imageVector = Lucide.Dock,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier
-                            .size(50.dp)
-                            .padding(8.dp)
-                    )
-                },
-                headlineContent = { Text("Privacy Policy") },
-                supportingContent = { Text("Read how Timeflow handles your data") },
-                trailingContent = {
-                    Icon(
-                        imageVector = Lucide.ChevronRight,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                },
-                colors = transparentListItemColors()
-            )
+                    },
+                    colors = transparentListItemColors()
+                )
+                SectionDivider()
+                ListItem(
+                    leadingContent = {
+                        Icon(
+                            imageVector = Lucide.Code,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier
+                                .size(50.dp)
+                                .padding(8.dp)
+                        )
+                    },
+                    headlineContent = { Text("Debansh Sahu") },
+                    supportingContent = { Text("Developer") },
+                    trailingContent = {
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            FilledTonalIconButton(onClick = { onOpenUrl(DEVELOPER_TWITTER) }) {
+                                Icon(
+                                    imageVector = Lucide.Twitter,
+                                    contentDescription = "Twitter",
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            }
+                            FilledTonalIconButton(onClick = { onOpenUrl(DEVELOPER_PROFILE) }) {
+                                Icon(
+                                    imageVector = Lucide.Github,
+                                    contentDescription = "GitHub",
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            }
+                        }
+                    },
+                    colors = transparentListItemColors()
+                )
+                SectionDivider()
+                ListItem(
+                    modifier = Modifier.clickable { onOpenUrl(PLAY_STORE) },
+                    leadingContent = {
+                        Icon(
+                            imageVector = Lucide.Star,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier
+                                .size(50.dp)
+                                .padding(8.dp)
+                        )
+                    },
+                    headlineContent = { Text("Rate on Google Play") },
+                    supportingContent = { Text("Liked the app? Write a review") },
+                    colors = transparentListItemColors()
+                )
+                SectionDivider()
+                ListItem(
+                    modifier = Modifier.clickable { onOpenUrl(PRIVACY_POLICY) },
+                    leadingContent = {
+                        Icon(
+                            imageVector = Lucide.Dock,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier
+                                .size(50.dp)
+                                .padding(8.dp)
+                        )
+                    },
+                    headlineContent = { Text("Privacy Policy") },
+                    supportingContent = { Text("Read how Timeflow handles your data") },
+                    trailingContent = {
+                        Icon(
+                            imageVector = Lucide.ChevronRight,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    },
+                    colors = transparentListItemColors()
+                )
+            }
         }
     }
 }
@@ -574,7 +644,7 @@ private fun SettingsGroup(content: @Composable ColumnScope.() -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
-            .background(MaterialTheme.colorScheme.surfaceContainer),
+            .background(MaterialTheme.colorScheme.surface),
         content = content
     )
 }
@@ -596,13 +666,14 @@ private fun ChipRow(
     icon: @Composable () -> Unit,
     options: List<Pair<String, String>>,
     selected: String,
+    shape: CornerBasedShape = JoinedBlockShape(isFirst = true, isLast = true),
     onSelect: (String) -> Unit,
 ) {
-    Column(modifier = Modifier.padding(top = 4.dp)) {
+    Column(modifier = Modifier.padding(vertical = 1.dp).clip(shape).background(color = MaterialTheme.colorScheme.surfaceContainer)) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.padding(start = 16.dp, bottom = 4.dp)
+            modifier = Modifier.padding(start = 16.dp, bottom = 4.dp, top = 16.dp)
         ) {
             icon()
             Text(
@@ -615,15 +686,21 @@ private fun ChipRow(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalArrangement = Arrangement.spacedBy(0.dp)
         ) {
             options.forEach { (value, label) ->
-                FilterChip(
-                    selected = value == selected,
-                    onClick = { onSelect(value) },
-                    label = { Text(label) }
-                )
+
+                ToggleButton(
+                    colors = ToggleButtonDefaults.toggleButtonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    ),
+                    checked = value == selected,
+                    onCheckedChange = {onSelect(value)}
+                ) {
+                    Text(label)
+                }
+
             }
         }
     }
@@ -635,56 +712,48 @@ private fun Swatch(
     selected: Boolean,
     onClick: () -> Unit,
 ) {
-    val argb = swatch.argb
-    val fill = if (argb == null) {
-        MaterialTheme.colorScheme.surfaceBright
-    } else {
-        Color(argb.toInt())
-    }
+    val fill = swatch.argb?.let { Color(it.toInt()) }
+        ?: MaterialTheme.colorScheme.surfaceBright
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(50))
+            .size(48.dp)
+            .clip(CircleShape)
             .clickable(onClick = onClick)
-            .border(
-                width = if (selected) 2.dp else 1.dp,
-                color = if (selected) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    Color.Transparent
-                },
-                shape = RoundedCornerShape(50)
+            .then(
+                if (selected) {
+                    Modifier.border(
+                        width = 2.dp,
+                        color = MaterialTheme.colorScheme.primary,
+                        shape = CircleShape
+                    )
+                } else Modifier
             )
-            .padding(horizontal = 8.dp, vertical = 6.dp)
+            .padding(5.dp)
+            .background(fill, CircleShape),
+        contentAlignment = Alignment.Center
     ) {
-        Box(
-            modifier = Modifier
-                .size(24.dp)
-                .clip(CircleShape)
-                .background(fill),
-            contentAlignment = Alignment.Center
+        AnimatedVisibility(
+            visible = selected,
+            enter = scaleIn(
+                initialScale = 0.3f,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium
+                )
+            ) + fadeIn(),
+            exit = scaleOut(
+                targetScale = 0.3f,
+                animationSpec = tween(150)
+            ) + fadeOut(),
         ) {
-            when {
-                argb == null -> Text(
-                    text = "Aa",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                selected -> Icon(
-                    imageVector = Lucide.CircleCheck,
-                    contentDescription = null,
-                    tint = Color.White
-                )
-            }
+            Icon(
+                imageVector = Lucide.Check,
+                contentDescription = "Selected",
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.size(22.dp)
+            )
         }
-        Text(
-            text = swatch.label,
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
-        )
     }
 }
 

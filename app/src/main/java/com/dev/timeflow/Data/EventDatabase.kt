@@ -10,7 +10,7 @@ import com.dev.timeflow.Data.Model.CountDown
 import com.dev.timeflow.Data.Model.Events
 
 
-@Database(entities = [Events::class, CountDown::class], version = 2)
+@Database(entities = [Events::class, CountDown::class], version = 2, exportSchema = true)
 abstract class EventDatabase : RoomDatabase(){
     abstract fun eventDao() : EventDao
 

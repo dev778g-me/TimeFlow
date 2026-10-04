@@ -7,7 +7,8 @@ import com.dev.timeflow.Data.Model.Tasks
 
 @Database(
     entities = [Tasks::class],
-    version = 1
+    version = 1,
+    exportSchema = true
 )
 abstract class TaskDatabase : RoomDatabase(){
     abstract fun taskDao() : TaskDao
